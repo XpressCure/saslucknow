@@ -130,3 +130,31 @@ img,iframe{max-width:100%}
   .support{padding-top:3.25rem;padding-bottom:3.25rem}
   .community-grid{margin-top:1.5rem}
 }
+
+/* e-Library */
+.language-strip{display:flex;align-items:center;gap:.65rem;flex-wrap:wrap;margin:2.4rem 0 1.2rem;padding:1rem 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.language-strip span{margin-right:.5rem;color:var(--saffron);font-size:.62rem;font-weight:700;letter-spacing:.16em}
+.language-strip b{padding:.45rem .7rem;background:#fff;border:1px solid var(--line);font-size:.72rem;font-weight:500}
+.library-toolbar{display:flex;align-items:end;justify-content:space-between;gap:2rem;margin:1.6rem 0 2rem}
+.library-search{display:grid;gap:.45rem;width:min(480px,100%);font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.library-search input{width:100%;min-height:50px;padding:.85rem 1rem;border:1px solid #c8c5bb;background:#fff;color:var(--ink);font-size:1rem;letter-spacing:0;text-transform:none}
+.library-grid{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);border-left:1px solid var(--line)}
+.library-card{min-height:330px;padding:1.6rem;display:flex;flex-direction:column;color:inherit;text-decoration:none;background:rgba(255,255,255,.48);border-right:1px solid var(--line);border-bottom:1px solid var(--line);transition:background .2s,transform .2s}
+.library-card:hover{background:#fff;transform:translateY(-3px)}
+.library-card small{margin-top:1.4rem;color:var(--saffron);font-size:.62rem;letter-spacing:.11em;text-transform:uppercase}
+.library-card h3{font-size:1.55rem;margin:.65rem 0 1rem;line-height:1.1}
+.library-card ul{margin:0;padding:0;list-style:none;color:#647278;font-size:.78rem;line-height:1.9}
+.library-card li:before{content:"—";margin-right:.45rem;color:#b58a55}
+.library-card b{margin-top:auto;padding-top:1.2rem;font-size:.72rem}
+.library-number{font:1rem Georgia,serif;color:#8c999e}
+.library-credit,.library-empty{font-size:.72rem;line-height:1.6;color:#6c787d}
+.library-credit{margin:1.2rem 0 0}.library-credit a{color:inherit}
+@media(max-width:1000px){.library-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:760px){
+  .library-toolbar{align-items:stretch;flex-direction:column;gap:1rem;margin-top:1.25rem}
+  .library-toolbar .filters{width:100%}
+  .language-strip{margin-top:1.6rem;flex-wrap:nowrap;overflow-x:auto}
+  .language-strip>*{flex:0 0 auto}
+  .library-grid{grid-template-columns:1fr}
+  .library-card{min-height:270px;padding:1.4rem}
+}

@@ -45,20 +45,30 @@ const copy = {
   },
 };
 
-const resources = [
-  { type: "Articles", title: "What is Integral Yoga?", meta: "A gentle introduction · 6 min" },
-  { type: "Talks", title: "The relevance of Sri Aurobindo today", meta: "Recorded lecture · 42 min" },
-  { type: "Reflections", title: "Reading Savitri together", meta: "Study circle notes · 8 min" },
+const libraryCollections = [
+  { category: "Books", title: "Works of Sri Aurobindo", count: "170+ books", items: ["Savitri", "The Life Divine", "The Synthesis of Yoga"], href: "https://www.motherandsriaurobindo.in/Sri-Aurobindo/books/" },
+  { category: "Books", title: "Works of the Mother", count: "160+ books", items: ["Prayers and Meditations", "Questions and Answers", "Words of the Mother"], href: "https://www.motherandsriaurobindo.in/The-Mother/books/" },
+  { category: "Audio", title: "Music, talks and readings", count: "Audio library", items: ["Meditation music", "Recorded talks", "Readings and messages"], href: "https://www.motherandsriaurobindo.in/The-Mother/audio/" },
+  { category: "Explore", title: "Explore Savitri", count: "Poem and study", items: ["Search the text", "Meditations on Savitri", "Book and canto index"], href: "https://www.motherandsriaurobindo.in/Sri-Aurobindo/savitri/" },
+  { category: "Explore", title: "Spiritual significance of flowers", count: "800+ flowers", items: ["Search by significance", "Browse by colour", "Botanical index"], href: "https://www.motherandsriaurobindo.in/The-Mother/spiritual-significance-of-flowers/" },
+  { category: "Explore", title: "The Mother as an artist", count: "100+ artworks", items: ["Paintings", "Drawings", "Thoughts on art"], href: "https://www.motherandsriaurobindo.in/The-Mother/The-Mother-as-an-artist/" },
+  { category: "Books", title: "Disciples and seekers", count: "100+ persons", items: ["Books and memoirs", "Interviews", "A–Z index"], href: "https://www.motherandsriaurobindo.in/disciples/" },
+  { category: "Explore", title: "Guidance and quotations", count: "Daily inspiration", items: ["Their guidance", "Aphorisms", "Prayers and mantras"], href: "https://www.motherandsriaurobindo.in/guidance/" },
 ];
 
 export function MissionHome() {
   const [lang, setLang] = useState<Language>("en");
   const [menu, setMenu] = useState(false);
   const [filter, setFilter] = useState("All");
+  const [libraryQuery, setLibraryQuery] = useState("");
   const [dialog, setDialog] = useState<"register" | "join" | "volunteer" | "contribute" | "gallery" | null>(null);
   const [sent, setSent] = useState(false);
   const t = copy[lang];
-  const shown = useMemo(() => filter === "All" ? resources : resources.filter(r => r.type === filter), [filter]);
+  const shown = useMemo(() => libraryCollections.filter(item => {
+    const matchesCategory = filter === "All" || item.category === filter;
+    const haystack = `${item.title} ${item.count} ${item.items.join(" ")}`.toLowerCase();
+    return matchesCategory && haystack.includes(libraryQuery.trim().toLowerCase());
+  }), [filter, libraryQuery]);
   const open = (name: typeof dialog) => { setSent(false); setDialog(name); };
   const submit = (event: FormEvent) => { event.preventDefault(); setSent(true); };
 
@@ -106,9 +116,16 @@ export function MissionHome() {
         <div className="path-grid">{t.pathways.map((x,i)=><a href="#wisdom" key={x} className={`path path-${i}`}><span className="path-symbol">{["A","M","∞","S"][i]}</span><small>0{i+1}</small><h3>{x}</h3><p>{["Life, works and evolutionary vision","A life of service and transformation","A practical psychology of consciousness","An epic of the soul’s journey"][i]}</p><b>Explore <span>↗</span></b></a>)}</div>
       </section>
 
-      <section className="library section" id="wisdom"><div className="section-title"><div><p className="kicker">READ · LISTEN · REFLECT</p><h2>{t.library}</h2></div>
-        <div className="filters">{[t.all,t.articles,t.talks,t.reflections].map((label,i)=>{const value=["All","Articles","Talks","Reflections"][i];return <button key={value} onClick={()=>setFilter(value)} className={filter===value?"active":""}>{label}</button>})}</div></div>
-        <div className="resource-list">{shown.map((r,i)=><article key={r.title}><span className="resource-number">0{i+1}</span><div><small>{r.type}</small><h3>{r.title}</h3><p>{r.meta}</p></div><button aria-label={`Open ${r.title}`}>↗</button></article>)}</div>
+      <section className="library section" id="wisdom">
+        <div className="section-title"><div><p className="kicker">E-LIBRARY · READ · LISTEN · EXPLORE</p><h2>A digital doorway to their works</h2></div><p>Browse books, audio, art, Savitri, flowers and the lives of disciples through a carefully organised spiritual library.</p></div>
+        <div className="language-strip" aria-label="Available library languages"><span>LANGUAGES</span><b>English</b><b>हिन्दी</b><b>বাংলা</b><b>Français</b><b>मराठी</b><b>தமிழ்</b><b>ગુજરાતી</b><b>తెలుగు</b></div>
+        <div className="library-toolbar">
+          <label className="library-search"><span>Search the library</span><input value={libraryQuery} onChange={event=>setLibraryQuery(event.target.value)} placeholder="Try Savitri, flowers, audio…"/></label>
+          <div className="filters" aria-label="Filter library collections">{["All","Books","Audio","Explore"].map(value=><button key={value} onClick={()=>setFilter(value)} className={filter===value?"active":""}>{value}</button>)}</div>
+        </div>
+        <div className="library-grid">{shown.map((item,i)=><a className="library-card" href={item.href} target="_blank" rel="noreferrer" key={item.title}><span className="library-number">{String(i+1).padStart(2,"0")}</span><small>{item.category} · {item.count}</small><h3>{item.title}</h3><ul>{item.items.map(entry=><li key={entry}>{entry}</li>)}</ul><b>Open collection ↗</b></a>)}</div>
+        {shown.length === 0 && <p className="library-empty">No collection matches that search. Try a broader word.</p>}
+        <p className="library-credit">Catalogue information and destination links are adapted from <a href="https://www.motherandsriaurobindo.in/" target="_blank" rel="noreferrer">The Mother & Sri Aurobindo e‑Library</a>. Content opens on the source website.</p>
       </section>
 
       <section className="lectures section" aria-labelledby="lectures-title"><div className="section-title"><div><p className="kicker">LUCKNOW LECTURE ARCHIVE</p><h2 id="lectures-title">Conversations for a conscious life</h2></div><p>Nearly fifty online lectures have brought seekers from Lucknow and neighbouring regions together for study and reflection.</p></div>
