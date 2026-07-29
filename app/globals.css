@@ -103,3 +103,30 @@ img,iframe{max-width:100%}
   .meeting-time{grid-template-columns:1fr;gap:.35rem}
   .meeting-time small{grid-column:1}
 }
+
+/* Refined vertical rhythm */
+.location.section{padding:0}
+@media(min-width:761px){
+  .section{padding-top:5.25rem;padding-bottom:5.25rem}
+  .theme-banner img{height:min(52vw,520px)}
+  .location-copy{padding:4rem 6vw}
+  .location .map{min-height:620px}
+  .meeting-time{margin:1.4rem 0;padding:1.1rem 0}
+  .location h3{margin:1.4rem 0 .35rem}
+  .contact-phone{margin:.4rem 0 1rem}
+  .contact-email{margin:-.35rem 0 1.25rem}
+  .facebook-embed iframe{height:560px}
+  .gallery-grid article{min-height:320px}
+  .community-grid{margin-top:2.25rem}
+}
+@media(max-width:760px){
+  .section{padding-top:3.25rem;padding-bottom:3.25rem}
+  .location-copy{padding-top:3.25rem;padding-bottom:3.25rem}
+  .location h3{margin-top:1.35rem}
+  .meeting-time{margin:1.25rem 0;padding:1rem 0}
+  .map{min-height:280px;height:280px}
+  .facebook-embed iframe{height:460px}
+  .gallery-grid article{min-height:230px}
+  .support{padding-top:3.25rem;padding-bottom:3.25rem}
+  .community-grid{margin-top:1.5rem}
+}
