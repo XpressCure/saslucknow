@@ -32,3 +32,14 @@ test("renders sourced portraits and the lecture archive", async () => {
   assert.match(html, /LUCKNOW LECTURE ARCHIVE/);
   assert.match(html, /CWSA Vol\. 12, p\. 157/);
 });
+
+test("renders location, weekly meeting, gallery and Facebook embed", async () => {
+  const response = await render();
+  const html = await response.text();
+  assert.match(html, /The Song of Life/);
+  assert.match(html, /4\/668, Vijayant Khand/);
+  assert.match(html, /6:00–7:00 PM/);
+  assert.match(html, /73888 99001/);
+  assert.match(html, /facebook\.com%2Fsaslucknow/);
+  assert.match(html, /Upload event photographs/);
+});
