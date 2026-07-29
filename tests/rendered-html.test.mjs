@@ -14,13 +14,13 @@ test("renders the mission homepage with accessible landmarks", async () => {
   const response = await render();
   assert.equal(response.status, 200);
   const html = await response.text();
-  assert.match(html, /Aurobindo Mission Lucknow/);
+  assert.match(html, /Sri Aurobindo Society/);
   assert.match(html, /A quiet space for inner growth/);
   assert.match(html, /aria-label="Main navigation"/);
   assert.match(html, /id="wisdom"/);
   assert.match(html, /id="events"/);
   assert.match(html, /id="shrine"/);
-  assert.match(html, /independent spiritual and educational initiative/i);
+  assert.match(html, /Gomti Nagar Centre \(UC-02\)/i);
   assert.doesNotMatch(html, /codex-preview|Your site is taking shape/);
 });
 
@@ -42,4 +42,15 @@ test("renders location, weekly meeting, gallery and Facebook embed", async () =>
   assert.match(html, /73888 99001/);
   assert.match(html, /facebook\.com%2Fsaslucknow/);
   assert.match(html, /Upload event photographs/);
+});
+
+test("renders official Society identity, email, roots and sourced wisdom", async () => {
+  const response = await render();
+  const html = await response.text();
+  assert.match(html, /Sri Aurobindo Society/);
+  assert.match(html, /sas-symbol%281%29\.jpg/);
+  assert.match(html, /info\.saslucknow@gmail\.com/);
+  assert.match(html, /From Puducherry to Lucknow/);
+  assert.match(html, /Auroville is an international township/);
+  assert.match(html, /To know is good, to live is better/);
 });

@@ -1,4 +1,4 @@
-# Aurobindo Mission Lucknow
+# Sri Aurobindo Society, Lucknow
 
 A bilingual, mobile-first spiritual and educational community platform for Lucknow and the Sultanpur shrine.
 

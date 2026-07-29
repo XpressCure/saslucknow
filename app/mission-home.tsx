@@ -6,7 +6,7 @@ type Language = "en" | "hi";
 const copy = {
   en: {
     nav: ["Discover", "Wisdom", "Events", "Sultanpur Shrine", "Community"],
-    eyebrow: "Sri Aurobindo–The Mother Mission, Lucknow",
+    eyebrow: "Sri Aurobindo Society · Lucknow Centre",
     title: "A quiet space for inner growth.",
     intro: "Discover the vision of Sri Aurobindo and the Mother. Study, reflect, participate, and grow together.",
     explore: "Begin exploring", event: "View next gathering", today: "A thought for today",
@@ -23,7 +23,7 @@ const copy = {
     community: "Grow with the community", join: "Join the community", volunteer: "Volunteer with us",
     support: "Support the work", supportText: "Voluntary contributions help sustain programmes, publications, shrine care and digital outreach.",
     contribute: "Contribute thoughtfully", footer: "Towards a Life Divine",
-    disclaimer: "An independent spiritual and educational initiative inspired by the teachings of Sri Aurobindo and the Mother. Formal affiliation will be stated only after appropriate authorisation.",
+    disclaimer: "Sri Aurobindo Society, Lucknow · Gomti Nagar Centre (UC-02). The Society was founded by the Mother in 1960 and is headquartered in Puducherry.",
   },
   hi: {
     nav: ["परिचय", "ज्ञान", "कार्यक्रम", "सुल्तानपुर समाधि", "समुदाय"],
@@ -65,7 +65,7 @@ export function MissionHome() {
   return <div className={lang === "hi" ? "hindi" : ""}>
     <a href="#main" className="skip">Skip to content</a>
     <header className="site-header">
-      <a className="brand" href="#"><span className="mark">✦</span><span>Aurobindo Mission<small>LUCKNOW</small></span></a>
+      <a className="brand" href="#"><img className="society-logo" src="https://cms.aurosociety.org/kcfinder/images/images/sas-symbol%281%29.jpg" alt="Sri Aurobindo Society symbol"/><span>Sri Aurobindo Society<small>LUCKNOW · GOMTI NAGAR CENTRE</small></span></a>
       <button className="menu-button" onClick={() => setMenu(!menu)} aria-expanded={menu} aria-label="Toggle navigation">☰</button>
       <nav className={menu ? "open" : ""} aria-label="Main navigation">
         {t.nav.map((item, i) => <a key={item} href={`#${["discover","wisdom","events","shrine","community"][i]}`}>{item}</a>)}
@@ -94,6 +94,14 @@ export function MissionHome() {
 
       <section className="vision section" id="pathways"><div><p className="kicker">THE VISION</p><h2>{t.vision}</h2><p>{t.visionText}</p></div><div className="pillars">{t.cards.map((x,i)=><article key={x}><b>0{i+1}</b><span>{x}</span></article>)}</div></section>
 
+      <section className="roots section" aria-labelledby="roots-title"><div className="section-title"><div><p className="kicker">A LIVING MOVEMENT</p><h2 id="roots-title">From Puducherry to Lucknow</h2></div><p>Sri Aurobindo Society was started by the Mother on 19 September 1960 and has grown into an international organisation carrying spirituality into many fields of life.</p></div><div className="roots-grid">
+        <article><span>01</span><h3>Puducherry</h3><p>The Society’s administrative headquarters and Society House are in Puducherry, close to the wider spiritual, cultural and educational life inspired by Sri Aurobindo and the Mother.</p><a href="https://aurosociety.org/society/index/About-Sri-Aurobindo-Society" target="_blank" rel="noreferrer">About the Society ↗</a></article>
+        <article><span>02</span><h3>Auroville</h3><p>Founded by the Mother in 1968, Auroville is an international township dedicated to human unity, unending education and material and spiritual research.</p><a href="https://auroville.org/page/history" target="_blank" rel="noreferrer">Explore Auroville ↗</a></article>
+        <article><span>03</span><h3>Lucknow</h3><p>The Lucknow and Gomti Nagar centres bring this vision into local life through Sunday meetings, lectures, study, reflection and community participation.</p><a href="#location">Visit our centre →</a></article>
+      </div></section>
+
+      <section className="wisdom-quotes section" aria-labelledby="quotes-title"><p className="kicker">WORDS TO LIVE BY</p><h2 id="quotes-title">A few lights for the way</h2><div className="quote-grid"><blockquote><p>“Escape, however high, redeems not life.”</p><cite>Sri Aurobindo · Daily quote, Sri Aurobindo Society</cite></blockquote><blockquote><p>“To know is good, to live is better, to be, that is perfect.”</p><cite>The Mother · Society motto</cite></blockquote><blockquote><p>“The soul in man is greater than his fate…”</p><cite>Sri Aurobindo · Sri Aurobindo Society</cite></blockquote></div><a className="source-note" href="https://aurosociety.org/society/index/About-Sri-Aurobindo-Society" target="_blank" rel="noreferrer">Read the source on the official Society website ↗</a></section>
+
       <section className="section pathways"><div className="section-title"><div><p className="kicker">DISCOVER</p><h2>{t.learn}</h2></div><p>{t.learnText}</p></div>
         <div className="path-grid">{t.pathways.map((x,i)=><a href="#wisdom" key={x} className={`path path-${i}`}><span className="path-symbol">{["A","M","∞","S"][i]}</span><small>0{i+1}</small><h3>{x}</h3><p>{["Life, works and evolutionary vision","A life of service and transformation","A practical psychology of consciousness","An epic of the soul’s journey"][i]}</p><b>Explore <span>↗</span></b></a>)}</div>
       </section>
@@ -119,14 +127,14 @@ export function MissionHome() {
 
       <section className="gallery section" id="gallery"><div className="section-title"><div><p className="kicker">MEMORIES OF THE WORK</p><h2>Gatherings through the years</h2></div><p>A growing visual record of lectures, study circles, observances, shrine visits and community moments.</p></div><div className="gallery-grid"><article className="gallery-one"><span>LECTURES</span><h3>Ideas that open doors</h3><p>Talks and conversations in Lucknow</p></article><article className="gallery-two"><span>COLLECTIVE LIFE</span><h3>Learning together</h3><p>Study circles and Sunday meetings</p></article><article className="gallery-three"><span>SULTANPUR</span><h3>A place of remembrance</h3><p>Shrine visits and sacred observances</p></article></div><div className="gallery-action"><p>Administrators can add a title, date, description, album and accessible caption with each photograph.</p><button className="button quiet" onClick={()=>open("gallery")}>Upload event photographs →</button></div></section>
 
-      <section className="location section" id="location"><div className="location-copy"><p className="kicker">VISIT THE CENTRE</p><h2>Come, sit with us.</h2><address>4/668, Vijayant Khand<br/>Gomti Nagar, Lucknow – 226010</address><div className="meeting-time"><span>SUNDAY</span><strong>6:00–7:00 PM</strong><small>Regular weekly meeting</small></div><h3>Mr. Rajendra Kumar Singh</h3><p>Secretary, Gomti Nagar Centre (UC-02)<br/>Vice-Chairman, Sri Aurobindo Society, UP & Uttarakhand</p><a className="contact-phone" href="tel:+917388899001">+91 73888 99001</a><div className="location-actions"><a className="button primary" href="https://www.google.com/maps/search/?api=1&query=4%2F668%2C%20Vijayant%20Khand%2C%20Gomti%20Nagar%2C%20Lucknow%20226010" target="_blank" rel="noreferrer">Get directions ↗</a><a className="button quiet" href="tel:+917388899001">Call the centre</a></div></div><div className="map"><iframe title="Map to Sri Aurobindo Society Gomti Nagar Centre" src="https://www.google.com/maps?q=4%2F668%2C%20Vijayant%20Khand%2C%20Gomti%20Nagar%2C%20Lucknow%20226010&output=embed" loading="lazy" referrerPolicy="no-referrer-when-downgrade"/></div></section>
+      <section className="location section" id="location"><div className="location-copy"><p className="kicker">VISIT THE CENTRE</p><h2>Come, sit with us.</h2><address>4/668, Vijayant Khand<br/>Gomti Nagar, Lucknow – 226010</address><div className="meeting-time"><span>SUNDAY</span><strong>6:00–7:00 PM</strong><small>Regular weekly meeting</small></div><h3>Mr. Rajendra Kumar Singh</h3><p>Secretary, Gomti Nagar Centre (UC-02)<br/>Vice-Chairman, Sri Aurobindo Society, UP & Uttarakhand</p><a className="contact-phone" href="tel:+917388899001">+91 73888 99001</a><a className="contact-email" href="mailto:info.saslucknow@gmail.com">info.saslucknow@gmail.com</a><div className="location-actions"><a className="button primary" href="https://www.google.com/maps/search/?api=1&query=4%2F668%2C%20Vijayant%20Khand%2C%20Gomti%20Nagar%2C%20Lucknow%20226010" target="_blank" rel="noreferrer">Get directions ↗</a><a className="button quiet" href="tel:+917388899001">Call the centre</a></div></div><div className="map"><iframe title="Map to Sri Aurobindo Society Gomti Nagar Centre" src="https://www.google.com/maps?q=4%2F668%2C%20Vijayant%20Khand%2C%20Gomti%20Nagar%2C%20Lucknow%20226010&output=embed" loading="lazy" referrerPolicy="no-referrer-when-downgrade"/></div></section>
 
       <section className="community section" id="community"><p className="kicker">PARTICIPATE</p><h2>{t.community}</h2><div className="community-grid"><button onClick={()=>open("join")}><span>01</span><b>{t.join}</b><small>Study circles, gatherings and updates →</small></button><button onClick={()=>open("volunteer")}><span>02</span><b>{t.volunteer}</b><small>Offer time, skills or venue support →</small></button></div></section>
 
       <section className="support section"><div><p className="kicker">A QUIET INVITATION</p><h2>{t.support}</h2><p>{t.supportText}</p></div><button className="button quiet light" onClick={()=>open("contribute")}>{t.contribute} →</button></section>
     </main>
 
-    <footer><div className="brand inverse"><span className="mark">✦</span><span>Aurobindo Mission<small>LUCKNOW</small></span></div><p>{t.footer}</p><div><a href="#wisdom">Wisdom</a><a href="#events">Events</a><a href="#community">Contact</a></div><small>{t.disclaimer}</small></footer>
+    <footer><div className="brand inverse"><img className="society-logo" src="https://cms.aurosociety.org/kcfinder/images/images/sas-symbol%281%29.jpg" alt="Sri Aurobindo Society symbol"/><span>Sri Aurobindo Society<small>LUCKNOW · GOMTI NAGAR CENTRE</small></span></div><p>{t.footer}</p><div><a href="#wisdom">Wisdom</a><a href="#events">Events</a><a href="mailto:info.saslucknow@gmail.com">Email</a></div><small>{t.disclaimer}</small></footer>
 
     {dialog && <div className="modal-backdrop" role="presentation" onMouseDown={()=>setDialog(null)}><div className="modal" role="dialog" aria-modal="true" aria-labelledby="dialog-title" onMouseDown={e=>e.stopPropagation()}><button className="close" onClick={()=>setDialog(null)} aria-label="Close">×</button>
       {!sent ? <><p className="kicker">AUROBINDO MISSION LUCKNOW</p><h2 id="dialog-title">{dialog === "register" ? "Register for this gathering" : dialog === "join" ? "Join the community" : dialog === "volunteer" ? "Volunteer with us" : dialog === "gallery" ? "Add event photographs" : "Make a voluntary contribution"}</h2><p className="privacy">{dialog === "gallery" ? "Upload controls are prepared for the S3 media library. Images should include event details and permission to publish." : "Your details are used only to respond to this request. Optional updates require separate consent."}</p>
