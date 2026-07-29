@@ -10,7 +10,7 @@ const copy = {
     title: "A quiet space for inner growth.",
     intro: "Discover the vision of Sri Aurobindo and the Mother. Study, reflect, participate, and grow together.",
     explore: "Begin exploring", event: "View next gathering", today: "A thought for today",
-    quote: "Sample quotation — source verification pending before publication.",
+    quote: "Man is a transitional being, he is not final.",
     vision: "A path towards a more conscious life",
     visionText: "Integral Yoga invites every part of life—thought, work, relationship and aspiration—to participate in inner growth.",
     cards: ["Inner growth", "Conscious living", "Human unity", "Spiritual evolution"],
@@ -30,7 +30,7 @@ const copy = {
     eyebrow: "श्री अरविंद–श्री माँ मिशन, लखनऊ", title: "आंतरिक विकास के लिए एक शांत स्थान।",
     intro: "श्री अरविंद और श्री माँ के दर्शन को जानें। अध्ययन करें, मनन करें, सहभागी बनें और साथ बढ़ें।",
     explore: "यात्रा आरंभ करें", event: "अगला कार्यक्रम देखें", today: "आज का विचार",
-    quote: "नमूना उद्धरण — प्रकाशन से पहले स्रोत सत्यापन लंबित है।",
+    quote: "Man is a transitional being, he is not final.",
     vision: "अधिक सचेत जीवन की ओर", visionText: "पूर्ण योग जीवन के प्रत्येक अंग—विचार, कर्म, संबंध और आकांक्षा—को आंतरिक विकास में सहभागी बनाता है।",
     cards: ["आंतरिक विकास", "सचेत जीवन", "मानव एकता", "आध्यात्मिक विकास"],
     learn: "जहाँ से मन जुड़े, वहीं से आरंभ करें", learnText: "एक विशाल और बहुआयामी दर्शन के सरल प्रवेश-द्वार।",
@@ -79,7 +79,16 @@ export function MissionHome() {
         <div className="hero-copy"><p className="eyebrow">{t.eyebrow}</p><h1>{t.title}</h1><p className="lead">{t.intro}</p>
           <div className="actions"><a className="button primary" href="#pathways">{t.explore} <span>→</span></a><a className="button quiet" href="#events">{t.event}</a></div>
         </div>
-        <aside className="quote-card"><span className="line"/><p>{t.today}</p><blockquote>“{t.quote}”</blockquote><small>— Placeholder content</small></aside>
+        <aside className="quote-card"><span className="line"/><p>{t.today}</p><blockquote>“{t.quote}”</blockquote><small>— Sri Aurobindo · CWSA Vol. 12, p. 157</small></aside>
+      </section>
+
+      <section className="people section" aria-labelledby="guides-title">
+        <div className="section-title"><div><p className="kicker">LIVES & VISION</p><h2 id="guides-title">Meet Sri Aurobindo and the Mother</h2></div><p>Two lives joined in a work for the evolution of consciousness and the transformation of life.</p></div>
+        <div className="people-grid">
+          <article className="person-card"><img src="https://www.sriaurobindoashram.org/sriaurobindo/images/sa_37.jpg" alt="Portrait of Sri Aurobindo" loading="lazy"/><div><small>1872–1950</small><h3>Sri Aurobindo</h3><p>Philosopher, poet, yogi and a leader of India’s awakening, he developed Integral Yoga as a path of inner and earthly transformation.</p><a href="https://www.sriaurobindoashram.org/exhibitions/a-life-sketch/page01.html" target="_blank" rel="noreferrer">Read the authorised life sketch ↗</a></div></article>
+          <article className="person-card"><img src="https://www.sriaurobindoashram.org/mother/images/ma01.jpg" alt="Portrait of the Mother, Mirra Alfassa" loading="lazy"/><div><small>1878–1973</small><h3>The Mother</h3><p>Born Mirra Alfassa, the Mother was Sri Aurobindo’s spiritual collaborator and guided the Ashram’s many-sided life for nearly fifty years.</p><a href="https://www.sriaurobindoashram.org/mother/" target="_blank" rel="noreferrer">Read the authorised introduction ↗</a></div></article>
+        </div>
+        <p className="image-credit">Portraits displayed from the Sri Aurobindo Ashram website. Permission for permanent production use should be confirmed with the Ashram Photo Section.</p>
       </section>
 
       <section className="vision section" id="pathways"><div><p className="kicker">THE VISION</p><h2>{t.vision}</h2><p>{t.visionText}</p></div><div className="pillars">{t.cards.map((x,i)=><article key={x}><b>0{i+1}</b><span>{x}</span></article>)}</div></section>
@@ -91,6 +100,11 @@ export function MissionHome() {
       <section className="library section" id="wisdom"><div className="section-title"><div><p className="kicker">READ · LISTEN · REFLECT</p><h2>{t.library}</h2></div>
         <div className="filters">{[t.all,t.articles,t.talks,t.reflections].map((label,i)=>{const value=["All","Articles","Talks","Reflections"][i];return <button key={value} onClick={()=>setFilter(value)} className={filter===value?"active":""}>{label}</button>})}</div></div>
         <div className="resource-list">{shown.map((r,i)=><article key={r.title}><span className="resource-number">0{i+1}</span><div><small>{r.type}</small><h3>{r.title}</h3><p>{r.meta}</p></div><button aria-label={`Open ${r.title}`}>↗</button></article>)}</div>
+      </section>
+
+      <section className="lectures section" aria-labelledby="lectures-title"><div className="section-title"><div><p className="kicker">LUCKNOW LECTURE ARCHIVE</p><h2 id="lectures-title">Conversations for a conscious life</h2></div><p>Nearly fifty online lectures have brought seekers from Lucknow and neighbouring regions together for study and reflection.</p></div>
+        <div className="lecture-grid"><article><span>01</span><small>FOUNDATIONS</small><h3>Sri Aurobindo’s evolutionary vision</h3><p>Introductions to consciousness, human potential and the movement towards a life divine.</p></article><article><span>02</span><small>PRACTICE</small><h3>Integral Yoga in daily life</h3><p>Talks on work, relationships, education, family life and the discovery of the inner being.</p></article><article><span>03</span><small>STUDY</small><h3>Approaching Savitri</h3><p>Guided readings and conversations around Sri Aurobindo’s epic poem.</p></article></div>
+        <a className="facebook-link" href="https://www.facebook.com/search/top?q=Sri%20Aurobindo%20Society%20Lucknow" target="_blank" rel="noreferrer"><b>f</b><span>Continue to the Facebook video archive<small>Opens Facebook · exact page link configurable in site settings</small></span><strong>↗</strong></a>
       </section>
 
       <section className="events section" id="events"><div><p className="kicker">COME TOGETHER</p><h2>{t.upcoming}</h2></div>

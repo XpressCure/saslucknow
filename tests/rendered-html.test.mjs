@@ -24,9 +24,11 @@ test("renders the mission homepage with accessible landmarks", async () => {
   assert.doesNotMatch(html, /codex-preview|Your site is taking shape/);
 });
 
-test("marks unverified sample quotation clearly", async () => {
+test("renders sourced portraits and the lecture archive", async () => {
   const response = await render();
   const html = await response.text();
-  assert.match(html, /source verification pending before publication/i);
-  assert.match(html, /Placeholder content/);
+  assert.match(html, /Portrait of Sri Aurobindo/);
+  assert.match(html, /Portrait of the Mother/);
+  assert.match(html, /LUCKNOW LECTURE ARCHIVE/);
+  assert.match(html, /CWSA Vol\. 12, p\. 157/);
 });
