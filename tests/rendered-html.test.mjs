@@ -78,7 +78,10 @@ test("renders the complete Mother profile structure", async () => {
   assert.equal(response.status, 200);
   const html = await response.text();
   for (const heading of ["Introduction", "On Herself", "Sri Aurobindo on The Mother", "Writings"]) assert.match(html, new RegExp(heading));
-  assert.match(html, /official Ashram website/);
+  assert.match(html, /Académie Julian/);
+  assert.match(html, /17 November 1973/);
+  assert.match(html, /src="\/the-mother-portrait\.jpg"/);
+  assert.doesNotMatch(html, /href="https?:\/\//);
 });
 
 test("renders the internal chronological life sketch", async () => {
@@ -86,7 +89,9 @@ test("renders the internal chronological life sketch", async () => {
   assert.equal(response.status, 200);
   const html = await response.text();
   for (const heading of ["Origins and education", "India’s awakening", "Pondicherry and Integral Yoga", "Alipore Jail", "Siddhi Day and the Ashram"]) assert.match(html, new RegExp(heading));
-  assert.match(html, /official Sri Aurobindo Ashram photographic life sketch/);
+  assert.match(html, /Sri Aurobindo Ashram photographic exhibition/);
+  assert.match(html, /src="\/sri-aurobindo-portrait\.jpg"/);
+  assert.doesNotMatch(html, /href="https?:\/\//);
 });
 
 test("homepage biography cards use internal routes", async () => {
