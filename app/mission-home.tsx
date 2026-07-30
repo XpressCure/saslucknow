@@ -29,6 +29,7 @@ const copy = {
     community: "Grow with the community", join: "Join the community", volunteer: "Volunteer with us",
     support: "Support the work", supportText: "Voluntary contributions help sustain programmes, publications, shrine care and digital outreach.",
     contribute: "Contribute thoughtfully", footer: "Towards a Life Divine",
+    more: "More", darshan: "Darshan Divas",
     disclaimer: "Sri Aurobindo Society, Lucknow · Gomti Nagar Centre (UC-02). The Society was founded by the Mother in 1960 and is headquartered in Puducherry.",
   },
   hi: {
@@ -53,6 +54,7 @@ const copy = {
     community: "समुदाय के साथ बढ़ें", join: "समुदाय से जुड़ें", volunteer: "सेवा में सहयोग दें",
     support: "कार्य में सहयोग", supportText: "स्वैच्छिक योगदान कार्यक्रमों, प्रकाशनों, स्थल की देखभाल और डिजिटल प्रसार में सहायक है।",
     contribute: "ससम्मान योगदान", footer: "दिव्य जीवन की ओर",
+    more: "और", darshan: "दर्शन दिवस",
     disclaimer: "श्री अरविंद और श्री माँ की शिक्षाओं से प्रेरित एक स्वतंत्र आध्यात्मिक एवं शैक्षिक पहल। औपचारिक संबद्धता उचित प्राधिकरण के बाद ही बताई जाएगी।",
   },
 };
@@ -71,6 +73,7 @@ const libraryCollections = [
 export function MissionHome() {
   const [lang, setLang] = useState<Language>("en");
   const [menu, setMenu] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
   const [filter, setFilter] = useState("All");
   const [libraryQuery, setLibraryQuery] = useState("");
   const [dialog, setDialog] = useState<"register" | "join" | "volunteer" | "contribute" | "gallery" | null>(null);
@@ -91,6 +94,10 @@ export function MissionHome() {
       <button className="menu-button" onClick={() => setMenu(!menu)} aria-expanded={menu} aria-label="Toggle navigation">☰</button>
       <nav className={menu ? "open" : ""} aria-label="Main navigation">
         {t.nav.map((item, i) => <a key={item} href={`#${["discover","wisdom","events","shrine","community"][i]}`} onClick={() => setMenu(false)}>{item}</a>)}
+        <div className={`more-menu ${moreOpen ? "open" : ""}`}>
+          <button type="button" aria-expanded={moreOpen} aria-haspopup="true" onClick={() => setMoreOpen(!moreOpen)}>{t.more}<span aria-hidden="true">⌄</span></button>
+          <div className="more-dropdown"><a href="/darshan-divas" onClick={() => { setMoreOpen(false); setMenu(false); }}>{t.darshan}</a></div>
+        </div>
       </nav>
       <div className="language"><button className={lang === "en" ? "active" : ""} onClick={() => setLang("en")}>EN</button><span>/</span><button className={lang === "hi" ? "active" : ""} onClick={() => setLang("hi")}>हिं</button></div>
     </header>

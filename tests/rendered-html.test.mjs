@@ -112,3 +112,16 @@ test("explains all four vision pillars inside their boxes", async () => {
     "Participate consciously in humanity’s movement",
   ]) assert.match(html, new RegExp(line));
 });
+
+test("renders the internal Darshan Divas guide and navigation entry", async () => {
+  const home = await render();
+  const homeHtml = await home.text();
+  assert.match(homeHtml, /Darshan Divas/);
+  assert.match(homeHtml, /href="\/darshan-divas"/);
+
+  const response = await render("/darshan-divas");
+  assert.equal(response.status, 200);
+  const html = await response.text();
+  for (const day of ["The Mother’s Birthday", "Sri Aurobindo’s Birthday", "Siddhi Day", "Supramental Manifestation Day", "Sri Aurobindo’s Mahasamadhi", "The Mother’s Mahasamadhi"]) assert.match(html, new RegExp(day));
+  assert.doesNotMatch(html, /href="https?:\/\//);
+});
