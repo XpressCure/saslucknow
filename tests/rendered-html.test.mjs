@@ -64,3 +64,19 @@ test("renders official Society identity, email, roots and sourced wisdom", async
   assert.match(html, /Auroville is an international township/);
   assert.match(html, /To know is good, to live is better/);
 });
+
+test("renders the complete Sri Aurobindo profile structure", async () => {
+  const response = await render("/sri-aurobindo");
+  assert.equal(response.status, 200);
+  const html = await response.text();
+  for (const heading of ["Introduction", "Life Sketch", "On Himself", "The Mother on Sri Aurobindo", "Writings", "Translations"]) assert.match(html, new RegExp(heading));
+  assert.match(html, /official Ashram website/);
+});
+
+test("renders the complete Mother profile structure", async () => {
+  const response = await render("/the-mother");
+  assert.equal(response.status, 200);
+  const html = await response.text();
+  for (const heading of ["Introduction", "On Herself", "Sri Aurobindo on The Mother", "Writings"]) assert.match(html, new RegExp(heading));
+  assert.match(html, /official Ashram website/);
+});

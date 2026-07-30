@@ -1,0 +1,19 @@
+const sections = [
+  { id: "introduction", title: "Introduction", text: "The Mother was born Mirra Alfassa in Paris on 21 February 1878. An artist, musician and spiritual seeker from childhood, she first met Sri Aurobindo in Pondicherry in 1914 and returned permanently in 1920. Their shared work gave practical form to Integral Yoga in the life of the Ashram and beyond.", href: "https://www.sriaurobindoashram.org/mother/" },
+  { id: "on-herself", title: "On Herself", text: "The Mother’s own accounts trace an inner life of unusual intensity and precision. They speak of early spiritual experiences, her recognition of Sri Aurobindo, and a lifelong effort to bring consciousness into the smallest details of material life.", href: "https://www.sriaurobindoashram.org/mother/on_herself.php" },
+  { id: "sri-aurobindo-on", title: "Sri Aurobindo on The Mother", text: "Sri Aurobindo described the Mother as his spiritual collaborator and as the executive power of their joint work. His words help explain why her guidance was central to the Ashram and to the practice of Integral Yoga.", href: "https://www.sriaurobindoashram.org/mother/sriauro_on.php" },
+  { id: "writings", title: "Writings", text: "The Mother’s writings and conversations address meditation, education, work, relationships, art, the body and the transformation of consciousness. Prayers and Meditations, Questions and Answers and the many volumes of her collected works preserve guidance that is at once practical and far-reaching.", href: "https://www.sriaurobindoashram.org/mother/writings.php" },
+];
+
+export default function MotherPage() {
+  return <div className="detail-page biography-page mother-page">
+    <header className="detail-header"><a className="brand" href="/"><img className="society-logo" src="https://cms.aurosociety.org/kcfinder/images/images/sas-symbol%281%29.jpg" alt="Sri Aurobindo Society symbol"/><span>Sri Aurobindo Society<small>LUCKNOW · GOMTI NAGAR CENTRE</small></span></a><nav aria-label="Page navigation"><a href="/">Home</a><a href="/#wisdom">e-Library</a><a href="/sri-aurobindo">Sri Aurobindo</a></nav></header>
+    <main>
+      <section className="biography-hero"><div className="biography-copy"><p className="kicker">THE MOTHER · 1878–1973</p><h1>The Mother</h1><p className="lead">A life of conscious service, spiritual transformation and tireless work for humanity’s future.</p></div><figure><img src="https://www.sriaurobindoashram.org/mother/images/ma01.jpg" alt="Portrait of the Mother, Mirra Alfassa"/><figcaption>Portrait from the Sri Aurobindo Ashram website</figcaption></figure></section>
+      <nav className="biography-index" aria-label="The Mother page sections">{sections.map((section, i)=><a href={`#${section.id}`} key={section.id}><span>{String(i+1).padStart(2,"0")}</span>{section.title}</a>)}</nav>
+      <div className="biography-sections">{sections.map((section, i)=><section id={section.id} key={section.id} className="biography-section"><span className="biography-number">{String(i+1).padStart(2,"0")}</span><div><p className="kicker">THE MOTHER</p><h2>{section.title}</h2><p>{section.text}</p><a href={section.href} target="_blank" rel="noreferrer">Read this section on the official Ashram website ↗</a></div></section>)}</div>
+      <aside className="biography-source"><p className="kicker">SOURCE NOTE</p><p>These original summaries follow the structure and factual material of the official Sri Aurobindo Ashram pages. Follow the source links for the complete, authoritative texts.</p><a className="button primary" href="https://www.sriaurobindoashram.org/mother/" target="_blank" rel="noreferrer">Visit official source ↗</a></aside>
+    </main>
+    <footer className="detail-footer"><a href="/">← Return to the Lucknow Centre</a><small>The Song of Life</small></footer>
+  </div>;
+}
