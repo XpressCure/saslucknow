@@ -14,6 +14,12 @@ const copy = {
     vision: "A path towards a more conscious life",
     visionText: "Integral Yoga invites every part of life—thought, work, relationship and aspiration—to participate in inner growth.",
     cards: ["Inner growth", "Conscious living", "Human unity", "Spiritual evolution"],
+    cardNotes: [
+      "Discover the deeper self and bring greater awareness into daily life.",
+      "Let thought, work and relationships become expressions of inner purpose.",
+      "Recognise one spirit in all and build harmony across every difference.",
+      "Participate consciously in humanity’s movement towards a higher life.",
+    ],
     learn: "Begin with what speaks to you",
     learnText: "Simple entry points into a vast and many-sided vision.",
     pathways: ["Sri Aurobindo", "The Mother", "Integral Yoga", "Savitri"],
@@ -33,6 +39,12 @@ const copy = {
     quote: "Man is a transitional being, he is not final.",
     vision: "अधिक सचेत जीवन की ओर", visionText: "पूर्ण योग जीवन के प्रत्येक अंग—विचार, कर्म, संबंध और आकांक्षा—को आंतरिक विकास में सहभागी बनाता है।",
     cards: ["आंतरिक विकास", "सचेत जीवन", "मानव एकता", "आध्यात्मिक विकास"],
+    cardNotes: [
+      "अपने गहरे स्वरूप को जानें और दैनिक जीवन में अधिक जागरूकता लाएँ।",
+      "विचार, कर्म और संबंधों को आंतरिक उद्देश्य की अभिव्यक्ति बनाएँ।",
+      "सबमें एक ही आत्मा को पहचानें और भिन्नताओं के बीच सामंजस्य बनाएँ।",
+      "मानवता की उच्चतर जीवन की ओर यात्रा में सचेत रूप से सहभागी बनें।",
+    ],
     learn: "जहाँ से मन जुड़े, वहीं से आरंभ करें", learnText: "एक विशाल और बहुआयामी दर्शन के सरल प्रवेश-द्वार।",
     pathways: ["श्री अरविंद", "श्री माँ", "पूर्ण योग", "सावित्री"],
     library: "ज्ञान संग्रह से", all: "सभी", articles: "लेख", talks: "व्याख्यान", reflections: "मनन",
@@ -102,7 +114,7 @@ export function MissionHome() {
         <p className="image-credit">Portraits displayed from the Sri Aurobindo Ashram website. Permission for permanent production use should be confirmed with the Ashram Photo Section.</p>
       </section>
 
-      <section className="vision section" id="pathways"><div><p className="kicker">THE VISION</p><h2>{t.vision}</h2><p>{t.visionText}</p></div><div className="pillars">{t.cards.map((x,i)=><article key={x}><b>0{i+1}</b><span>{x}</span></article>)}</div></section>
+      <section className="vision section" id="pathways"><div><p className="kicker">THE VISION</p><h2>{t.vision}</h2><p>{t.visionText}</p></div><div className="pillars">{t.cards.map((x,i)=><article key={x}><b>0{i+1}</b><span>{x}</span><p>{t.cardNotes[i]}</p></article>)}</div></section>
 
       <section className="roots section" aria-labelledby="roots-title"><div className="section-title"><div><p className="kicker">A LIVING MOVEMENT</p><h2 id="roots-title">From Puducherry to Lucknow</h2></div><p>Sri Aurobindo Society was started by the Mother on 19 September 1960 and has grown into an international organisation carrying spirituality into many fields of life.</p></div><div className="roots-grid">
         <article><span>01</span><h3>Puducherry</h3><p>The Society’s administrative headquarters and Society House are in Puducherry, close to the wider spiritual, cultural and educational life inspired by Sri Aurobindo and the Mother.</p><a href="https://aurosociety.org/society/index/About-Sri-Aurobindo-Society" target="_blank" rel="noreferrer">About the Society ↗</a></article>

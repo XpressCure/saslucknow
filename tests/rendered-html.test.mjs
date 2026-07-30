@@ -101,3 +101,14 @@ test("homepage biography cards use internal routes", async () => {
   assert.match(html, /href="\/the-mother"/);
   assert.doesNotMatch(html, /href="https:\/\/www\.sriaurobindoashram\.org\/exhibitions\/a-life-sketch\/page01\.html"[^>]*>Read the authorised/);
 });
+
+test("explains all four vision pillars inside their boxes", async () => {
+  const response = await render();
+  const html = await response.text();
+  for (const line of [
+    "Discover the deeper self",
+    "Let thought, work and relationships",
+    "Recognise one spirit in all",
+    "Participate consciously in humanity’s movement",
+  ]) assert.match(html, new RegExp(line));
+});
