@@ -171,3 +171,18 @@ main section[id]{scroll-margin-top:96px}
   main{padding-top:64px}
   main section[id]{scroll-margin-top:76px}
 }
+
+/* Sultanpur Shrine detail page */
+.detail-page{background:var(--paper);min-height:100vh}.detail-page main{padding-top:82px}
+.detail-header{height:82px;position:fixed;z-index:20;top:0;left:0;right:0;padding:0 6vw;display:flex;align-items:center;background:rgba(251,250,246,.96);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.detail-header nav{margin-left:auto;margin-right:0}.detail-hero{min-height:590px;padding:7rem 8vw 5rem;position:relative;overflow:hidden;background:linear-gradient(120deg,#f8f3ea,#e7ebe3)}
+.detail-hero h1{max-width:780px}.detail-hero .lead{max-width:650px}.detail-orb{position:absolute;right:8vw;top:5rem;width:330px;height:330px;border-radius:50%;display:grid;place-items:center;border:1px solid #c5cec2;color:#c88443;font:5rem Georgia,serif}
+.detail-orb:before,.detail-orb:after{content:"";position:absolute;inset:14%;border-radius:50%;border:1px solid #cbd3c6}.detail-orb:after{inset:29%}
+.detail-intro{padding:5rem 18vw;background:#fff}.detail-dropcap{margin:0;font:1.75rem/1.65 Georgia,serif;color:#40515a}.detail-dropcap:first-letter{float:left;margin:.08em .13em 0 0;font-size:4.8rem;line-height:.75;color:var(--saffron)}
+.detail-content{padding:6rem 8vw;display:grid;grid-template-columns:.8fr 1.2fr;gap:8vw;background:var(--blue);color:#f7f4ec}.detail-content h2{max-width:480px}
+.detail-list{border-top:1px solid rgba(255,255,255,.2)}.detail-list article{display:grid;grid-template-columns:50px 1fr;gap:1rem;padding:2rem 0;border-bottom:1px solid rgba(255,255,255,.2)}.detail-list article>span{color:#e8bd78;font:1rem Georgia,serif}.detail-list h3{margin:0 0 .7rem;font-size:1.65rem}.detail-list p{margin:0;color:#cbd5d8;line-height:1.75}
+.visit-placeholder{padding:6rem 8vw;display:grid;grid-template-columns:1fr 1fr;gap:7vw;align-items:center;background:var(--cream)}.visit-placeholder>div:first-child p:last-child{max-width:560px;color:#66757a;line-height:1.7}
+.map-placeholder{min-height:330px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;border:1px solid #c9c6bd;background:repeating-linear-gradient(135deg,#f8f5ee,#f8f5ee 18px,#f2ede3 18px,#f2ede3 36px)}.map-placeholder span{font-size:.62rem;letter-spacing:.16em;color:var(--saffron)}.map-placeholder strong{margin-top:.7rem;font:1.5rem Georgia,serif}
+.detail-footer{display:flex;justify-content:space-between;align-items:center;padding:2rem 8vw;background:#132630;color:white}.detail-footer a{color:white;text-decoration:none}.detail-footer small{color:#91a0a6}
+@media(max-width:900px){.detail-header nav{display:none}.detail-hero{min-height:520px}.detail-orb{right:-120px;opacity:.55}.detail-content,.visit-placeholder{grid-template-columns:1fr}.detail-intro{padding:4rem 8vw}}
+@media(max-width:760px){.detail-page main{padding-top:64px}.detail-header{height:64px;padding:0 4vw}.detail-hero{min-height:460px;padding:5rem 5vw 3.5rem}.detail-hero h1{font-size:3.2rem;max-width:310px}.detail-orb{width:260px;height:260px;top:4rem;right:-145px;font-size:3.5rem}.detail-intro{padding:3.5rem 5vw}.detail-dropcap{font-size:1.35rem}.detail-content,.visit-placeholder{padding:4rem 5vw}.detail-list article{grid-template-columns:36px 1fr;padding:1.5rem 0}.map-placeholder{min-height:250px}.detail-footer{align-items:flex-start;flex-direction:column;gap:1rem;padding:2rem 5vw}}

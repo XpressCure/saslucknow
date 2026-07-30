@@ -1,11 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-async function render() {
+async function render(path = "/") {
   const workerUrl = new URL("../dist/server/index.js", import.meta.url);
   workerUrl.searchParams.set("test", `${process.pid}-${Date.now()}`);
   const { default: worker } = await import(workerUrl.href);
-  return worker.fetch(new Request("http://localhost/", { headers: { accept: "text/html" } }), {
+  return worker.fetch(new Request(`http://localhost${path}`, { headers: { accept: "text/html" } }), {
     ASSETS: { fetch: async () => new Response("Not found", { status: 404 }) },
   }, { waitUntil() {}, passThroughOnException() {} });
 }
@@ -22,6 +22,16 @@ test("renders the mission homepage with accessible landmarks", async () => {
   assert.match(html, /id="shrine"/);
   assert.match(html, /Gomti Nagar Centre \(UC-02\)/i);
   assert.doesNotMatch(html, /codex-preview|Your site is taking shape/);
+});
+
+test("renders the Sultanpur Shrine detail page", async () => {
+  const response = await render("/sultanpur-shrine");
+  assert.equal(response.status, 200);
+  const html = await response.text();
+  assert.match(html, /The Sultanpur Shrine/);
+  assert.match(html, /April 6, 2008/);
+  assert.match(html, /Dr\. J\. P\. Singh/);
+  assert.match(html, /Address and map coming soon/);
 });
 
 test("renders sourced portraits and the lecture archive", async () => {
