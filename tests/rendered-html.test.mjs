@@ -80,3 +80,19 @@ test("renders the complete Mother profile structure", async () => {
   for (const heading of ["Introduction", "On Herself", "Sri Aurobindo on The Mother", "Writings"]) assert.match(html, new RegExp(heading));
   assert.match(html, /official Ashram website/);
 });
+
+test("renders the internal chronological life sketch", async () => {
+  const response = await render("/sri-aurobindo/life-sketch");
+  assert.equal(response.status, 200);
+  const html = await response.text();
+  for (const heading of ["Origins and education", "India’s awakening", "Pondicherry and Integral Yoga", "Alipore Jail", "Siddhi Day and the Ashram"]) assert.match(html, new RegExp(heading));
+  assert.match(html, /official Sri Aurobindo Ashram photographic life sketch/);
+});
+
+test("homepage biography cards use internal routes", async () => {
+  const response = await render();
+  const html = await response.text();
+  assert.match(html, /href="\/sri-aurobindo\/life-sketch"/);
+  assert.match(html, /href="\/the-mother"/);
+  assert.doesNotMatch(html, /href="https:\/\/www\.sriaurobindoashram\.org\/exhibitions\/a-life-sketch\/page01\.html"[^>]*>Read the authorised/);
+});
