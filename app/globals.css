@@ -233,3 +233,28 @@ main section[id]{scroll-margin-top:96px}
 .darshan-history{padding:6rem 9vw;display:grid;grid-template-columns:.8fr 1.2fr;gap:8vw;background:#e7ebe3}.darshan-history h2{max-width:530px}.darshan-history ol{margin:0;padding:0;list-style:none;border-top:1px solid #c5cec2}.darshan-history li{display:grid;grid-template-columns:110px 1fr;gap:1.5rem;padding:1.6rem 0;border-bottom:1px solid #c5cec2}.darshan-history li span{color:var(--saffron);font:1rem Georgia,serif}.darshan-history li p{margin:0;color:#5d6c70;line-height:1.7}
 @media(max-width:900px){.darshan-intro,.darshan-history{grid-template-columns:1fr}.darshan-grid{grid-template-columns:1fr}.darshan-grid article{min-height:0}.darshan-hero{grid-template-columns:1fr .5fr}}
 @media(max-width:760px){.darshan-page main{padding-top:64px}.darshan-hero{min-height:0;padding:4.5rem 5vw 3.5rem;grid-template-columns:1fr}.darshan-hero h1{font-size:3.7rem}.darshan-aura{width:260px;margin-top:1rem}.darshan-intro,.darshan-days,.darshan-history{padding:4rem 5vw}.darshan-grid{margin-top:2rem}.darshan-grid article{padding:1.5rem}.darshan-date strong{font-size:1.65rem}.darshan-history li{grid-template-columns:85px 1fr;gap:1rem}}
+
+/* More opens directly on hover; Darshan dates run as a chronological list */
+@media(min-width:901px){
+  .site-header .more-dropdown{top:100%}
+  .site-header .more-menu:hover .more-dropdown{display:block}
+}
+.darshan-grid{display:block;border-left:1px solid rgba(255,255,255,.18)}
+.darshan-grid article{min-height:0;display:grid;grid-template-columns:52px 175px minmax(230px,.8fr) minmax(300px,1.35fr);align-items:center;gap:1.5rem;padding:1.8rem 2rem}
+.darshan-date{display:block;margin:0;padding:0;border:0}
+.darshan-date strong,.darshan-date small{display:block}
+.darshan-date strong{font-size:1.55rem}
+.darshan-date small{margin-top:.35rem}
+.darshan-grid h3{margin:0;font-size:1.55rem}
+.darshan-grid article>p{margin:0}
+@media(max-width:900px){
+  .site-header .more-menu>button{justify-content:flex-start}
+  .darshan-grid article{grid-template-columns:42px 145px 1fr}
+  .darshan-grid article>p{grid-column:2/-1;padding-top:.15rem}
+}
+@media(max-width:620px){
+  .darshan-grid article{grid-template-columns:38px 1fr;gap:.65rem 1rem;padding:1.5rem 1.2rem}
+  .darshan-number{grid-row:1/4;align-self:start;padding-top:.2rem}
+  .darshan-date,.darshan-grid h3,.darshan-grid article>p{grid-column:2}
+  .darshan-grid article>p{padding-top:.35rem}
+}

@@ -95,7 +95,7 @@ export function MissionHome() {
       <nav className={menu ? "open" : ""} aria-label="Main navigation">
         {t.nav.map((item, i) => <a key={item} href={`#${["discover","wisdom","events","shrine","community"][i]}`} onClick={() => setMenu(false)}>{item}</a>)}
         <div className={`more-menu ${moreOpen ? "open" : ""}`}>
-          <button type="button" aria-expanded={moreOpen} aria-haspopup="true" onClick={() => setMoreOpen(!moreOpen)}>{t.more}<span aria-hidden="true">⌄</span></button>
+          <button type="button" aria-expanded={moreOpen} aria-haspopup="true" onClick={() => setMoreOpen(!moreOpen)}>{t.more}</button>
           <div className="more-dropdown"><a href="/darshan-divas" onClick={() => { setMoreOpen(false); setMenu(false); }}>{t.darshan}</a></div>
         </div>
       </nav>

@@ -1,5 +1,11 @@
 const darshanDays = [
   {
+    date: "15 August",
+    year: "1872",
+    title: "Sri Aurobindo’s Birthday",
+    significance: "Sri Aurobindo was born in Calcutta on this day. The date is remembered not only as a birthday, but as the advent of a consciousness and evolutionary vision whose influence continues to work for humanity’s future.",
+  },
+  {
     date: "21 February",
     year: "1878",
     title: "The Mother’s Birthday",
@@ -12,28 +18,22 @@ const darshanDays = [
     significance: "The Mother returned to Pondicherry on this day to remain permanently with Sri Aurobindo. It marks the beginning of their uninterrupted collaboration and a decisive step in the collective work of Integral Yoga.",
   },
   {
-    date: "15 August",
-    year: "1872",
-    title: "Sri Aurobindo’s Birthday",
-    significance: "Sri Aurobindo was born in Calcutta on this day. The date is remembered not only as a birthday, but as the advent of a consciousness and evolutionary vision whose influence continues to work for humanity’s future.",
-  },
-  {
     date: "24 November",
     year: "1926",
     title: "Siddhi Day · Victory Day",
     significance: "This day recalls a major spiritual realisation associated with the descent of the Overmind consciousness. It opened a new phase in Sri Aurobindo’s Yoga and is also linked with the formation of the Sri Aurobindo Ashram.",
   },
   {
-    date: "29 February",
-    year: "1956",
-    title: "Supramental Manifestation Day",
-    significance: "During the Ashram’s collective meditation, the Mother experienced the supramental Light, Force and Consciousness entering the earth-atmosphere. The leap-day observance recalls this decisive event in the work of transformation.",
-  },
-  {
     date: "5 December",
     year: "1950",
     title: "Sri Aurobindo’s Mahasamadhi",
     significance: "The day marks Sri Aurobindo’s withdrawal from the physical body. It is observed in silence and gratitude, with the understanding that his consciousness and action remain present in the continuing work.",
+  },
+  {
+    date: "29 February",
+    year: "1956",
+    title: "Supramental Manifestation Day",
+    significance: "During the Ashram’s collective meditation, the Mother experienced the supramental Light, Force and Consciousness entering the earth-atmosphere. The leap-day observance recalls this decisive event in the work of transformation.",
   },
   {
     date: "17 November",

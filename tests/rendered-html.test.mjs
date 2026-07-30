@@ -123,5 +123,7 @@ test("renders the internal Darshan Divas guide and navigation entry", async () =
   assert.equal(response.status, 200);
   const html = await response.text();
   for (const day of ["The Mother’s Birthday", "Sri Aurobindo’s Birthday", "Siddhi Day", "Supramental Manifestation Day", "Sri Aurobindo’s Mahasamadhi", "The Mother’s Mahasamadhi"]) assert.match(html, new RegExp(day));
+  const yearPositions = ["1872", "1878", "1920", "1926", "1950", "1956", "1973"].map(year => html.indexOf(`>${year}<`));
+  assert.deepEqual(yearPositions, [...yearPositions].sort((a, b) => a - b));
   assert.doesNotMatch(html, /href="https?:\/\//);
 });
