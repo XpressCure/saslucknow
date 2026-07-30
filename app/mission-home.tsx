@@ -5,7 +5,7 @@ import { FormEvent, useMemo, useState } from "react";
 type Language = "en" | "hi";
 const copy = {
   en: {
-    nav: ["Discover", "Wisdom", "Events", "Sultanpur Shrine", "Community"],
+    nav: ["Discover", "e-Library", "Events", "Sultanpur Shrine", "Community"],
     eyebrow: "Sri Aurobindo Society · Lucknow Centre",
     title: "A quiet space for inner growth.",
     intro: "Discover the vision of Sri Aurobindo and the Mother. Study, reflect, participate, and grow together.",
@@ -26,7 +26,7 @@ const copy = {
     disclaimer: "Sri Aurobindo Society, Lucknow · Gomti Nagar Centre (UC-02). The Society was founded by the Mother in 1960 and is headquartered in Puducherry.",
   },
   hi: {
-    nav: ["परिचय", "ज्ञान", "कार्यक्रम", "सुल्तानपुर समाधि", "समुदाय"],
+    nav: ["परिचय", "ई-पुस्तकालय", "कार्यक्रम", "सुल्तानपुर समाधि", "समुदाय"],
     eyebrow: "श्री अरविंद–श्री माँ मिशन, लखनऊ", title: "आंतरिक विकास के लिए एक शांत स्थान।",
     intro: "श्री अरविंद और श्री माँ के दर्शन को जानें। अध्ययन करें, मनन करें, सहभागी बनें और साथ बढ़ें।",
     explore: "यात्रा आरंभ करें", event: "अगला कार्यक्रम देखें", today: "आज का विचार",
