@@ -51,7 +51,8 @@ test("renders location, weekly meeting, gallery and Facebook embed", async () =>
   assert.match(html, /6:00–7:00 PM/);
   assert.match(html, /73888 99001/);
   assert.match(html, /facebook\.com%2Fsaslucknow/);
-  assert.match(html, /Upload event photographs/);
+  assert.match(html, /Upload event photos or videos/);
+  assert.match(html, /Every submission is reviewed before publication/);
 });
 
 test("renders official Society identity, email, roots and sourced wisdom", async () => {

@@ -1,0 +1,22 @@
+[Unit]
+Description=Sri Aurobindo Society gallery submission service
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ec2-user
+Group=ec2-user
+WorkingDirectory=/var/www/saslucknow/releases/current
+Environment=NODE_ENV=production
+Environment=PORT=3001
+Environment=UPLOAD_DIR=/var/www/saslucknow/shared/pending-media
+EnvironmentFile=-/etc/saslucknow-gallery.env
+ExecStart=/usr/bin/node server/gallery-api.mjs
+Restart=always
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
