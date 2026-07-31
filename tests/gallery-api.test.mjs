@@ -42,3 +42,20 @@ test("saves a public photo or video submission as pending", async () => {
     await rm(uploadDir, { recursive: true, force: true });
   }
 });
+
+test("rejects requests that are not event upload forms", async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "sas-gallery-invalid-"));
+  process.env.UPLOAD_DIR = root;
+  const { createGalleryServer } = await import(`../server/gallery-api.mjs?invalid=${Date.now()}`);
+  const server = createGalleryServer();
+  await new Promise(resolve => server.listen(0, "127.0.0.1", resolve));
+  try {
+    const address = server.address();
+    const response = await fetch(`http://127.0.0.1:${address.port}/api/gallery-submissions`, { method: "POST" });
+    assert.equal(response.status, 400);
+    assert.match((await response.json()).error, /event form/);
+  } finally {
+    await new Promise(resolve => server.close(resolve));
+    await rm(root, { recursive: true, force: true });
+  }
+});

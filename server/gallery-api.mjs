@@ -142,6 +142,9 @@ async function removeTemporaryFiles(files = []) {
 export async function handleSubmission(request, response) {
   if (request.method === "GET" && request.url === "/health") return json(response, 200, { ok: true });
   if (request.method !== "POST" || request.url !== "/api/gallery-submissions") return json(response, 404, { error: "Not found" });
+  if (!String(request.headers["content-type"] || "").toLowerCase().startsWith("multipart/form-data")) {
+    return json(response, 400, { error: "Please submit the event form with photographs or videos." });
+  }
   const length = Number(request.headers["content-length"] || 0);
   if (length > MAX_REQUEST_BYTES) return json(response, 413, { error: "The complete upload must be 130 MB or smaller." });
   const address = clientAddress(request);
