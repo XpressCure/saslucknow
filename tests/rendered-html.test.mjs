@@ -62,7 +62,7 @@ test("renders official Society identity, email, roots and sourced wisdom", async
   assert.match(html, /info\.saslucknow@gmail\.com/);
   assert.match(html, /From Puducherry to Lucknow/);
   assert.match(html, /Auroville is an international township/);
-  assert.match(html, /To know is good, to live is better/);
+  assert.doesNotMatch(html, /WORDS TO LIVE BY|A few lights for the way/);
 });
 
 test("renders the complete Sri Aurobindo profile structure", async () => {

@@ -129,8 +129,6 @@ export function MissionHome() {
         <article><span>03</span><h3>Lucknow</h3><p>The Lucknow and Gomti Nagar centres bring this vision into local life through Sunday meetings, lectures, study, reflection and community participation.</p><a href="#location">Visit our centre →</a></article>
       </div></section>
 
-      <section className="wisdom-quotes section" aria-labelledby="quotes-title"><p className="kicker">WORDS TO LIVE BY</p><h2 id="quotes-title">A few lights for the way</h2><div className="quote-grid"><blockquote><p>“Escape, however high, redeems not life.”</p><cite>Sri Aurobindo · Daily quote, Sri Aurobindo Society</cite></blockquote><blockquote><p>“To know is good, to live is better, to be, that is perfect.”</p><cite>The Mother · Society motto</cite></blockquote><blockquote><p>“The soul in man is greater than his fate…”</p><cite>Sri Aurobindo · Sri Aurobindo Society</cite></blockquote></div><a className="source-note" href="https://aurosociety.org/society/index/About-Sri-Aurobindo-Society" target="_blank" rel="noreferrer">Read the source on the official Society website ↗</a></section>
-
       <section className="section pathways"><div className="section-title"><div><p className="kicker">DISCOVER</p><h2>{t.learn}</h2></div><p>{t.learnText}</p></div>
         <div className="path-grid">{t.pathways.map((x,i)=><a href={["/sri-aurobindo","/the-mother","#wisdom","#wisdom"][i]} key={x} className={`path path-${i}`}><span className="path-symbol">{["A","M","∞","S"][i]}</span><small>0{i+1}</small><h3>{x}</h3><p>{["Life, works and evolutionary vision","A life of service and transformation","A practical psychology of consciousness","An epic of the soul’s journey"][i]}</p><b>Explore <span>→</span></b></a>)}</div>
       </section>
