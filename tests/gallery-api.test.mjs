@@ -53,6 +53,11 @@ test("saves a public photo or video submission as pending", async () => {
     const mediaResponse = await fetch(`http://127.0.0.1:${address.port}${approvedList.items[0].mediaUrl}`);
     assert.equal(mediaResponse.status, 200);
     assert.equal(await mediaResponse.text(), "test-image");
+
+    const rangeResponse = await fetch(`http://127.0.0.1:${address.port}${approvedList.items[0].mediaUrl}`, { headers: { Range: "bytes=0-3" } });
+    assert.equal(rangeResponse.status, 206);
+    assert.equal(rangeResponse.headers.get("content-range"), "bytes 0-3/10");
+    assert.equal(await rangeResponse.text(), "test");
   } finally {
     server.closeAllConnections();
     await new Promise(resolve => server.close(resolve));

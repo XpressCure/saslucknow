@@ -63,7 +63,7 @@ async function approvedGalleryItems() {
     .sort((a, b) => String(b.eventDate).localeCompare(String(a.eventDate)));
 }
 
-async function serveApprovedMedia(pathname, response) {
+async function serveApprovedMedia(pathname, request, response) {
   const match = pathname.match(/^\/api\/gallery-media\/([0-9a-f-]{36})\/([^/]+)$/i);
   if (!match) return json(response, 404, { error: "Not found" });
   const submissionId = match[1];
@@ -77,13 +77,30 @@ async function serveApprovedMedia(pathname, response) {
     const filePath = path.resolve(UPLOAD_DIR, media.key);
     if (!filePath.startsWith(`${root}${path.sep}`)) return json(response, 404, { error: "Not found" });
     const details = await stat(filePath);
-    response.writeHead(200, {
+    const range = String(request.headers.range || "");
+    const rangeMatch = range.match(/^bytes=(\d*)-(\d*)$/);
+    let start = 0;
+    let end = details.size - 1;
+    let status = 200;
+    if (rangeMatch) {
+      start = rangeMatch[1] ? Number(rangeMatch[1]) : 0;
+      end = rangeMatch[2] ? Math.min(Number(rangeMatch[2]), details.size - 1) : details.size - 1;
+      if (!Number.isSafeInteger(start) || !Number.isSafeInteger(end) || start < 0 || start > end || start >= details.size) {
+        response.writeHead(416, { "Content-Range": `bytes */${details.size}` });
+        return response.end();
+      }
+      status = 206;
+    }
+    const headers = {
       "Content-Type": media.mimeType,
-      "Content-Length": details.size,
+      "Content-Length": end - start + 1,
       "Cache-Control": "public, max-age=3600",
       "X-Content-Type-Options": "nosniff",
-    });
-    createReadStream(filePath).pipe(response);
+      "Accept-Ranges": "bytes",
+    };
+    if (status === 206) headers["Content-Range"] = `bytes ${start}-${end}/${details.size}`;
+    response.writeHead(status, headers);
+    createReadStream(filePath, { start, end }).pipe(response);
   } catch (error) {
     if (error?.code === "ENOENT" || error instanceof SyntaxError) return json(response, 404, { error: "Not found" });
     throw error;
@@ -203,7 +220,7 @@ export async function handleSubmission(request, response) {
   const pathname = new URL(request.url || "/", "http://localhost").pathname;
   if (request.method === "GET" && pathname === "/health") return json(response, 200, { ok: true });
   if (request.method === "GET" && pathname === "/api/gallery-items") return json(response, 200, { items: await approvedGalleryItems() });
-  if (request.method === "GET" && pathname.startsWith("/api/gallery-media/")) return serveApprovedMedia(pathname, response);
+  if (request.method === "GET" && pathname.startsWith("/api/gallery-media/")) return serveApprovedMedia(pathname, request, response);
   if (request.method !== "POST" || pathname !== "/api/gallery-submissions") return json(response, 404, { error: "Not found" });
   if (!String(request.headers["content-type"] || "").toLowerCase().startsWith("multipart/form-data")) {
     return json(response, 400, { error: "Please submit the event form with photographs or videos." });
