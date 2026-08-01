@@ -15,7 +15,7 @@ type GalleryItem = {
 };
 const copy = {
   en: {
-    nav: ["Discover", "e-Library", "Events", "Sultanpur Shrine", "Community"],
+    nav: ["e-Library", "Events", "Sultanpur Shrine", "Community"],
     eyebrow: "Sri Aurobindo Society · Lucknow Centre",
     title: "A quiet space for inner growth.",
     intro: "Discover the vision of Sri Aurobindo and the Mother. Study, reflect, participate, and grow together.",
@@ -43,7 +43,7 @@ const copy = {
     disclaimer: "Sri Aurobindo Society, Lucknow · Gomti Nagar Centre (UC-02). The Society was founded by the Mother in 1960 and is headquartered in Puducherry.",
   },
   hi: {
-    nav: ["परिचय", "ई-पुस्तकालय", "कार्यक्रम", "सुल्तानपुर समाधि", "समुदाय"],
+    nav: ["ई-पुस्तकालय", "कार्यक्रम", "सुल्तानपुर समाधि", "समुदाय"],
     eyebrow: "श्री अरविंद–श्री माँ मिशन, लखनऊ", title: "आंतरिक विकास के लिए एक शांत स्थान।",
     intro: "श्री अरविंद और श्री माँ के दर्शन को जानें। अध्ययन करें, मनन करें, सहभागी बनें और साथ बढ़ें।",
     explore: "यात्रा आरंभ करें", event: "अगला कार्यक्रम देखें", today: "आज का विचार",
@@ -142,7 +142,7 @@ export function MissionHome() {
       <a className="brand" href="#"><img className="society-logo" src="https://cms.aurosociety.org/kcfinder/images/images/sas-symbol%281%29.jpg" alt="Sri Aurobindo Society symbol"/><span>Sri Aurobindo Society<small>LUCKNOW · GOMTI NAGAR CENTRE</small></span></a>
       <button className="menu-button" onClick={() => setMenu(!menu)} aria-expanded={menu} aria-label="Toggle navigation">☰</button>
       <nav className={menu ? "open" : ""} aria-label="Main navigation">
-        {t.nav.map((item, i) => <a key={item} href={`#${["discover","wisdom","events","shrine","community"][i]}`} onClick={() => setMenu(false)}>{item}</a>)}
+        {t.nav.map((item, i) => <a key={item} href={["#wisdom","#events","/sultanpur-shrine","#community"][i]} onClick={() => setMenu(false)}>{item}</a>)}
         <div className={`more-menu ${moreOpen ? "open" : ""}`}>
           <button type="button" aria-expanded={moreOpen} aria-haspopup="true" onClick={() => setMoreOpen(!moreOpen)}>{t.more}</button>
           <div className="more-dropdown"><a href="/darshan-divas" onClick={() => { setMoreOpen(false); setMenu(false); }}>{t.darshan}</a></div>
@@ -176,11 +176,8 @@ export function MissionHome() {
         <article><span>01</span><h3>Puducherry</h3><p>The Society’s administrative headquarters and Society House are in Puducherry, close to the wider spiritual, cultural and educational life inspired by Sri Aurobindo and the Mother.</p><a href="https://aurosociety.org/society/index/About-Sri-Aurobindo-Society" target="_blank" rel="noreferrer">About the Society ↗</a></article>
         <article><span>02</span><h3>Auroville</h3><p>Founded by the Mother in 1968, Auroville is an international township dedicated to human unity, unending education and material and spiritual research.</p><a href="https://auroville.org/page/history" target="_blank" rel="noreferrer">Explore Auroville ↗</a></article>
         <article><span>03</span><h3>Lucknow</h3><p>The Lucknow and Gomti Nagar centres bring this vision into local life through Sunday meetings, lectures, study, reflection and community participation.</p><a href="#location">Visit our centre →</a></article>
+        <article><span>04</span><h3>Sultanpur</h3><p>A sacred centre housing Sri Aurobindo’s relics and nurturing collective meditation, study and educational activities.</p><a href="/sultanpur-shrine">Explore the Sultanpur Shrine →</a></article>
       </div></section>
-
-      <section className="section pathways"><div className="section-title"><div><p className="kicker">DISCOVER</p><h2>{t.learn}</h2></div><p>{t.learnText}</p></div>
-        <div className="path-grid">{t.pathways.map((x,i)=><a href={["/sri-aurobindo","/the-mother","#wisdom","#wisdom"][i]} key={x} className={`path path-${i}`}><span className="path-symbol">{["A","M","∞","S"][i]}</span><small>0{i+1}</small><h3>{x}</h3><p>{["Life, works and evolutionary vision","A life of service and transformation","A practical psychology of consciousness","An epic of the soul’s journey"][i]}</p><b>Explore <span>→</span></b></a>)}</div>
-      </section>
 
       <section className="library section" id="wisdom">
         <div className="section-title"><div><p className="kicker">E-LIBRARY · READ · LISTEN · EXPLORE</p><h2>A digital doorway to their works</h2></div><p>Browse books, audio, art, Savitri, flowers and the lives of disciples through a carefully organised spiritual library.</p></div>
@@ -205,8 +202,6 @@ export function MissionHome() {
         <article className="event-card"><div className="date"><strong>15</strong><span>AUG<br/>2026</span></div><div className="event-info"><span>SPECIAL OBSERVANCE · OFFLINE</span><h3>A collective meditation & reflection</h3><p>Saturday · 5:30 PM IST · Lucknow</p></div><button className="button primary" onClick={()=>open("register")}>{t.register} →</button></article>
         <article className="event-card secondary"><div className="date"><strong>23</strong><span>AUG<br/>2026</span></div><div className="event-info"><span>SAVITRI STUDY · ONLINE</span><h3>Savitri: Book One, Canto One</h3><p>Sunday · 10:30 AM IST · Zoom</p></div><button className="button quiet" onClick={()=>open("register")}>{t.register}</button></article>
       </section>
-
-      <section className="shrine section" id="shrine"><div className="shrine-art" aria-label="Abstract peaceful illustration of the Sultanpur shrine"><div className="sun"/><div className="temple">ॐ</div></div><div><p className="kicker">A SACRED PLACE</p><h2>{t.shrine}</h2><p>{t.shrineText}</p><p>The Society’s dedicated Sultanpur campus houses Sri Aurobindo’s sacred relics and nurtures regular spiritual and educational activities.</p><a href="/sultanpur-shrine">Read More →</a></div></section>
 
       <section className="gallery section" id="gallery"><div className="section-title gallery-heading"><div><p className="kicker">MEMORIES OF THE WORK</p><h2>Gatherings through the years</h2></div><p>A growing visual record of lectures, study circles, observances, shrine visits and community moments.</p></div>{galleryItems.length > 0 && <div className="gallery-slider-header"><div className="gallery-controls" aria-label="Gallery navigation"><button type="button" onClick={()=>moveGallery(-1)} aria-label="Previous gallery items">←</button><button type="button" onClick={()=>moveGallery(1)} aria-label="Next gallery items">→</button></div></div>}<div className={`gallery-track ${galleryItems.length ? "has-items" : ""}`} ref={galleryTrack} aria-label="Event photographs and videos" aria-live="polite">{galleryLoading ? <div className="gallery-empty">Loading event memories…</div> : galleryItems.length === 0 ? <div className="gallery-empty"><span>THE GALLERY IS READY</span><h3>Approved event memories will appear here.</h3><p>Use the upload button below to submit photographs or videos for review.</p></div> : galleryItems.map(item => <article className="gallery-slide" key={item.id}><div className="gallery-media">{item.kind === "video" ? <video controls preload="metadata" playsInline><source src={item.mediaUrl} type={item.mimeType}/>Your browser cannot play this video.</video> : <img src={item.mediaUrl} alt={`${item.title} event photograph`} loading="lazy"/>}</div><div className="gallery-caption"><span>{item.category}</span><h3><small>Event</small>{item.title}</h3><p>{item.description}</p><time dateTime={item.eventDate}>{displayDate(item.eventDate)}</time></div></article>)}</div><div className="gallery-action"><p>Visitors may submit event photographs or videos with a title, date and description. Every submission is reviewed before publication.</p><button className="button quiet" onClick={()=>open("gallery")}>Upload event photos or videos →</button></div></section>
 

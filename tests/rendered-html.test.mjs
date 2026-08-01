@@ -19,7 +19,8 @@ test("renders the mission homepage with accessible landmarks", async () => {
   assert.match(html, /aria-label="Main navigation"/);
   assert.match(html, /id="wisdom"/);
   assert.match(html, /id="events"/);
-  assert.match(html, /id="shrine"/);
+  assert.match(html, /href="\/sultanpur-shrine"/);
+  assert.doesNotMatch(html, /<a href="#discover">Discover<\/a>/);
   assert.match(html, /Gomti Nagar Centre \(UC-02\)/i);
   assert.doesNotMatch(html, /codex-preview|Your site is taking shape/);
 });
@@ -67,6 +68,9 @@ test("renders official Society identity, email, roots and sourced wisdom", async
   assert.match(html, /info\.saslucknow@gmail\.com/);
   assert.match(html, /From Puducherry to Lucknow/);
   assert.match(html, /Auroville is an international township/);
+  assert.match(html, /A sacred centre housing Sri Aurobindo’s relics/);
+  assert.doesNotMatch(html, /Begin with what speaks to you/);
+  assert.doesNotMatch(html, /A SACRED PLACE<\/p><h2>The Sultanpur shrine/);
   assert.doesNotMatch(html, /WORDS TO LIVE BY|A few lights for the way/);
 });
 
