@@ -4,7 +4,7 @@ import { mkdtemp, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import os from "node:os";
 
-test("saves a public photo or video submission as pending", async () => {
+test("saves a public photo submission as pending", async () => {
   const uploadDir = await mkdtemp(path.join(os.tmpdir(), "sas-gallery-test-"));
   process.env.UPLOAD_DIR = uploadDir;
   delete process.env.MONGODB_URI;
@@ -58,6 +58,46 @@ test("saves a public photo or video submission as pending", async () => {
     assert.equal(rangeResponse.status, 206);
     assert.equal(rangeResponse.headers.get("content-range"), "bytes 0-3/10");
     assert.equal(await rangeResponse.text(), "test");
+  } finally {
+    server.closeAllConnections();
+    await new Promise(resolve => server.close(resolve));
+    await rm(uploadDir, { recursive: true, force: true });
+  }
+});
+
+test("publishes a submitted video immediately", async () => {
+  const uploadDir = await mkdtemp(path.join(os.tmpdir(), "sas-gallery-video-test-"));
+  process.env.UPLOAD_DIR = uploadDir;
+  delete process.env.MONGODB_URI;
+  delete process.env.STORAGE_PROVIDER;
+  const { createGalleryServer } = await import(`../server/gallery-api.mjs?video=${Date.now()}`);
+  const server = createGalleryServer();
+  await new Promise(resolve => server.listen(0, "127.0.0.1", resolve));
+  const address = server.address();
+
+  try {
+    const form = new FormData();
+    form.set("title", "Sunday meditation video");
+    form.set("date", "2026-08-01");
+    form.set("category", "Sunday meeting");
+    form.set("description", "A video from the collective meditation session.");
+    form.set("permission", "yes");
+    form.append("media", new Blob(["test-video"], { type: "video/mp4" }), "meditation.mp4");
+
+    const response = await fetch(`http://127.0.0.1:${address.port}/api/gallery-submissions`, { method: "POST", body: form });
+    assert.equal(response.status, 201);
+    const result = await response.json();
+    assert.equal(result.status, "approved");
+
+    const manifests = await readdir(path.join(uploadDir, "manifests"));
+    const manifest = JSON.parse(await readFile(path.join(uploadDir, "manifests", manifests[0]), "utf8"));
+    assert.equal(manifest.status, "approved");
+    assert.equal(manifest.media[0].kind, "video");
+
+    const gallery = await fetch(`http://127.0.0.1:${address.port}/api/gallery-items`).then(value => value.json());
+    assert.equal(gallery.items.length, 1);
+    assert.equal(gallery.items[0].title, "Sunday meditation video");
+    assert.equal(gallery.items[0].kind, "video");
   } finally {
     server.closeAllConnections();
     await new Promise(resolve => server.close(resolve));

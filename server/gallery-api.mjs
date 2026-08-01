@@ -170,7 +170,7 @@ async function parseMultipart(request) {
   return { fields, files, problems };
 }
 
-async function storeFiles(submissionId, files) {
+async function storeFiles(submissionId, files, publicationStatus) {
   const now = new Date();
   const prefix = `gallery-submissions/${now.getUTCFullYear()}/${String(now.getUTCMonth() + 1).padStart(2, "0")}/${submissionId}`;
   if (process.env.STORAGE_PROVIDER === "s3" && process.env.S3_BUCKET) {
@@ -178,7 +178,7 @@ async function storeFiles(submissionId, files) {
     const stored = [];
     for (const file of files) {
       const key = `${prefix}/${randomUUID()}-${file.originalName}`;
-      await new Upload({ client, params: { Bucket: process.env.S3_BUCKET, Key: key, Body: createReadStream(file.tempPath), ContentType: file.mimeType, Metadata: { submission: submissionId, moderation: "pending" } } }).done();
+      await new Upload({ client, params: { Bucket: process.env.S3_BUCKET, Key: key, Body: createReadStream(file.tempPath), ContentType: file.mimeType, Metadata: { submission: submissionId, moderation: publicationStatus } } }).done();
       await rm(file.tempPath, { force: true });
       stored.push({ storage: "s3", key, name: file.originalName, mimeType: file.mimeType, kind: file.kind, size: file.size });
     }
@@ -245,10 +245,11 @@ export async function handleSubmission(request, response) {
     }
 
     const submissionId = randomUUID();
-    const media = await storeFiles(submissionId, files);
+    const publicationStatus = files.some(file => file.kind === "video") ? "approved" : "pending";
+    const media = await storeFiles(submissionId, files, publicationStatus);
     const document = {
       submissionId,
-      status: "pending",
+      status: publicationStatus,
       title: cleanText(fields.title, 160),
       eventDate: cleanText(fields.date, 20),
       category: cleanText(fields.category, 80),
@@ -261,7 +262,7 @@ export async function handleSubmission(request, response) {
       updatedAt: new Date(),
     };
     const persistence = await saveMetadata(document);
-    return json(response, 201, { ok: true, reference: submissionId.slice(0, 8).toUpperCase(), status: "pending", metadataStoredInMongo: persistence.mongo });
+    return json(response, 201, { ok: true, reference: submissionId.slice(0, 8).toUpperCase(), status: publicationStatus, metadataStoredInMongo: persistence.mongo });
   } catch (error) {
     await removeTemporaryFiles(parsed?.files);
     console.error("Gallery submission failed", error);
