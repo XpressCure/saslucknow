@@ -1,8 +1,18 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 
 type Language = "en" | "hi";
+type GalleryItem = {
+  id: string;
+  title: string;
+  eventDate: string;
+  category: string;
+  description: string;
+  kind: "image" | "video";
+  mimeType: string;
+  mediaUrl: string;
+};
 const copy = {
   en: {
     nav: ["Discover", "e-Library", "Events", "Sultanpur Shrine", "Community"],
@@ -81,6 +91,9 @@ export function MissionHome() {
   const [uploading, setUploading] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [uploadReference, setUploadReference] = useState("");
+  const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
+  const [galleryLoading, setGalleryLoading] = useState(true);
+  const galleryTrack = useRef<HTMLDivElement>(null);
   const t = copy[lang];
   const shown = useMemo(() => libraryCollections.filter(item => {
     const matchesCategory = filter === "All" || item.category === filter;
@@ -88,6 +101,23 @@ export function MissionHome() {
     return matchesCategory && haystack.includes(libraryQuery.trim().toLowerCase());
   }), [filter, libraryQuery]);
   const open = (name: typeof dialog) => { setSent(false); setUploading(false); setSubmitError(""); setUploadReference(""); setDialog(name); };
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch("/api/gallery-items", { signal: controller.signal })
+      .then(response => response.ok ? response.json() : Promise.reject(new Error("Gallery unavailable")))
+      .then(result => setGalleryItems(Array.isArray(result.items) ? result.items : []))
+      .catch(error => { if (error?.name !== "AbortError") setGalleryItems([]); })
+      .finally(() => setGalleryLoading(false));
+    return () => controller.abort();
+  }, []);
+  const moveGallery = (direction: -1 | 1) => {
+    const track = galleryTrack.current;
+    if (track) track.scrollBy({ left: direction * Math.max(280, track.clientWidth * .82), behavior: "smooth" });
+  };
+  const displayDate = (date: string) => {
+    const value = new Date(`${date}T00:00:00`);
+    return Number.isNaN(value.getTime()) ? date : new Intl.DateTimeFormat(lang === "hi" ? "hi-IN" : "en-IN", { day: "numeric", month: "long", year: "numeric" }).format(value);
+  };
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (dialog !== "gallery") { setSent(true); return; }
@@ -178,7 +208,7 @@ export function MissionHome() {
 
       <section className="shrine section" id="shrine"><div className="shrine-art" aria-label="Abstract peaceful illustration of the Sultanpur shrine"><div className="sun"/><div className="temple">ॐ</div></div><div><p className="kicker">A SACRED PLACE</p><h2>{t.shrine}</h2><p>{t.shrineText}</p><p>The Society’s dedicated Sultanpur campus houses Sri Aurobindo’s sacred relics and nurtures regular spiritual and educational activities.</p><a href="/sultanpur-shrine">Read More →</a></div></section>
 
-      <section className="gallery section" id="gallery"><div className="section-title"><div><p className="kicker">MEMORIES OF THE WORK</p><h2>Gatherings through the years</h2></div><p>A growing visual record of lectures, study circles, observances, shrine visits and community moments.</p></div><div className="gallery-grid"><article className="gallery-one"><span>LECTURES</span><h3>Ideas that open doors</h3><p>Talks and conversations in Lucknow</p></article><article className="gallery-two"><span>COLLECTIVE LIFE</span><h3>Learning together</h3><p>Study circles and Sunday meetings</p></article><article className="gallery-three"><span>SULTANPUR</span><h3>A place of remembrance</h3><p>Shrine visits and sacred observances</p></article></div><div className="gallery-action"><p>Visitors may submit event photographs or videos with a title, date and description. Every submission is reviewed before publication.</p><button className="button quiet" onClick={()=>open("gallery")}>Upload event photos or videos →</button></div></section>
+      <section className="gallery section" id="gallery"><div className="section-title gallery-heading"><div><p className="kicker">MEMORIES OF THE WORK</p><h2>Gatherings through the years</h2></div><p>A growing visual record of lectures, study circles, observances, shrine visits and community moments.</p></div><div className="gallery-slider-header"><p>Swipe left or right to explore approved event memories.</p>{galleryItems.length > 0 && <div className="gallery-controls" aria-label="Gallery navigation"><button type="button" onClick={()=>moveGallery(-1)} aria-label="Previous gallery items">←</button><button type="button" onClick={()=>moveGallery(1)} aria-label="Next gallery items">→</button></div>}</div><div className={`gallery-track ${galleryItems.length ? "has-items" : ""}`} ref={galleryTrack} aria-label="Event photographs and videos" aria-live="polite">{galleryLoading ? <div className="gallery-empty">Loading event memories…</div> : galleryItems.length === 0 ? <div className="gallery-empty"><span>THE GALLERY IS READY</span><h3>Approved event memories will appear here.</h3><p>Use the upload button below to submit photographs or videos for review.</p></div> : galleryItems.map(item => <article className="gallery-slide" key={item.id}><div className="gallery-media">{item.kind === "video" ? <video controls preload="metadata" playsInline><source src={item.mediaUrl} type={item.mimeType}/>Your browser cannot play this video.</video> : <img src={item.mediaUrl} alt={`${item.title} event photograph`} loading="lazy"/>}</div><div className="gallery-caption"><span>{item.category}</span><h3><small>Event</small>{item.title}</h3><p>{item.description}</p><time dateTime={item.eventDate}>{displayDate(item.eventDate)}</time></div></article>)}</div><div className="gallery-action"><p>Visitors may submit event photographs or videos with a title, date and description. Every submission is reviewed before publication.</p><button className="button quiet" onClick={()=>open("gallery")}>Upload event photos or videos →</button></div></section>
 
       <section className="location section" id="location"><div className="location-copy"><p className="kicker">VISIT THE CENTRE</p><h2>Come, sit with us.</h2><address>4/668, Vijayant Khand<br/>Gomti Nagar, Lucknow – 226010</address><div className="meeting-time"><span>SUNDAY</span><strong>6:00–7:00 PM</strong><small>Regular weekly meeting</small></div><h3>Mr. Rajendra Kumar Singh</h3><p>Secretary, Gomti Nagar Centre (UC-02)<br/>Vice-Chairman, Sri Aurobindo Society, UP & Uttarakhand</p><a className="contact-phone" href="tel:+917388899001">+91 73888 99001</a><a className="contact-email" href="mailto:info.saslucknow@gmail.com">info.saslucknow@gmail.com</a><div className="location-actions"><a className="button primary" href="https://www.google.com/maps/search/?api=1&query=4%2F668%2C%20Vijayant%20Khand%2C%20Gomti%20Nagar%2C%20Lucknow%20226010" target="_blank" rel="noreferrer">Get directions ↗</a><a className="button quiet" href="tel:+917388899001">Call the centre</a></div></div><div className="map"><iframe title="Map to Sri Aurobindo Society Gomti Nagar Centre" src="https://www.google.com/maps?q=4%2F668%2C%20Vijayant%20Khand%2C%20Gomti%20Nagar%2C%20Lucknow%20226010&output=embed" loading="lazy" referrerPolicy="no-referrer-when-downgrade"/></div></section>
 

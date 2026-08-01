@@ -1,6 +1,6 @@
 import http from "node:http";
 import { createReadStream, createWriteStream } from "node:fs";
-import { mkdir, rename, rm, writeFile } from "node:fs/promises";
+import { mkdir, readFile, readdir, rename, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { pipeline } from "node:stream/promises";
 import { pathToFileURL } from "node:url";
@@ -28,6 +28,66 @@ let mongoClientPromise;
 function json(response, status, body) {
   response.writeHead(status, { "Content-Type": "application/json; charset=utf-8", "X-Content-Type-Options": "nosniff", "Cache-Control": "no-store" });
   response.end(JSON.stringify(body));
+}
+
+async function approvedGalleryItems() {
+  let names;
+  try {
+    names = await readdir(MANIFEST_DIR);
+  } catch (error) {
+    if (error?.code === "ENOENT") return [];
+    throw error;
+  }
+  const documents = await Promise.all(names.filter(name => name.endsWith(".json")).map(async name => {
+    try {
+      return JSON.parse(await readFile(path.join(MANIFEST_DIR, name), "utf8"));
+    } catch {
+      return null;
+    }
+  }));
+  return documents
+    .filter(document => document?.status === "approved")
+    .flatMap(document => (document.media || [])
+      .filter(media => media.storage === "local" && allowedTypes.has(media.mimeType))
+      .map((media, index) => ({
+        id: `${document.submissionId}-${index}`,
+        submissionId: document.submissionId,
+        title: cleanText(document.title, 160),
+        eventDate: cleanText(document.eventDate, 20),
+        category: cleanText(document.category, 80),
+        description: cleanText(document.description, 2500),
+        kind: media.kind,
+        mimeType: media.mimeType,
+        mediaUrl: `/api/gallery-media/${encodeURIComponent(document.submissionId)}/${encodeURIComponent(path.basename(media.key))}`,
+      })))
+    .sort((a, b) => String(b.eventDate).localeCompare(String(a.eventDate)));
+}
+
+async function serveApprovedMedia(pathname, response) {
+  const match = pathname.match(/^\/api\/gallery-media\/([0-9a-f-]{36})\/([^/]+)$/i);
+  if (!match) return json(response, 404, { error: "Not found" });
+  const submissionId = match[1];
+  const requestedName = path.basename(decodeURIComponent(match[2]));
+  try {
+    const document = JSON.parse(await readFile(path.join(MANIFEST_DIR, `${submissionId}.json`), "utf8"));
+    if (document.status !== "approved") return json(response, 404, { error: "Not found" });
+    const media = (document.media || []).find(item => item.storage === "local" && path.basename(item.key) === requestedName && allowedTypes.has(item.mimeType));
+    if (!media) return json(response, 404, { error: "Not found" });
+    const root = path.resolve(UPLOAD_DIR);
+    const filePath = path.resolve(UPLOAD_DIR, media.key);
+    if (!filePath.startsWith(`${root}${path.sep}`)) return json(response, 404, { error: "Not found" });
+    const details = await stat(filePath);
+    response.writeHead(200, {
+      "Content-Type": media.mimeType,
+      "Content-Length": details.size,
+      "Cache-Control": "public, max-age=3600",
+      "X-Content-Type-Options": "nosniff",
+    });
+    createReadStream(filePath).pipe(response);
+  } catch (error) {
+    if (error?.code === "ENOENT" || error instanceof SyntaxError) return json(response, 404, { error: "Not found" });
+    throw error;
+  }
 }
 
 function cleanText(value, max = 1000) {
@@ -140,8 +200,11 @@ async function removeTemporaryFiles(files = []) {
 }
 
 export async function handleSubmission(request, response) {
-  if (request.method === "GET" && request.url === "/health") return json(response, 200, { ok: true });
-  if (request.method !== "POST" || request.url !== "/api/gallery-submissions") return json(response, 404, { error: "Not found" });
+  const pathname = new URL(request.url || "/", "http://localhost").pathname;
+  if (request.method === "GET" && pathname === "/health") return json(response, 200, { ok: true });
+  if (request.method === "GET" && pathname === "/api/gallery-items") return json(response, 200, { items: await approvedGalleryItems() });
+  if (request.method === "GET" && pathname.startsWith("/api/gallery-media/")) return serveApprovedMedia(pathname, response);
+  if (request.method !== "POST" || pathname !== "/api/gallery-submissions") return json(response, 404, { error: "Not found" });
   if (!String(request.headers["content-type"] || "").toLowerCase().startsWith("multipart/form-data")) {
     return json(response, 400, { error: "Please submit the event form with photographs or videos." });
   }
@@ -190,7 +253,13 @@ export async function handleSubmission(request, response) {
 }
 
 export function createGalleryServer() {
-  return http.createServer((request, response) => { void handleSubmission(request, response); });
+  return http.createServer((request, response) => {
+    void handleSubmission(request, response).catch(error => {
+      console.error("Gallery service request failed", error);
+      if (!response.headersSent) json(response, 500, { error: "The gallery is temporarily unavailable." });
+      else response.destroy();
+    });
+  });
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

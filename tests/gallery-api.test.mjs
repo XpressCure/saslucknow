@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { mkdtemp, readdir, readFile, rm } from "node:fs/promises";
+import { mkdtemp, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import os from "node:os";
 
@@ -33,11 +33,28 @@ test("saves a public photo or video submission as pending", async () => {
 
     const manifests = await readdir(path.join(uploadDir, "manifests"));
     assert.equal(manifests.length, 1);
-    const manifest = JSON.parse(await readFile(path.join(uploadDir, "manifests", manifests[0]), "utf8"));
+    const manifestPath = path.join(uploadDir, "manifests", manifests[0]);
+    const manifest = JSON.parse(await readFile(manifestPath, "utf8"));
     assert.equal(manifest.status, "pending");
     assert.equal(manifest.media[0].kind, "image");
     assert.equal(manifest.title, "Sunday gathering");
+
+    const pendingList = await fetch(`http://127.0.0.1:${address.port}/api/gallery-items`).then(value => value.json());
+    assert.deepEqual(pendingList.items, []);
+
+    manifest.status = "approved";
+    await writeFile(manifestPath, JSON.stringify(manifest));
+    const approvedList = await fetch(`http://127.0.0.1:${address.port}/api/gallery-items`).then(value => value.json());
+    assert.equal(approvedList.items.length, 1);
+    assert.equal(approvedList.items[0].title, "Sunday gathering");
+    assert.equal(approvedList.items[0].eventDate, "2026-07-26");
+    assert.equal(approvedList.items[0].kind, "image");
+
+    const mediaResponse = await fetch(`http://127.0.0.1:${address.port}${approvedList.items[0].mediaUrl}`);
+    assert.equal(mediaResponse.status, 200);
+    assert.equal(await mediaResponse.text(), "test-image");
   } finally {
+    server.closeAllConnections();
     await new Promise(resolve => server.close(resolve));
     await rm(uploadDir, { recursive: true, force: true });
   }
@@ -55,6 +72,7 @@ test("rejects requests that are not event upload forms", async () => {
     assert.equal(response.status, 400);
     assert.match((await response.json()).error, /event form/);
   } finally {
+    server.closeAllConnections();
     await new Promise(resolve => server.close(resolve));
     await rm(root, { recursive: true, force: true });
   }

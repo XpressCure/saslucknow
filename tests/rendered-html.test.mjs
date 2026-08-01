@@ -53,6 +53,10 @@ test("renders location, weekly meeting, gallery and Facebook embed", async () =>
   assert.match(html, /facebook\.com%2Fsaslucknow/);
   assert.match(html, /Upload event photos or videos/);
   assert.match(html, /Every submission is reviewed before publication/);
+  assert.match(html, /Swipe left or right to explore approved event memories/);
+  assert.doesNotMatch(html, /Ideas that open doors/);
+  assert.doesNotMatch(html, /Learning together/);
+  assert.doesNotMatch(html, /A place of remembrance/);
 });
 
 test("renders official Society identity, email, roots and sourced wisdom", async () => {
