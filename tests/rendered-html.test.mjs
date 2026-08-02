@@ -53,7 +53,9 @@ test("renders location, weekly meeting, gallery and Facebook embed", async () =>
   assert.match(html, /73888 99001/);
   assert.match(html, /facebook\.com%2Fsaslucknow/);
   assert.match(html, /Upload event photos or videos/);
-  assert.match(html, /Every submission is reviewed before publication/);
+  assert.match(html, /Videos are published automatically/);
+  assert.match(html, /Play soft meditation music/);
+  assert.match(html, /quiet-aspiration\.wav/);
   assert.doesNotMatch(html, /Swipe left or right to explore approved event memories/);
   assert.doesNotMatch(html, /Ideas that open doors/);
   assert.doesNotMatch(html, /Learning together/);

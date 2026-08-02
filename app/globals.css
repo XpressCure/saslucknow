@@ -301,3 +301,25 @@ main section[id]{scroll-margin-top:96px}
   .gallery-caption h3{font-size:1.4rem}
   .gallery-empty{min-height:250px;padding:2rem 1.25rem}
 }
+
+/* Homepage meditation soundscape */
+.meditation-control{display:flex;align-items:center;gap:.42rem;margin-left:.8rem;min-height:42px;padding:.45rem .75rem;border:1px solid #d8c9ad;border-radius:999px;background:#fffaf0;color:var(--ink);cursor:pointer;white-space:nowrap;transition:background .2s,border-color .2s,box-shadow .2s}
+.meditation-control span{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:#f0dfba;color:#8b5f2b;font-size:.9rem}
+.meditation-control small{font-size:.62rem;font-weight:600;letter-spacing:.04em;color:#69767b}
+.meditation-control b{font-size:.68rem;letter-spacing:.08em;text-transform:uppercase}
+.meditation-control:hover{border-color:var(--saffron);background:#fff7e6}
+.meditation-control.playing{border-color:#b98943;background:#f4e4bf;box-shadow:0 0 0 4px rgba(200,132,67,.1)}
+.meditation-control.playing span{background:var(--blue);color:white}
+@media(max-width:900px){
+  .meditation-control{order:4;margin-left:.25rem}
+  .meditation-control small{display:none}
+}
+@media(max-width:580px){
+  .meditation-control{min-width:54px;min-height:40px;justify-content:center;gap:.3rem;padding:.35rem .5rem}
+  .meditation-control span{width:21px;height:21px;font-size:.78rem}
+  .meditation-control b{font-size:.62rem}
+}
+@media(max-width:420px){
+  .meditation-control span{display:none}
+  .meditation-control{min-width:48px;margin-left:0;padding:.3rem .4rem}
+}

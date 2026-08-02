@@ -84,6 +84,7 @@ export function MissionHome() {
   const [lang, setLang] = useState<Language>("en");
   const [menu, setMenu] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
+  const [musicPlaying, setMusicPlaying] = useState(false);
   const [filter, setFilter] = useState("All");
   const [libraryQuery, setLibraryQuery] = useState("");
   const [dialog, setDialog] = useState<"register" | "join" | "volunteer" | "contribute" | "gallery" | null>(null);
@@ -94,6 +95,7 @@ export function MissionHome() {
   const [uploadStatus, setUploadStatus] = useState<"approved" | "pending">("pending");
   const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
   const [galleryLoading, setGalleryLoading] = useState(true);
+  const audioRef = useRef<HTMLAudioElement>(null);
   const galleryTrack = useRef<HTMLDivElement>(null);
   const t = copy[lang];
   const shown = useMemo(() => libraryCollections.filter(item => {
@@ -114,6 +116,23 @@ export function MissionHome() {
   const moveGallery = (direction: -1 | 1) => {
     const track = galleryTrack.current;
     if (track) track.scrollBy({ left: direction * Math.max(280, track.clientWidth * .82), behavior: "smooth" });
+  };
+  const toggleMeditationMusic = async () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    if (musicPlaying) {
+      audio.pause();
+      audio.currentTime = 0;
+      setMusicPlaying(false);
+      return;
+    }
+    audio.volume = 0.32;
+    try {
+      await audio.play();
+      setMusicPlaying(true);
+    } catch {
+      setMusicPlaying(false);
+    }
   };
   const displayDate = (date: string) => {
     const value = new Date(`${date}T00:00:00`);
@@ -155,6 +174,8 @@ export function MissionHome() {
         </div>
       </nav>
       <div className="language"><button className={lang === "en" ? "active" : ""} onClick={() => setLang("en")}>EN</button><span>/</span><button className={lang === "hi" ? "active" : ""} onClick={() => setLang("hi")}>हिं</button></div>
+      <button className={`meditation-control ${musicPlaying ? "playing" : ""}`} type="button" onClick={toggleMeditationMusic} aria-pressed={musicPlaying} aria-label={`${musicPlaying ? "Stop" : "Play"} soft meditation music`} title="Original meditation soundscape · Quiet Aspiration"><span aria-hidden="true">♪</span><small>Meditation</small><b>{musicPlaying ? "Stop" : "Play"}</b></button>
+      <audio ref={audioRef} src="/audio/quiet-aspiration.wav" loop preload="none" onPause={()=>setMusicPlaying(false)} onPlay={()=>setMusicPlaying(true)}/>
     </header>
 
     <main id="main">
