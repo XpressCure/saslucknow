@@ -11,7 +11,7 @@ from pathlib import Path
 SAMPLE_RATE = 22_050
 DURATION = 96.0
 TAU = math.tau
-OUTPUT = Path(__file__).resolve().parents[1] / "public" / "audio" / "quiet-aspiration.wav"
+OUTPUT = Path(__file__).resolve().parents[1] / "public" / "quiet-aspiration.wav"
 CHORDS = (
     (130.81, 164.81, 196.00, 246.94),
     (110.00, 130.81, 164.81, 196.00),

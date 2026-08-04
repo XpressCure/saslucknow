@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { FormEvent, type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 
 type Language = "en" | "hi";
 type GalleryItem = {
@@ -13,9 +13,66 @@ type GalleryItem = {
   mimeType: string;
   mediaUrl: string;
 };
+type SakhiMessage = {
+  role: "user" | "assistant";
+  content: string;
+};
+
+type LibraryCollection = {
+  category: string;
+  title: string;
+  count: string;
+  items: string[];
+  href: string;
+};
+
+type LibrarySearchResult = {
+  title: string;
+  snippet: string;
+  category: string;
+  source: string;
+  href: string;
+};
+
+function renderSakhiInline(text: string): ReactNode[] {
+  const parts = text.split(/(\*\*.+\*\*|\*[^*]+\*|\[[^\]]+\]\(https?:\/\/[^\s)]+\)|https?:\/\/[^\s<]+)/g).filter(Boolean);
+  return parts.map((part, index) => {
+    const bold = part.match(/^\*\*(.+)\*\*$/);
+    if (bold) return <strong key={index}>{bold[1].replace(/\*+/g, "")}</strong>;
+    const italic = part.match(/^\*([^*]+)\*$/);
+    if (italic) return <em key={index}>{italic[1]}</em>;
+    const markdownLink = part.match(/^\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)$/);
+    if (markdownLink) return <a key={index} href={markdownLink[2]} target="_blank" rel="noreferrer">{markdownLink[1]}</a>;
+    if (/^https?:\/\//.test(part)) {
+      const trailing = part.match(/([.,;:!?]+)$/)?.[1] || "";
+      const href = trailing ? part.slice(0, -trailing.length) : part;
+      return <span key={index}><a href={href} target="_blank" rel="noreferrer">{href}</a>{trailing}</span>;
+    }
+    return part.replace(/\*+/g, "");
+  });
+}
+
+function SakhiFormattedAnswer({ content }: { content: string }) {
+  return <div className="sakhi-answer">{content.split(/\r?\n/).map((line, index) => {
+    const trimmed = line.trim();
+    if (!trimmed) return <div className="sakhi-answer-space" aria-hidden="true" key={index}/>;
+    const heading = trimmed.match(/^#{1,4}\s+(.+)$/);
+    const numberedHeading = trimmed.match(/^\d+\.\s+(Identification|Passage context|Meaning|Reference|References)(.*)$/i);
+    if (heading || numberedHeading) {
+      const title = heading?.[1] || `${numberedHeading?.[1]}${numberedHeading?.[2] || ""}`;
+      return <h4 className="sakhi-answer-heading" key={index}>{renderSakhiInline(title)}</h4>;
+    }
+    const bullet = trimmed.match(/^[-*]\s+(.+)$/);
+    if (bullet) return <div className="sakhi-answer-list" key={index}><span aria-hidden="true">•</span><p>{renderSakhiInline(bullet[1])}</p></div>;
+    const quotation = trimmed.match(/^>\s*(.+)$/);
+    if (quotation) return <blockquote className="sakhi-answer-quote" key={index}>{renderSakhiInline(quotation[1])}</blockquote>;
+    return <p className="sakhi-answer-line" key={index}>{renderSakhiInline(trimmed)}</p>;
+  })}</div>;
+}
+
 const copy = {
   en: {
-    nav: ["e-Library", "Events", "Sultanpur Shrine", "Community"],
+    nav: ["e-Library", "Events", "Community"],
     eyebrow: "Sri Aurobindo Society · Lucknow Centre",
     title: "A quiet space for inner growth.",
     intro: "Discover the vision of Sri Aurobindo and the Mother. Study, reflect, participate, and grow together.",
@@ -39,11 +96,13 @@ const copy = {
     community: "Grow with the community", join: "Join the community", volunteer: "Volunteer with us",
     support: "Support the work", supportText: "Voluntary contributions help sustain programmes, publications, shrine care and digital outreach.",
     contribute: "Contribute thoughtfully", footer: "Towards a Life Divine",
-    more: "More", darshan: "Darshan Divas",
+    more: "More",
+    sultanpur: "Sultanpur Shrine",
+    darshan: "Darshan Divas",
     disclaimer: "Sri Aurobindo Society, Lucknow · Gomti Nagar Centre (UC-02). The Society was founded by the Mother in 1960 and is headquartered in Puducherry.",
   },
   hi: {
-    nav: ["ई-पुस्तकालय", "कार्यक्रम", "सुल्तानपुर समाधि", "समुदाय"],
+    nav: ["ई-पुस्तकालय", "कार्यक्रम", "समुदाय"],
     eyebrow: "श्री अरविंद–श्री माँ मिशन, लखनऊ", title: "आंतरिक विकास के लिए एक शांत स्थान।",
     intro: "श्री अरविंद और श्री माँ के दर्शन को जानें। अध्ययन करें, मनन करें, सहभागी बनें और साथ बढ़ें।",
     explore: "यात्रा आरंभ करें", event: "अगला कार्यक्रम देखें", today: "आज का विचार",
@@ -69,7 +128,7 @@ const copy = {
   },
 };
 
-const libraryCollections = [
+const libraryCollections: LibraryCollection[] = [
   { category: "Books", title: "Works of Sri Aurobindo", count: "170+ books", items: ["Savitri", "The Life Divine", "The Synthesis of Yoga"], href: "https://www.motherandsriaurobindo.in/Sri-Aurobindo/books/" },
   { category: "Books", title: "Works of the Mother", count: "160+ books", items: ["Prayers and Meditations", "Questions and Answers", "Words of the Mother"], href: "https://www.motherandsriaurobindo.in/The-Mother/books/" },
   { category: "Audio", title: "Music, talks and readings", count: "Audio library", items: ["Meditation music", "Recorded talks", "Readings and messages"], href: "https://www.motherandsriaurobindo.in/The-Mother/audio/" },
@@ -84,9 +143,12 @@ export function MissionHome() {
   const [lang, setLang] = useState<Language>("en");
   const [menu, setMenu] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
-  const [musicPlaying, setMusicPlaying] = useState(false);
+  const [musicPlaying, setMusicPlaying] = useState(true);
   const [filter, setFilter] = useState("All");
   const [libraryQuery, setLibraryQuery] = useState("");
+  const [libraryResults, setLibraryResults] = useState<LibrarySearchResult[]>([]);
+  const [librarySearching, setLibrarySearching] = useState(false);
+  const [librarySearchError, setLibrarySearchError] = useState("");
   const [dialog, setDialog] = useState<"register" | "join" | "volunteer" | "contribute" | "gallery" | null>(null);
   const [sent, setSent] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -95,15 +157,71 @@ export function MissionHome() {
   const [uploadStatus, setUploadStatus] = useState<"approved" | "pending">("pending");
   const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
   const [galleryLoading, setGalleryLoading] = useState(true);
+  const [sakhiOpen, setSakhiOpen] = useState(false);
+  const [sakhiInput, setSakhiInput] = useState("");
+  const [sakhiMessages, setSakhiMessages] = useState<SakhiMessage[]>([]);
+  const [sakhiThinking, setSakhiThinking] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
   const galleryTrack = useRef<HTMLDivElement>(null);
+  const sakhiEndRef = useRef<HTMLDivElement>(null);
   const t = copy[lang];
+  const primaryNav = [
+    { label: t.nav[0], href: "#wisdom" },
+    { label: t.nav[1], href: "#events" },
+    { label: t.nav[2], href: "#community" },
+  ];
+  const normalizedLibraryQuery = libraryQuery.trim().toLowerCase();
+  const isSearchingLibrary = normalizedLibraryQuery.length > 0;
   const shown = useMemo(() => libraryCollections.filter(item => {
     const matchesCategory = filter === "All" || item.category === filter;
     const haystack = `${item.title} ${item.count} ${item.items.join(" ")}`.toLowerCase();
-    return matchesCategory && haystack.includes(libraryQuery.trim().toLowerCase());
+    return matchesCategory && haystack.includes(normalizedLibraryQuery);
   }), [filter, libraryQuery]);
+  const filteredLibraryResults = useMemo(() => {
+    if (!isSearchingLibrary) return shown;
+    return libraryResults.filter(result => filter === "All" || result.category === filter).map(result => ({ ...result, kind: "remote" as const }));
+  }, [filter, isSearchingLibrary, libraryResults, shown]);
+  const hasLibraryResults = isSearchingLibrary ? filteredLibraryResults.length > 0 : shown.length > 0;
   const open = (name: typeof dialog) => { setSent(false); setUploading(false); setSubmitError(""); setUploadReference(""); setUploadStatus("pending"); setDialog(name); };
+  useEffect(() => {
+    const searchTerm = libraryQuery.trim();
+    if (!searchTerm) {
+      setLibraryResults([]);
+      setLibrarySearchError("");
+      setLibrarySearching(false);
+      return;
+    }
+    const controller = new AbortController();
+    const timeout = setTimeout(async () => {
+      try {
+        setLibrarySearching(true);
+        setLibrarySearchError("");
+        const response = await fetch(`/api/library-search?query=${encodeURIComponent(searchTerm)}`, {
+          signal: controller.signal,
+        });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error((result as { error?: string }).error || "Live library search is temporarily unavailable.");
+        const found = Array.isArray((result as { results?: unknown }).results) ? (result as { results: LibrarySearchResult[] }).results : [];
+        setLibraryResults(found.map(item => ({
+          title: typeof item.title === "string" ? item.title.trim() : "",
+          snippet: typeof item.snippet === "string" ? item.snippet.trim() : "",
+          category: typeof item.category === "string" ? item.category : "Source",
+          source: typeof item.source === "string" ? item.source : "The Mother & Sri Aurobindo e-Library",
+          href: typeof item.href === "string" ? item.href : "https://www.motherandsriaurobindo.in/",
+        })).filter(item => item.title));
+      } catch (error) {
+        if ((error as Error)?.name === "AbortError") return;
+        setLibrarySearchError("Could not fetch live results right now. Showing local collections.");
+        setLibraryResults([]);
+      } finally {
+        setLibrarySearching(false);
+      }
+    }, 220);
+    return () => {
+      controller.abort();
+      clearTimeout(timeout);
+    };
+  }, [libraryQuery]);
   useEffect(() => {
     const controller = new AbortController();
     fetch("/api/gallery-items", { signal: controller.signal })
@@ -113,26 +231,55 @@ export function MissionHome() {
       .finally(() => setGalleryLoading(false));
     return () => controller.abort();
   }, []);
+  useEffect(() => {
+    if (sakhiOpen) sakhiEndRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }, [sakhiMessages, sakhiOpen, sakhiThinking]);
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.volume = 0.22;
+    const startMusic = () => {
+      audio.play().then(() => setMusicPlaying(true)).catch(() => setMusicPlaying(false));
+    };
+    startMusic();
+    const startAfterInteraction = (event: Event) => {
+      if (event.target instanceof Element && event.target.closest(".meditation-control")) return;
+      if (audio.paused) startMusic();
+    };
+    window.addEventListener("pointerdown", startAfterInteraction, { once: true });
+    window.addEventListener("keydown", startAfterInteraction, { once: true });
+    return () => {
+      window.removeEventListener("pointerdown", startAfterInteraction);
+      window.removeEventListener("keydown", startAfterInteraction);
+    };
+  }, []);
   const moveGallery = (direction: -1 | 1) => {
     const track = galleryTrack.current;
     if (track) track.scrollBy({ left: direction * Math.max(280, track.clientWidth * .82), behavior: "smooth" });
   };
+  const playMeditationMusic = async () => {
+    const audio = audioRef.current;
+    if (!audio) return false;
+    audio.volume = 0.22;
+    try {
+      await audio.play();
+      setMusicPlaying(true);
+      return true;
+    } catch {
+      setMusicPlaying(false);
+      return false;
+    }
+  };
   const toggleMeditationMusic = async () => {
     const audio = audioRef.current;
     if (!audio) return;
-    if (musicPlaying) {
+    if (!audio.paused) {
       audio.pause();
       audio.currentTime = 0;
       setMusicPlaying(false);
       return;
     }
-    audio.volume = 0.32;
-    try {
-      await audio.play();
-      setMusicPlaying(true);
-    } catch {
-      setMusicPlaying(false);
-    }
+    await playMeditationMusic();
   };
   const displayDate = (date: string) => {
     const value = new Date(`${date}T00:00:00`);
@@ -160,6 +307,32 @@ export function MissionHome() {
       setUploading(false);
     }
   };
+  const askSavitriSakhi = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const question = sakhiInput.trim();
+    if (!question || sakhiThinking) return;
+    const conversation: SakhiMessage[] = [...sakhiMessages, { role: "user", content: question }].slice(-12);
+    setSakhiMessages(conversation);
+    setSakhiInput("");
+    setSakhiThinking(true);
+    try {
+      const response = await fetch("/api/savitri-sakhi", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: conversation }),
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok || typeof result.answer !== "string") throw new Error(result.error || "Savitri Sakhi could not answer just now.");
+      setSakhiMessages([...conversation, { role: "assistant", content: result.answer }]);
+    } catch (error) {
+      setSakhiMessages([...conversation, {
+        role: "assistant",
+        content: error instanceof Error ? error.message : "I could not answer just now. Please try again in a moment.",
+      }]);
+    } finally {
+      setSakhiThinking(false);
+    }
+  };
 
   return <div className={lang === "hi" ? "hindi" : ""}>
     <a href="#main" className="skip">Skip to content</a>
@@ -167,16 +340,19 @@ export function MissionHome() {
       <a className="brand" href="#"><img className="society-logo" src="https://cms.aurosociety.org/kcfinder/images/images/sas-symbol%281%29.jpg" alt="Sri Aurobindo Society symbol"/><span>Sri Aurobindo Society<small>LUCKNOW · GOMTI NAGAR CENTRE</small></span></a>
       <button className="menu-button" onClick={() => setMenu(!menu)} aria-expanded={menu} aria-label="Toggle navigation">☰</button>
       <nav className={menu ? "open" : ""} aria-label="Main navigation">
-        {t.nav.map((item, i) => <a key={item} href={["#wisdom","#events","/sultanpur-shrine","#community"][i]} onClick={() => setMenu(false)}>{item}</a>)}
+        {primaryNav.map(item => <a key={item.label} href={item.href} onClick={() => setMenu(false)}>{item.label}</a>)}
         <div className={`more-menu ${moreOpen ? "open" : ""}`}>
           <button type="button" aria-expanded={moreOpen} aria-haspopup="true" onClick={() => setMoreOpen(!moreOpen)}>{t.more}</button>
-          <div className="more-dropdown"><a href="/darshan-divas" onClick={() => { setMoreOpen(false); setMenu(false); }}>{t.darshan}</a></div>
+          <div className="more-dropdown">
+            <a href="/sultanpur-shrine" onClick={() => { setMoreOpen(false); setMenu(false); }}>{t.shrine}</a>
+            <a href="/darshan-divas" onClick={() => { setMoreOpen(false); setMenu(false); }}>{t.darshan}</a>
+          </div>
         </div>
       </nav>
       <div className="language"><button className={lang === "en" ? "active" : ""} onClick={() => setLang("en")}>EN</button><span>/</span><button className={lang === "hi" ? "active" : ""} onClick={() => setLang("hi")}>हिं</button></div>
-      <button className={`meditation-control ${musicPlaying ? "playing" : ""}`} type="button" onClick={toggleMeditationMusic} aria-pressed={musicPlaying} aria-label={`${musicPlaying ? "Stop" : "Play"} soft meditation music`} title="Original meditation soundscape · Quiet Aspiration"><span aria-hidden="true">♪</span><small>Meditation</small><b>{musicPlaying ? "Stop" : "Play"}</b></button>
-      <audio ref={audioRef} src="/audio/quiet-aspiration.wav" loop preload="none" onPause={()=>setMusicPlaying(false)} onPlay={()=>setMusicPlaying(true)}/>
     </header>
+    <audio ref={audioRef} autoPlay loop preload="auto" playsInline onPause={()=>setMusicPlaying(false)} onPlay={()=>setMusicPlaying(true)} onError={()=>setMusicPlaying(false)}><source src="/quiet-aspiration.wav" type="audio/wav"/></audio>
+    <button className={`meditation-control ${musicPlaying ? "playing" : ""}`} type="button" onClick={toggleMeditationMusic} aria-pressed={musicPlaying} aria-label={`${musicPlaying ? "Stop" : "Play"} soft meditation music`} title="Original meditation soundscape · Quiet Aspiration"><span aria-hidden="true">♪</span><small>Meditation</small><b>{musicPlaying ? "Stop" : "Play"}</b></button>
 
     <main id="main">
       <section className="theme-banner" aria-label="Website theme: The Song of Life"><img src="/song-of-life-banner.png" alt="The Song of Life, glowing over a radiant golden dawn"/><div className="theme-caption"><span>OUR WEBSITE THEME</span><p>A luminous invitation to discover the deeper music within life.</p></div></section>
@@ -202,8 +378,8 @@ export function MissionHome() {
       <section className="roots section" aria-labelledby="roots-title"><div className="section-title"><div><p className="kicker">A LIVING MOVEMENT</p><h2 id="roots-title">From Puducherry to Lucknow</h2></div><p>Sri Aurobindo Society was started by the Mother on 19 September 1960 and has grown into an international organisation carrying spirituality into many fields of life.</p></div><div className="roots-grid">
         <article><span>01</span><h3>Puducherry</h3><p>The Society’s administrative headquarters and Society House are in Puducherry, close to the wider spiritual, cultural and educational life inspired by Sri Aurobindo and the Mother.</p><a href="https://aurosociety.org/society/index/About-Sri-Aurobindo-Society" target="_blank" rel="noreferrer">About the Society ↗</a></article>
         <article><span>02</span><h3>Auroville</h3><p>Founded by the Mother in 1968, Auroville is an international township dedicated to human unity, unending education and material and spiritual research.</p><a href="https://auroville.org/page/history" target="_blank" rel="noreferrer">Explore Auroville ↗</a></article>
-        <article><span>03</span><h3>Lucknow</h3><p>The Lucknow and Gomti Nagar centres bring this vision into local life through Sunday meetings, lectures, study, reflection and community participation.</p><a href="#location">Visit our centre →</a></article>
-        <article><span>04</span><h3>Sultanpur</h3><p>A sacred centre housing Sri Aurobindo’s relics and nurturing collective meditation, study and educational activities.</p><a href="/sultanpur-shrine">Explore the Sultanpur Shrine →</a></article>
+        <article><span>03</span><h3>Sultanpur</h3><p>A sacred centre housing Sri Aurobindo’s relics and nurturing collective meditation, study and educational activities.</p><a href="/sultanpur-shrine">Explore the Sultanpur Shrine →</a></article>
+        <article><span>04</span><h3>Lucknow</h3><p>The Lucknow and Gomti Nagar centres bring this vision into local life through Sunday meetings, lectures, study, reflection and community participation.</p><a href="#location">Visit our centre →</a></article>
       </div></section>
 
       <section className="library section" id="wisdom">
@@ -213,8 +389,11 @@ export function MissionHome() {
           <label className="library-search"><span>Search the library</span><input value={libraryQuery} onChange={event=>setLibraryQuery(event.target.value)} placeholder="Try Savitri, flowers, audio…"/></label>
           <div className="filters" aria-label="Filter library collections">{["All","Books","Audio","Explore"].map(value=><button key={value} onClick={()=>setFilter(value)} className={filter===value?"active":""}>{value}</button>)}</div>
         </div>
-        <div className="library-grid">{shown.map((item,i)=><a className="library-card" href={item.href} target="_blank" rel="noreferrer" key={item.title}><span className="library-number">{String(i+1).padStart(2,"0")}</span><small>{item.category} · {item.count}</small><h3>{item.title}</h3><ul>{item.items.map(entry=><li key={entry}>{entry}</li>)}</ul><b>Open collection ↗</b></a>)}</div>
-        {shown.length === 0 && <p className="library-empty">No collection matches that search. Try a broader word.</p>}
+        <div className="library-grid">{isSearchingLibrary ? filteredLibraryResults.map((item,i)=><a className="library-card" href={item.href} target="_blank" rel="noreferrer" key={item.href}><span className="library-number">{String(i + 1).padStart(2,"0")}</span><small>{item.category} · {item.source}</small><h3>{item.title}</h3><p className="library-search-snippet">{item.snippet || "From the official e-Library index."}</p><b>Open result →</b></a>) : shown.map((item,i)=><a className="library-card" href={item.href} target="_blank" rel="noreferrer" key={item.title}><span className="library-number">{String(i+1).padStart(2,"0")}</span><small>{item.category} · {item.count}</small><h3>{item.title}</h3><ul>{item.items.map(entry=><li key={entry}>{entry}</li>)}</ul><b>Open collection →</b></a>)}</div>
+        {isSearchingLibrary && librarySearching && <p className="library-empty">Searching the live e-Library for "{libraryQuery}"...</p>}
+        {isSearchingLibrary && librarySearchError && <p className="library-empty">Live search is temporarily unavailable. Showing local collections.</p>}
+        {isSearchingLibrary && !librarySearching && !librarySearchError && filteredLibraryResults.length === 0 && <p className="library-empty">No matches found. Try another keyword.</p>}
+        {!isSearchingLibrary && shown.length === 0 && <p className="library-empty">No collection matches that search. Try a broader word.</p>}
         <p className="library-credit">Catalogue information and destination links are adapted from <a href="https://www.motherandsriaurobindo.in/" target="_blank" rel="noreferrer">The Mother & Sri Aurobindo e‑Library</a>. Content opens on the source website.</p>
       </section>
 
@@ -240,6 +419,41 @@ export function MissionHome() {
     </main>
 
     <footer><div className="brand inverse"><img className="society-logo" src="https://cms.aurosociety.org/kcfinder/images/images/sas-symbol%281%29.jpg" alt="Sri Aurobindo Society symbol"/><span>Sri Aurobindo Society<small>LUCKNOW · GOMTI NAGAR CENTRE</small></span></div><p>{t.footer}</p><div><a href="#wisdom">Wisdom</a><a href="#events">Events</a><a href="mailto:info.saslucknow@gmail.com">Email</a></div><small>{t.disclaimer}</small></footer>
+
+    <aside className={`sakhi-widget ${sakhiOpen ? "open" : ""}`} aria-label="Savitri Sakhi AI assistant">
+      {sakhiOpen && <section className="sakhi-window" role="dialog" aria-label="Chat with Savitri Sakhi">
+        <header className="sakhi-header">
+          <div className="sakhi-symbol" aria-hidden="true"><span>✦</span>S</div>
+          <div><small>SAVITRI · SRI AUROBINDO · THE MOTHER</small><h2>Savitri Sakhi</h2><p>सावित्री सखी</p></div>
+          <button type="button" onClick={() => setSakhiOpen(false)} aria-label="Close Savitri Sakhi">×</button>
+        </header>
+        <div className="sakhi-conversation" role="log" aria-live="polite" aria-relevant="additions">
+          {sakhiMessages.length === 0 && <div className="sakhi-welcome">
+            <span aria-hidden="true">✦</span>
+            <h3>What would you like to explore?</h3>
+            <p>Ask me about <em>Savitri</em>—its lines, symbols, books and cantos—or about the vision of Sri Aurobindo and the Mother. Write in English or Hindi.</p>
+            <p className="sakhi-hindi">सावित्री की पंक्तियों, प्रतीकों, पर्वों और सर्गों या श्री अरविंद और श्री माँ के दर्शन के बारे में अंग्रेज़ी अथवा हिंदी में पूछें।</p>
+            <div className="sakhi-prompts">
+              {["Identify this line: All can be done if the god-touch is there", "Explain the symbol of Night in Savitri", "सावित्री का मुख्य संदेश क्या है?"].map(prompt => <button type="button" key={prompt} onClick={() => setSakhiInput(prompt)}>{prompt}</button>)}
+            </div>
+          </div>}
+          {sakhiMessages.map((message, index) => <article className={`sakhi-message ${message.role}`} key={`${message.role}-${index}`}>
+            <small>{message.role === "assistant" ? "Savitri Sakhi" : "You"}</small>
+            {message.role === "assistant" ? <SakhiFormattedAnswer content={message.content}/> : <p>{message.content}</p>}
+          </article>)}
+          {sakhiThinking && <div className="sakhi-thinking" aria-label="Savitri Sakhi is reflecting"><i/><i/><i/><span>Reflecting…</span></div>}
+          <div ref={sakhiEndRef}/>
+        </div>
+        <form className="sakhi-form" onSubmit={askSavitriSakhi}>
+          <label htmlFor="sakhi-question">Ask in English or Hindi</label>
+          <div><textarea id="sakhi-question" value={sakhiInput} onChange={event => setSakhiInput(event.target.value)} onKeyDown={event => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} rows={2} maxLength={4000} placeholder="Type your question… / अपना प्रश्न लिखें…" disabled={sakhiThinking}/><button type="submit" disabled={sakhiThinking || !sakhiInput.trim()} aria-label="Send question to Savitri Sakhi">↑</button></div>
+          <small>AI responses may contain errors. Exact references are verified when possible.</small>
+        </form>
+      </section>}
+      <button className="sakhi-launcher" type="button" onClick={() => setSakhiOpen(!sakhiOpen)} aria-expanded={sakhiOpen} aria-label={`${sakhiOpen ? "Close" : "Open"} Savitri Sakhi`}>
+        <span className="sakhi-launcher-icon" aria-hidden="true">{sakhiOpen ? "×" : <><i>✦</i>S</>}</span><b>{sakhiOpen ? "Close" : "Savitri Sakhi"}</b><small>{sakhiOpen ? "" : "Ask in English or Hindi"}</small>
+      </button>
+    </aside>
 
     {dialog && <div className="modal-backdrop" role="presentation" onMouseDown={()=>setDialog(null)}><div className="modal" role="dialog" aria-modal="true" aria-labelledby="dialog-title" onMouseDown={e=>e.stopPropagation()}><button className="close" onClick={()=>setDialog(null)} aria-label="Close">×</button>
       {!sent ? <><p className="kicker">AUROBINDO MISSION LUCKNOW</p><h2 id="dialog-title">{dialog === "register" ? "Register for this gathering" : dialog === "join" ? "Join the community" : dialog === "volunteer" ? "Volunteer with us" : dialog === "gallery" ? "Add event photos or videos" : "Make a voluntary contribution"}</h2><p className="privacy">{dialog === "gallery" ? "Share media from a Society gathering. Submitted videos are published immediately; photo-only submissions are held for review." : "Your details are used only to respond to this request. Optional updates require separate consent."}</p>

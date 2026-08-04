@@ -54,8 +54,12 @@ test("renders location, weekly meeting, gallery and Facebook embed", async () =>
   assert.match(html, /facebook\.com%2Fsaslucknow/);
   assert.match(html, /Upload event photos or videos/);
   assert.match(html, /Videos are published automatically/);
-  assert.match(html, /Play soft meditation music/);
-  assert.match(html, /quiet-aspiration\.wav/);
+  assert.match(html, /Stop soft meditation music/);
+  assert.match(html, /autoplay=""/i);
+  assert.doesNotMatch(html, /Enter with music|Continue in silence/);
+  assert.match(html, /src="\/quiet-aspiration\.wav"/);
+  assert.match(html, /Savitri Sakhi/);
+  assert.match(html, /Open Savitri Sakhi/);
   assert.doesNotMatch(html, /Swipe left or right to explore approved event memories/);
   assert.doesNotMatch(html, /Ideas that open doors/);
   assert.doesNotMatch(html, /Learning together/);
@@ -137,4 +141,19 @@ test("renders the internal Darshan Divas guide and navigation entry", async () =
   const yearPositions = ["1872", "1878", "1920", "1926", "1950", "1956", "1973"].map(year => html.indexOf(`>${year}<`));
   assert.deepEqual(yearPositions, [...yearPositions].sort((a, b) => a - b));
   assert.doesNotMatch(html, /href="https?:\/\//);
+});
+
+test("serves a bilingual Savitri Sakhi demonstration without an API key", async () => {
+  const workerUrl = new URL("../dist/server/index.js", import.meta.url);
+  workerUrl.searchParams.set("sakhi", `${process.pid}-${Date.now()}`);
+  const { default: worker } = await import(workerUrl.href);
+  const response = await worker.fetch(new Request("http://localhost/api/savitri-sakhi", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ messages: [{ role: "user", content: "What is Savitri?" }] }),
+  }), { ASSETS: { fetch: async () => new Response("Not found", { status: 404 }) } }, { waitUntil() {}, passThroughOnException() {} });
+  assert.equal(response.status, 200);
+  const result = await response.json();
+  assert.equal(result.demo, true);
+  assert.match(result.answer, /spiritual epic/i);
 });

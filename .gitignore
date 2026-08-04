@@ -40,4 +40,6 @@ next-env.d.ts
 /.wrangler/
 /outputs/
 /work/
+/build/preview-*
+/.sites-git/
 *.tsbuildinfo
