@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, type ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import { PushpanjaliCampaign } from "./pushpanjali-campaign";
 
 type Language = "en" | "hi";
 type GalleryItem = {
@@ -353,6 +354,7 @@ export function MissionHome() {
     </header>
     <audio ref={audioRef} autoPlay loop preload="auto" playsInline onPause={()=>setMusicPlaying(false)} onPlay={()=>setMusicPlaying(true)} onError={()=>setMusicPlaying(false)}><source src="/quiet-aspiration.wav" type="audio/wav"/></audio>
     <button className={`meditation-control ${musicPlaying ? "playing" : ""}`} type="button" onClick={toggleMeditationMusic} aria-pressed={musicPlaying} aria-label={`${musicPlaying ? "Stop" : "Play"} soft meditation music`} title="Original meditation soundscape · Quiet Aspiration"><span aria-hidden="true">♪</span><small>Meditation</small><b>{musicPlaying ? "Stop" : "Play"}</b></button>
+    <PushpanjaliCampaign/>
 
     <main id="main">
       <section className="theme-banner" aria-label="Website theme: The Song of Life"><img src="/song-of-life-banner.png" alt="The Song of Life, glowing over a radiant golden dawn"/><div className="theme-caption"><span>OUR WEBSITE THEME</span><p>A luminous invitation to discover the deeper music within life.</p></div></section>

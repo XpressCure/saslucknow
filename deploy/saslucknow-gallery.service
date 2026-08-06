@@ -11,6 +11,7 @@ WorkingDirectory=/var/www/saslucknow/releases/current
 Environment=NODE_ENV=production
 Environment=PORT=3001
 Environment=UPLOAD_DIR=/var/www/saslucknow/shared/pending-media
+Environment=PUSHPANJALI_DIR=/var/www/saslucknow/shared/pushpanjali-offerings
 EnvironmentFile=-/etc/saslucknow-gallery.env
 ExecStart=/usr/bin/node server/gallery-api.mjs
 Restart=always

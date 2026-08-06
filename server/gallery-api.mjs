@@ -7,6 +7,7 @@ import { pathToFileURL } from "node:url";
 import { randomUUID } from "node:crypto";
 import Busboy from "busboy";
 import { MongoClient } from "mongodb";
+import nodemailer from "nodemailer";
 import { S3Client } from "@aws-sdk/client-s3";
 import { Upload } from "@aws-sdk/lib-storage";
 
@@ -14,6 +15,7 @@ const PORT = Number(process.env.PORT || 3001);
 const UPLOAD_DIR = process.env.UPLOAD_DIR || path.resolve("work/gallery-submissions");
 const TEMP_DIR = path.join(UPLOAD_DIR, ".tmp");
 const MANIFEST_DIR = path.join(UPLOAD_DIR, "manifests");
+const PUSHPANJALI_DIR = process.env.PUSHPANJALI_DIR || path.resolve("work/pushpanjali-offerings");
 const MAX_REQUEST_BYTES = 130 * 1024 * 1024;
 const MAX_VIDEO_BYTES = 80 * 1024 * 1024;
 const MAX_IMAGE_BYTES = 12 * 1024 * 1024;
@@ -23,11 +25,47 @@ const allowedTypes = new Map([
   ["video/mp4", "video"], ["video/webm", "video"], ["video/quicktime", "video"],
 ]);
 const rateLimits = new Map();
+const pushpanjaliRateLimits = new Map();
 let mongoClientPromise;
 
-function json(response, status, body) {
-  response.writeHead(status, { "Content-Type": "application/json; charset=utf-8", "X-Content-Type-Options": "nosniff", "Cache-Control": "no-store" });
+const pushpanjaliFlowers = new Map([
+  ["divine-love", {
+    name: "Divine Love",
+    meaning: "A flower that is said to blossom even in the desert.",
+    botanical: "Punica granatum · orange-red, double",
+    image: "https://www.saslucknow.in/pushpanjali-divine-love.jpg",
+  }],
+  ["integral-love", {
+    name: "Integral Love for the Divine",
+    meaning: "Pure, complete, irrevocable, a love that gives itself for ever.",
+    botanical: "Rosa · white",
+    image: "https://www.saslucknow.in/pushpanjali-integral-love.jpg",
+  }],
+  ["supramental-power", {
+    name: "Power of the Supramental Consciousness",
+    meaning: "Organising and active, irresistible in its influence.",
+    botanical: "Hibiscus rosa-sinensis ‘Rukmini’ · deep gold, double",
+    image: "https://www.saslucknow.in/pushpanjali-supramental-power.jpg",
+  }],
+]);
+
+function json(response, status, body, extraHeaders = {}) {
+  response.writeHead(status, { "Content-Type": "application/json; charset=utf-8", "X-Content-Type-Options": "nosniff", "Cache-Control": "no-store", ...extraHeaders });
   response.end(JSON.stringify(body));
+}
+
+function pushpanjaliCors(request) {
+  const origin = String(request.headers.origin || "");
+  if (!origin) return {};
+  const allowed = origin === "https://www.saslucknow.in"
+    || origin === "https://saslucknow.in"
+    || origin === "https://aurobindo-mission-lucknow.xpresscure.chatgpt.site";
+  return allowed ? {
+    "Access-Control-Allow-Origin": origin,
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type",
+    Vary: "Origin",
+  } : {};
 }
 
 async function approvedGalleryItems() {
@@ -130,6 +168,166 @@ function isRateLimited(address) {
   return false;
 }
 
+function isPushpanjaliRateLimited(address) {
+  const now = Date.now();
+  const recent = (pushpanjaliRateLimits.get(address) || []).filter(time => now - time < 60 * 60 * 1000);
+  if (recent.length >= 8) return true;
+  recent.push(now);
+  pushpanjaliRateLimits.set(address, recent);
+  return false;
+}
+
+function safeHtml(value) {
+  return String(value || "").replace(/[&<>'"]/g, character => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", "\"": "&quot;",
+  })[character]);
+}
+
+async function readJsonBody(request, maxBytes = 12_000) {
+  const chunks = [];
+  let size = 0;
+  for await (const chunk of request) {
+    size += chunk.length;
+    if (size > maxBytes) throw Object.assign(new Error("Request too large"), { statusCode: 413 });
+    chunks.push(chunk);
+  }
+  try {
+    return JSON.parse(Buffer.concat(chunks).toString("utf8"));
+  } catch {
+    throw Object.assign(new Error("Invalid JSON"), { statusCode: 400 });
+  }
+}
+
+async function savePushpanjaliOffering(document) {
+  await mkdir(PUSHPANJALI_DIR, { recursive: true });
+  await writeFile(path.join(PUSHPANJALI_DIR, `${document.offeringId}.json`), JSON.stringify(document, null, 2), { flag: "wx" });
+  if (!process.env.MONGODB_URI) {
+    const files = await readdir(PUSHPANJALI_DIR);
+    return { mongo: false, offeringNumber: files.filter(name => name.endsWith(".json")).length };
+  }
+  try {
+    mongoClientPromise ||= new MongoClient(process.env.MONGODB_URI, { serverSelectionTimeoutMS: 8000 }).connect();
+    const client = await mongoClientPromise;
+    const database = client.db(process.env.MONGODB_DB || "saslucknow");
+    const counter = await database.collection("siteCounters").findOneAndUpdate(
+      { _id: "pushpanjali-2026" },
+      { $inc: { value: 1 }, $setOnInsert: { createdAt: new Date() } },
+      { upsert: true, returnDocument: "after" },
+    );
+    const offeringNumber = Number(counter?.value || 1);
+    await database.collection("pushpanjaliOfferings").insertOne({ ...document, offeringNumber });
+    return { mongo: true, offeringNumber };
+  } catch (error) {
+    console.error("Pushpanjali MongoDB save failed; local record retained", error instanceof Error ? error.message : error);
+    mongoClientPromise = undefined;
+    const files = await readdir(PUSHPANJALI_DIR);
+    return { mongo: false, offeringNumber: files.filter(name => name.endsWith(".json")).length };
+  }
+}
+
+async function emailPushpanjaliCertificate({ name, email, flower, reference, offeringNumber }) {
+  if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASSWORD) {
+    console.warn(`Pushpanjali ${reference}: SMTP is not configured; certificate email was not sent.`);
+    return false;
+  }
+  const transport = nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: Number(process.env.SMTP_PORT || 587),
+    secure: Number(process.env.SMTP_PORT || 587) === 465,
+    auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASSWORD },
+  });
+  const escapedName = safeHtml(name);
+  const escapedFlower = safeHtml(flower.name);
+  const escapedMeaning = safeHtml(flower.meaning);
+  const escapedReference = safeHtml(reference);
+  const paddedNumber = String(offeringNumber).padStart(4, "0");
+  const certificateHtml = `
+    <div style="margin:0;padding:28px;background:#efe6d5;font-family:Arial,sans-serif;color:#173846">
+      <div style="max-width:760px;margin:auto;border:4px double #b98335;background:linear-gradient(135deg,#fffdf8,#f6e3b8);padding:34px;text-align:center">
+        <div style="font-size:14px;font-weight:700;letter-spacing:2px">SRI AUROBINDO SOCIETY · LUCKNOW</div>
+        <div style="margin-top:5px;color:#9b6428;font-size:11px;letter-spacing:1.5px">GOMTI NAGAR CENTRE (UC-02)</div>
+        <h1 style="margin:24px 0 6px;font:42px Georgia,serif">Certificate of Pushpanjali</h1>
+        <div style="margin:18px auto;width:190px;height:250px;overflow:hidden;border:2px solid #c49345;border-radius:12px">
+          <img src="https://www.saslucknow.in/sri-aurobindo-portrait.jpg" alt="Sri Aurobindo" style="width:100%;height:100%;object-fit:cover">
+        </div>
+        <p style="margin:18px 0 5px;color:#59686c">This certifies that</p>
+        <h2 style="margin:0;font:38px Georgia,serif;color:#173846">${escapedName}</h2>
+        <p style="margin:18px 0 4px;color:#59686c">has lovingly offered</p>
+        <table role="presentation" style="margin:8px auto;border-collapse:collapse"><tr>
+          <td><img src="${flower.image}" alt="${escapedFlower}" width="92" height="92" style="display:block;object-fit:cover;border:2px solid #c49345;border-radius:50%"></td>
+          <td style="padding-left:18px;text-align:left"><strong style="font:24px Georgia,serif;color:#9b6428">${escapedFlower}</strong><br><em style="font:17px Georgia,serif;color:#526269">“${escapedMeaning}”</em><br><small style="color:#8b6b3a">Spiritual significance given by the Mother</small></td>
+        </tr></table>
+        <div style="margin-top:24px;padding-top:18px;border-top:1px solid #d5b879;font-weight:700;letter-spacing:1.2px">15 AUGUST 2026 · SRI AUROBINDO’S BIRTHDAY DARSHAN</div>
+        <div style="margin-top:8px;color:#8a6b3d;font-size:12px">OFFERING ${paddedNumber} · ${escapedReference}</div>
+        <p style="margin:22px 0 0;font:italic 17px Georgia,serif">With gratitude and aspiration</p>
+      </div>
+      <p style="max-width:760px;margin:18px auto 0;text-align:center;font-size:13px;color:#58666b">Your virtual Pushpanjali has been recorded by SAS Lucknow. <a href="https://www.facebook.com/saslucknow" style="color:#8e5c22">Follow SAS Lucknow on Facebook</a>.</p>
+    </div>`;
+  await transport.sendMail({
+    from: process.env.EMAIL_FROM || `SAS Lucknow <${process.env.SMTP_USER}>`,
+    to: email,
+    replyTo: process.env.EMAIL_REPLY_TO || "info.saslucknow@gmail.com",
+    subject: "Your Pushpanjali to Sri Aurobindo · 15 August 2026",
+    text: `Dear ${name},\n\nYour ${flower.name} has been offered in Pushpanjali to Sri Aurobindo for the Darshan Day of 15 August 2026.\n\n“${flower.meaning}” — The Mother\n\nOffering ${paddedNumber} · ${reference}\n\nWith gratitude and aspiration,\nSri Aurobindo Society, Lucknow · Gomti Nagar Centre (UC-02)\n\nFollow SAS Lucknow: https://www.facebook.com/saslucknow`,
+    html: certificateHtml,
+  });
+  return true;
+}
+
+async function handlePushpanjali(request, response) {
+  const headers = pushpanjaliCors(request);
+  if (request.method === "OPTIONS") return json(response, 204, {}, headers);
+  if (request.method !== "POST") return json(response, 405, { error: "Method not allowed" }, headers);
+  if (!String(request.headers["content-type"] || "").toLowerCase().startsWith("application/json")) {
+    return json(response, 400, { error: "Please submit the Pushpanjali form." }, headers);
+  }
+  const address = clientAddress(request);
+  if (isPushpanjaliRateLimited(address)) return json(response, 429, { error: "Too many offerings from this connection. Please try again later." }, headers);
+
+  try {
+    const payload = await readJsonBody(request);
+    if (payload.website) return json(response, 201, { ok: true, reference: "received", offeringNumber: 1, emailed: false }, headers);
+    const name = cleanText(payload.name, 100);
+    const email = String(payload.email || "").trim().toLowerCase().slice(0, 180);
+    const flowerId = cleanText(payload.flowerId, 60);
+    const flower = pushpanjaliFlowers.get(flowerId);
+    if (name.length < 2 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !flower) {
+      return json(response, 400, { error: "Please enter your name, a valid email address and select one flower." }, headers);
+    }
+
+    const offeringId = randomUUID();
+    const reference = `SAS-P2026-${offeringId.replace(/-/g, "").slice(0, 8).toUpperCase()}`;
+    const document = {
+      offeringId,
+      reference,
+      participant: { name, email },
+      flowerId,
+      flower,
+      ceremonyDate: "2026-08-15",
+      submittedFrom: address,
+      createdAt: new Date(),
+    };
+    const persistence = await savePushpanjaliOffering(document);
+    let emailed = false;
+    try {
+      emailed = await emailPushpanjaliCertificate({ name, email, flower, reference, offeringNumber: persistence.offeringNumber });
+    } catch (error) {
+      console.error(`Pushpanjali ${reference}: certificate email failed`, error instanceof Error ? error.message : error);
+    }
+    return json(response, 201, {
+      ok: true,
+      reference,
+      offeringNumber: persistence.offeringNumber,
+      emailed,
+      metadataStoredInMongo: persistence.mongo,
+    }, headers);
+  } catch (error) {
+    const status = Number(error?.statusCode || 500);
+    console.error("Pushpanjali submission failed", error);
+    return json(response, status, { error: status === 413 ? "The request was too large." : status === 400 ? "Please submit a valid Pushpanjali form." : "Your Pushpanjali could not be recorded. Please try again." }, headers);
+  }
+}
+
 async function parseMultipart(request) {
   await mkdir(TEMP_DIR, { recursive: true });
   const fields = {};
@@ -219,6 +417,7 @@ async function removeTemporaryFiles(files = []) {
 export async function handleSubmission(request, response) {
   const pathname = new URL(request.url || "/", "http://localhost").pathname;
   if (request.method === "GET" && pathname === "/health") return json(response, 200, { ok: true });
+  if (pathname === "/api/pushpanjali-offerings") return handlePushpanjali(request, response);
   if (request.method === "GET" && pathname === "/api/gallery-items") return json(response, 200, { items: await approvedGalleryItems() });
   if (request.method === "GET" && pathname.startsWith("/api/gallery-media/")) return serveApprovedMedia(pathname, request, response);
   if (request.method !== "POST" || pathname !== "/api/gallery-submissions") return json(response, 404, { error: "Not found" });

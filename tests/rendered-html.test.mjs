@@ -1,4 +1,7 @@
 import assert from "node:assert/strict";
+import { mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import path from "node:path";
 import test from "node:test";
 
 async function render(path = "/") {
@@ -64,6 +67,48 @@ test("renders location, weekly meeting, gallery and Facebook embed", async () =>
   assert.doesNotMatch(html, /Ideas that open doors/);
   assert.doesNotMatch(html, /Learning together/);
   assert.doesNotMatch(html, /A place of remembrance/);
+});
+
+test("renders the 15 August Pushpanjali campaign entry point", async () => {
+  const response = await render();
+  const html = await response.text();
+  assert.match(html, /Pushpanjali/);
+  assert.match(html, /15 August 2026/);
+});
+
+test("records a Pushpanjali offering and returns a certificate reference", async () => {
+  const directory = await mkdtemp(path.join(tmpdir(), "sas-pushpanjali-"));
+  const previousDirectory = process.env.PUSHPANJALI_DIR;
+  const previousMongo = process.env.MONGODB_URI;
+  const previousSmtpHost = process.env.SMTP_HOST;
+  process.env.PUSHPANJALI_DIR = directory;
+  delete process.env.MONGODB_URI;
+  delete process.env.SMTP_HOST;
+  const moduleUrl = new URL("../server/gallery-api.mjs", import.meta.url);
+  moduleUrl.searchParams.set("test", `${process.pid}-${Date.now()}`);
+  const { createGalleryServer } = await import(moduleUrl.href);
+  const server = createGalleryServer();
+  await new Promise(resolve => server.listen(0, "127.0.0.1", resolve));
+  const address = server.address();
+  try {
+    const response = await fetch(`http://127.0.0.1:${address.port}/api/pushpanjali-offerings`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ name: "Test Devotee", email: "devotee@example.com", flowerId: "integral-love" }),
+    });
+    assert.equal(response.status, 201);
+    const result = await response.json();
+    assert.equal(result.ok, true);
+    assert.equal(result.emailed, false);
+    assert.equal(result.offeringNumber, 1);
+    assert.match(result.reference, /^SAS-P2026-[A-F0-9]{8}$/);
+  } finally {
+    await new Promise(resolve => server.close(resolve));
+    await rm(directory, { recursive: true, force: true });
+    if (previousDirectory === undefined) delete process.env.PUSHPANJALI_DIR; else process.env.PUSHPANJALI_DIR = previousDirectory;
+    if (previousMongo === undefined) delete process.env.MONGODB_URI; else process.env.MONGODB_URI = previousMongo;
+    if (previousSmtpHost === undefined) delete process.env.SMTP_HOST; else process.env.SMTP_HOST = previousSmtpHost;
+  }
 });
 
 test("renders official Society identity, email, roots and sourced wisdom", async () => {
