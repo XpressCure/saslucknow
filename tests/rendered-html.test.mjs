@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdtemp, readFile, rm, stat } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -74,6 +74,17 @@ test("renders the 15 August Pushpanjali campaign entry point", async () => {
   const html = await response.text();
   assert.match(html, /Pushpanjali/);
   assert.match(html, /15 August 2026/);
+  const source = await readFile(new URL("../app/pushpanjali-campaign.tsx", import.meta.url), "utf8");
+  for (const asset of [
+    "pushpanjali-sri-aurobindo.jpg",
+    "pushpanjali-divine-love-cutout.png",
+    "pushpanjali-integral-love-cutout.png",
+    "pushpanjali-supramental-power-cutout.png",
+  ]) {
+    assert.match(source, new RegExp(asset.replace(".", "\\.")));
+    assert.ok((await stat(new URL(`../public/${asset}`, import.meta.url))).size > 10_000);
+  }
+  assert.match(source, /1872–1950/);
 });
 
 test("records a Pushpanjali offering and returns a certificate reference", async () => {

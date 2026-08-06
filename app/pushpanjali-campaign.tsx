@@ -8,6 +8,7 @@ type Flower = {
   meaning: string;
   botanical: string;
   image: string;
+  cutout: string;
 };
 
 type OfferingResult = {
@@ -23,6 +24,7 @@ const flowers: Flower[] = [
     meaning: "A flower that is said to blossom even in the desert.",
     botanical: "Punica granatum · orange-red, double",
     image: "/pushpanjali-divine-love.jpg",
+    cutout: "/pushpanjali-divine-love-cutout.png",
   },
   {
     id: "integral-love",
@@ -30,6 +32,7 @@ const flowers: Flower[] = [
     meaning: "Pure, complete, irrevocable, a love that gives itself for ever.",
     botanical: "Rosa · white",
     image: "/pushpanjali-integral-love.jpg",
+    cutout: "/pushpanjali-integral-love-cutout.png",
   },
   {
     id: "supramental-power",
@@ -37,6 +40,7 @@ const flowers: Flower[] = [
     meaning: "Organising and active, irresistible in its influence.",
     botanical: "Hibiscus rosa-sinensis ‘Rukmini’ · deep gold, double",
     image: "/pushpanjali-supramental-power.jpg",
+    cutout: "/pushpanjali-supramental-power-cutout.png",
   },
 ];
 
@@ -149,8 +153,8 @@ export function PushpanjaliCampaign() {
     if (!result) return;
     try {
       const [portrait, flower] = await Promise.all([
-        loadImage("/sri-aurobindo-portrait.jpg"),
-        loadImage(selectedFlower.image),
+        loadImage("/pushpanjali-sri-aurobindo.jpg"),
+        loadImage(selectedFlower.cutout),
       ]);
       const canvas = document.createElement("canvas");
       canvas.width = 1600;
@@ -198,6 +202,17 @@ export function PushpanjaliCampaign() {
       roundedRect(context, 105, 340, 390, 545, 22);
       context.stroke();
 
+      context.fillStyle = "rgba(16,43,56,.78)";
+      roundedRect(context, 126, 362, 218, 78, 10);
+      context.fill();
+      context.textAlign = "left";
+      context.fillStyle = "#fffdf7";
+      context.font = "26px Georgia";
+      context.fillText("Sri Aurobindo", 144, 395);
+      context.fillStyle = "#e8c884";
+      context.font = "bold 16px Arial";
+      context.fillText("1872–1950", 144, 423);
+
       context.textAlign = "left";
       context.fillStyle = "#4b5c62";
       context.font = "24px Arial";
@@ -219,16 +234,11 @@ export function PushpanjaliCampaign() {
       context.fillText("— Spiritual significance given by the Mother", 575, meaningEnd + 38);
 
       context.save();
-      context.beginPath();
-      context.arc(1390, 750, 95, 0, Math.PI * 2);
-      context.clip();
-      context.drawImage(flower, 1295, 655, 190, 190);
+      context.shadowColor = "rgba(63,43,18,.25)";
+      context.shadowBlur = 18;
+      context.shadowOffsetY = 8;
+      context.drawImage(flower, 1275, 635, 230, 230);
       context.restore();
-      context.strokeStyle = "#c99a51";
-      context.lineWidth = 4;
-      context.beginPath();
-      context.arc(1390, 750, 95, 0, Math.PI * 2);
-      context.stroke();
 
       context.textAlign = "center";
       context.fillStyle = "#173846";
@@ -270,11 +280,11 @@ export function PushpanjaliCampaign() {
 
         <div className="pushpanjali-body">
           <div className={`pushpanjali-portrait ${status === "offered" ? "is-offered" : ""}`} aria-label="Virtual flower offering to Sri Aurobindo">
-            <img className="pushpanjali-aurobindo" src="/sri-aurobindo-portrait.jpg" alt="Sri Aurobindo"/>
+            <img className="pushpanjali-aurobindo" src="/pushpanjali-sri-aurobindo.jpg" alt="Sri Aurobindo seated in Pondicherry in April 1950"/>
             <div className="pushpanjali-aura" aria-hidden="true"/>
             {status === "offered" && fallingFlowers.map((flower, index) => <img
               className="pushpanjali-falling-flower"
-              src={selectedFlower.image}
+              src={selectedFlower.cutout}
               alt=""
               aria-hidden="true"
               key={`${selectedFlower.id}-${index}`}
