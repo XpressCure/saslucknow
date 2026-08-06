@@ -188,17 +188,19 @@ test("renders the internal Darshan Divas guide and navigation entry", async () =
   assert.doesNotMatch(html, /href="https?:\/\//);
 });
 
-test("serves a bilingual Savitri Sakhi demonstration without an API key", async () => {
+test("identifies an indexed Savitri line without an API key", async () => {
   const workerUrl = new URL("../dist/server/index.js", import.meta.url);
   workerUrl.searchParams.set("sakhi", `${process.pid}-${Date.now()}`);
   const { default: worker } = await import(workerUrl.href);
   const response = await worker.fetch(new Request("http://localhost/api/savitri-sakhi", {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ messages: [{ role: "user", content: "What is Savitri?" }] }),
+    body: JSON.stringify({ messages: [{ role: "user", content: "Identify this line: All can be done if the god-touch is there" }] }),
   }), { ASSETS: { fetch: async () => new Response("Not found", { status: 404 }) } }, { waitUntil() {}, passThroughOnException() {} });
   assert.equal(response.status, 200);
   const result = await response.json();
-  assert.equal(result.demo, true);
-  assert.match(result.answer, /spiritual epic/i);
+  assert.equal(result.verified, true);
+  assert.match(result.answer, /Book 1/);
+  assert.match(result.answer, /Canto 1/);
+  assert.match(result.answer, /line 78/);
 });
