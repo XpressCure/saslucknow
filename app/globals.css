@@ -397,7 +397,9 @@ main section[id]{scroll-margin-top:96px}
 .pushpanjali-heading{position:relative;z-index:1;padding:2.2rem 5rem 1.6rem;text-align:center;border-bottom:1px solid #dfc58f;background:linear-gradient(110deg,rgba(255,249,232,.82),rgba(245,218,157,.58),rgba(255,250,239,.82))}
 .pushpanjali-heading p{margin:0 0 .45rem;color:#9b6428;font-size:.66rem;font-weight:800;letter-spacing:.18em}
 .pushpanjali-heading h2{margin:0;color:#173846;font:clamp(2.1rem,4.2vw,4.15rem)/1.05 Georgia,serif;letter-spacing:-.025em}
-.pushpanjali-heading span{display:block;margin-top:.65rem;color:#5f6d70;font:italic 1rem Georgia,serif}
+.pushpanjali-heading>span{display:block;margin-top:.65rem;color:#5f6d70;font:italic 1rem Georgia,serif}
+.pushpanjali-counter{position:absolute;left:1.4rem;top:1.15rem;display:flex;min-width:122px;flex-direction:column;align-items:flex-start;padding:.55rem .75rem;border-left:2px solid #b77a31;background:rgba(255,253,246,.72);text-align:left}
+.pushpanjali-counter strong{color:#173846;font:1.55rem/1 Georgia,serif}.pushpanjali-counter span{margin-top:.28rem;color:#8d632f;font-size:.52rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
 .pushpanjali-body{position:relative;z-index:1;display:grid;grid-template-columns:minmax(360px,.78fr) minmax(560px,1.22fr);min-height:590px}
 .pushpanjali-portrait{position:relative;min-height:590px;overflow:hidden;background:#102b38}
 .pushpanjali-aurobindo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 24%;filter:sepia(.08) contrast(1.04)}
@@ -408,6 +410,7 @@ main section[id]{scroll-margin-top:96px}
 .pushpanjali-falling-flower{position:absolute;z-index:3;left:var(--flower-left);top:-15%;width:var(--flower-size);height:var(--flower-size);object-fit:contain;filter:drop-shadow(0 7px 6px rgba(0,0,0,.38));opacity:0;transform:translateX(-50%) rotate(0);animation:pushpanjali-flower-fall 1.7s cubic-bezier(.25,.62,.38,1) var(--flower-delay) forwards}
 .pushpanjali-form{padding:2rem 2.4rem 2.3rem;background:linear-gradient(150deg,#fffdf8,#f8edda)}
 .pushpanjali-fields{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.pushpanjali-phone{grid-column:1/-1}
 .pushpanjali-form label{display:block;color:#344d56;font-size:.7rem;font-weight:700;letter-spacing:.03em}
 .pushpanjali-form input[type="text"],.pushpanjali-form input[type="email"],.pushpanjali-fields input{width:100%;height:48px;margin-top:.42rem;padding:0 .85rem;border:1px solid #d7c7ac;border-radius:8px;background:#fff;color:#203b46;font:1rem Inter,sans-serif;outline:none}
 .pushpanjali-form input:focus{border-color:#b87932;box-shadow:0 0 0 3px rgba(184,121,50,.13)}
@@ -432,6 +435,7 @@ main section[id]{scroll-margin-top:96px}
 .pushpanjali-success-symbol{width:58px;height:58px;display:grid;place-items:center;border:1px solid #c9974e;border-radius:50%;background:#173846;color:#f0ce8b;font-size:1.4rem;box-shadow:0 0 0 8px rgba(201,151,78,.1)}
 .pushpanjali-success>p:first-of-type{margin:1.3rem 0 .45rem;color:#a06a2b;font-size:.62rem;font-weight:800;letter-spacing:.18em}
 .pushpanjali-success h3{margin:0;color:#173846;font:clamp(2rem,3vw,3rem)/1.1 Georgia,serif}
+.pushpanjali-thanks{max-width:650px;margin:.85rem 0 0!important;color:#52656b!important;font:.9rem/1.55 Arial,sans-serif!important;letter-spacing:0!important}
 .pushpanjali-success blockquote{max-width:650px;margin:1.25rem 0 .35rem;color:#506168;font:italic 1.1rem/1.55 Georgia,serif}
 .pushpanjali-success>small{color:#9a6b31;font-size:.66rem;letter-spacing:.08em}
 .pushpanjali-reference{display:flex;gap:1rem;align-items:center;margin:1.25rem 0 0;padding:.72rem 1rem;border:1px solid #d8bd88;border-radius:999px;background:rgba(255,255,255,.6);color:#657175;font-size:.66rem;text-transform:uppercase;letter-spacing:.08em}
@@ -440,6 +444,7 @@ main section[id]{scroll-margin-top:96px}
 .pushpanjali-success-actions{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
 .pushpanjali-success-actions button,.pushpanjali-success-actions a{min-height:48px;display:flex;align-items:center;justify-content:center;padding:.7rem 1rem;border-radius:8px;font-size:.68rem;font-weight:800;letter-spacing:.035em;text-decoration:none;cursor:pointer}
 .pushpanjali-success-actions button{border:0;background:#173846;color:#fff}.pushpanjali-success-actions a{border:1px solid #ae7936;background:#fffaf0;color:#8d5a20}
+.pushpanjali-success-actions .pushpanjali-whatsapp{background:#187b45}.pushpanjali-success-actions a{grid-column:1/-1}.pushpanjali-share-notice{max-width:620px;margin:.8rem 0 0;color:#52656b;font-size:.67rem;line-height:1.5}
 .pushpanjali-finish{margin-top:1rem;border:0;background:transparent;color:#52656c;font-size:.67rem;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 .pushpanjali-footer{position:relative;z-index:1;padding:.8rem 1rem;border-top:1px solid #dec89d;background:#173846;color:#e8cc94;text-align:center;font-size:.58rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase}
 .pushpanjali-reopen{position:fixed;left:18px;bottom:20px;z-index:44;display:grid;grid-template-columns:38px auto;grid-template-rows:1fr 1fr;column-gap:.6rem;min-height:54px;padding:.45rem .85rem .45rem .5rem;border:1px solid #c79548;border-radius:999px;background:linear-gradient(135deg,#fff7e4,#edcf91);box-shadow:0 14px 32px rgba(35,42,41,.2);color:#173846;cursor:pointer;text-align:left}
@@ -454,17 +459,20 @@ main section[id]{scroll-margin-top:96px}
   .pushpanjali-aurobindo{object-position:center 20%}
   .pushpanjali-form,.pushpanjali-success{min-height:0}
   .pushpanjali-heading{padding:1.8rem 4rem 1.35rem}
+  .pushpanjali-counter{left:.8rem;top:.75rem;min-width:105px}
   .pushpanjali-flowers>label>span{min-height:160px}
 }
 @media(max-width:650px){
   .pushpanjali-backdrop{padding:0;align-items:stretch}
   .pushpanjali-modal{width:100%;max-height:100dvh;border:0;border-radius:0}
   .pushpanjali-heading{padding:1.2rem 3.2rem 1rem}
+  .pushpanjali-counter{position:static;width:max-content;min-width:0;margin:0 auto .65rem;align-items:center;border:0;border-bottom:1px solid #bd8a42;background:transparent;text-align:center}.pushpanjali-counter strong{font-size:1.25rem}
   .pushpanjali-heading p{font-size:.55rem;line-height:1.5}.pushpanjali-heading h2{font-size:2.25rem}.pushpanjali-heading span{font-size:.78rem}
   .pushpanjali-close{right:10px;top:9px;width:36px;height:36px}
   .pushpanjali-portrait{min-height:310px}
   .pushpanjali-form{padding:1.35rem 1rem 1.8rem}
   .pushpanjali-fields{grid-template-columns:1fr;gap:.75rem}
+  .pushpanjali-phone{grid-column:auto}
   .pushpanjali-flowers{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;padding:.2rem .15rem .8rem}
   .pushpanjali-flowers>label{flex:0 0 78vw;scroll-snap-align:center}
   .pushpanjali-flowers img{height:155px}.pushpanjali-flowers>label>span{min-height:145px}

@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtemp, readFile, rm, stat } from "node:fs/promises";
+import { mkdtemp, readFile, readdir, rm, stat } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -102,10 +102,13 @@ test("records a Pushpanjali offering and returns a certificate reference", async
   await new Promise(resolve => server.listen(0, "127.0.0.1", resolve));
   const address = server.address();
   try {
+    const initialCountResponse = await fetch(`http://127.0.0.1:${address.port}/api/pushpanjali-offerings`);
+    assert.equal(initialCountResponse.status, 200);
+    assert.deepEqual(await initialCountResponse.json(), { ok: true, count: 0 });
     const response = await fetch(`http://127.0.0.1:${address.port}/api/pushpanjali-offerings`, {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ name: "Test Devotee", email: "devotee@example.com", flowerId: "integral-love" }),
+      body: JSON.stringify({ name: "Test Devotee", email: "devotee@example.com", phone: "+91 98765 43210", flowerId: "integral-love" }),
     });
     assert.equal(response.status, 201);
     const result = await response.json();
@@ -113,6 +116,12 @@ test("records a Pushpanjali offering and returns a certificate reference", async
     assert.equal(result.emailed, false);
     assert.equal(result.offeringNumber, 1);
     assert.match(result.reference, /^SAS-P2026-[A-F0-9]{8}$/);
+    const files = await readdir(directory);
+    assert.equal(files.filter(name => name.endsWith(".json")).length, 1);
+    const document = JSON.parse(await readFile(path.join(directory, files[0]), "utf8"));
+    assert.equal(document.participant.phone, "+919876543210");
+    const finalCountResponse = await fetch(`http://127.0.0.1:${address.port}/api/pushpanjali-offerings`);
+    assert.equal((await finalCountResponse.json()).count, 1);
   } finally {
     await new Promise(resolve => server.close(resolve));
     await rm(directory, { recursive: true, force: true });

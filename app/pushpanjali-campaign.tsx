@@ -45,6 +45,13 @@ const flowers: Flower[] = [
 ];
 
 const flowerPositions = [8, 16, 25, 34, 43, 52, 61, 70, 79, 88, 13, 29, 47, 65, 83];
+const whatsappLandingUrl = "https://www.saslucknow.in/?pushpanjali=1";
+
+function offeringEndpoint() {
+  return window.location.hostname.endsWith("chatgpt.site")
+    ? "https://www.saslucknow.in/api/pushpanjali-offerings"
+    : "/api/pushpanjali-offerings";
+}
 
 function loadImage(src: string) {
   return new Promise<HTMLImageElement>((resolve, reject) => {
@@ -84,9 +91,13 @@ export function PushpanjaliCampaign() {
   const [selectedId, setSelectedId] = useState<Flower["id"]>("divine-love");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [status, setStatus] = useState<"ready" | "submitting" | "offered">("ready");
   const [error, setError] = useState("");
   const [result, setResult] = useState<OfferingResult | null>(null);
+  const [offeringCount, setOfferingCount] = useState(0);
+  const [certificateBlob, setCertificateBlob] = useState<Blob | null>(null);
+  const [shareNotice, setShareNotice] = useState("");
   const selectedFlower = flowers.find(flower => flower.id === selectedId) || flowers[0];
   const fallingFlowers = useMemo(() => flowerPositions.map((left, index) => ({
     left,
@@ -96,9 +107,24 @@ export function PushpanjaliCampaign() {
   })), []);
 
   useEffect(() => {
-    if (window.sessionStorage.getItem("sas-pushpanjali-2026-seen")) return;
+    let active = true;
+    fetch(offeringEndpoint())
+      .then(response => response.ok ? response.json() : null)
+      .then((payload: unknown) => {
+        const count = Number((payload as { count?: unknown } | null)?.count);
+        if (active && Number.isFinite(count)) setOfferingCount(count);
+      })
+      .catch(() => {});
+    if (new URLSearchParams(window.location.search).get("pushpanjali") === "1") {
+      setOpen(true);
+      return () => { active = false; };
+    }
+    if (window.sessionStorage.getItem("sas-pushpanjali-2026-seen")) return () => { active = false; };
     const timer = window.setTimeout(() => setOpen(true), 550);
-    return () => window.clearTimeout(timer);
+    return () => {
+      active = false;
+      window.clearTimeout(timer);
+    };
   }, []);
 
   useEffect(() => {
@@ -126,32 +152,41 @@ export function PushpanjaliCampaign() {
     setStatus("submitting");
     setError("");
     try {
-      const endpoint = window.location.hostname.endsWith("chatgpt.site")
-        ? "https://www.saslucknow.in/api/pushpanjali-offerings"
-        : "/api/pushpanjali-offerings";
-      const response = await fetch(endpoint, {
+      const response = await fetch(offeringEndpoint(), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, flowerId: selectedFlower.id, website: "" }),
+        body: JSON.stringify({ name, email, phone, flowerId: selectedFlower.id, website: "" }),
       });
-      const payload = await response.json().catch(() => ({}));
+      const payload = await response.json().catch(() => ({})) as {
+        error?: string;
+        reference?: string;
+        offeringNumber?: number;
+        emailed?: boolean;
+      };
       if (!response.ok) throw new Error(payload.error || "Your Pushpanjali could not be recorded. Please try again.");
-      setResult({
+      const offeringResult = {
         reference: String(payload.reference || "SAS-PUSHPA-2026"),
         offeringNumber: Number(payload.offeringNumber || 1),
         emailed: Boolean(payload.emailed),
-      });
+      };
+      setResult(offeringResult);
+      setOfferingCount(current => Math.max(current, offeringResult.offeringNumber));
       setStatus("offered");
       window.sessionStorage.setItem("sas-pushpanjali-2026-seen", "yes");
+      try {
+        const blob = await buildCertificate(offeringResult);
+        setCertificateBlob(blob);
+        triggerCertificateDownload(blob);
+      } catch {
+        setError("Your offering is recorded, but automatic certificate download was blocked. Use the download button below.");
+      }
     } catch (submissionError) {
       setError(submissionError instanceof Error ? submissionError.message : "Your Pushpanjali could not be recorded. Please try again.");
       setStatus("ready");
     }
   };
 
-  const downloadCertificate = async () => {
-    if (!result) return;
-    try {
+  const buildCertificate = async (certificateResult: OfferingResult) => {
       const [portrait, flower] = await Promise.all([
         loadImage("/pushpanjali-sri-aurobindo.jpg"),
         loadImage(selectedFlower.cutout),
@@ -160,7 +195,7 @@ export function PushpanjaliCampaign() {
       canvas.width = 1600;
       canvas.height = 1100;
       const context = canvas.getContext("2d");
-      if (!context) return;
+      if (!context) throw new Error("Canvas is unavailable");
 
       const background = context.createLinearGradient(0, 0, 1600, 1100);
       background.addColorStop(0, "#fffaf0");
@@ -246,21 +281,58 @@ export function PushpanjaliCampaign() {
       context.fillText("15 AUGUST 2026 · DARSHAN DAY", 980, 870);
       context.fillStyle = "#8b6a35";
       context.font = "20px Arial";
-      context.fillText(`Offering ${String(result.offeringNumber).padStart(4, "0")} · ${result.reference}`, 980, 915);
+      context.fillText(`Offering ${String(certificateResult.offeringNumber).padStart(4, "0")} · ${certificateResult.reference}`, 980, 915);
       context.fillStyle = "#173846";
       context.font = "italic 24px Georgia";
       context.fillText("With gratitude and aspiration", 800, 992);
 
-      canvas.toBlob(blob => {
-        if (!blob) return;
-        const anchor = document.createElement("a");
-        anchor.href = URL.createObjectURL(blob);
-        anchor.download = `SAS-Lucknow-Pushpanjali-${name.trim().replace(/[^a-z0-9]+/gi, "-") || "Certificate"}.png`;
-        anchor.click();
-        window.setTimeout(() => URL.revokeObjectURL(anchor.href), 1000);
-      }, "image/png");
+      return await new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error("Certificate image could not be created")), "image/png");
+      });
+  };
+
+  const certificateFilename = () => `SAS-Lucknow-Pushpanjali-${name.trim().replace(/[^a-z0-9]+/gi, "-") || "Certificate"}.png`;
+
+  const triggerCertificateDownload = (blob: Blob) => {
+    const anchor = document.createElement("a");
+    anchor.href = URL.createObjectURL(blob);
+    anchor.download = certificateFilename();
+    anchor.click();
+    window.setTimeout(() => URL.revokeObjectURL(anchor.href), 1000);
+  };
+
+  const downloadCertificate = async () => {
+    if (!result) return;
+    try {
+      const blob = certificateBlob || await buildCertificate(result);
+      setCertificateBlob(blob);
+      triggerCertificateDownload(blob);
     } catch {
       setError("The certificate could not be downloaded on this device. Please try once more.");
+    }
+  };
+
+  const shareCertificateOnWhatsApp = async () => {
+    if (!result) return;
+    setError("");
+    setShareNotice("");
+    const message = `🙏 Thank you for offering your Pushpanjali to Sri Aurobindo on his Birthday Darshan, 15 August 2026.\n\nYour certificate is attached.\n\nTo get your certificate, click the link:\n${whatsappLandingUrl}`;
+    try {
+      const blob = certificateBlob || await buildCertificate(result);
+      setCertificateBlob(blob);
+      const file = new File([blob], certificateFilename(), { type: "image/png" });
+      const shareData = { title: "My Pushpanjali Certificate", text: message, files: [file] };
+      if (navigator.share && (!navigator.canShare || navigator.canShare(shareData))) {
+        await navigator.share(shareData);
+        setShareNotice("Certificate image shared. Select WhatsApp and the intended contact if prompted.");
+        return;
+      }
+      const digits = phone.replace(/\D/g, "").replace(/^0+/, "");
+      window.open(`https://wa.me/${digits.length === 10 ? `91${digits}` : digits}?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer");
+      setShareNotice("WhatsApp has opened for the entered number. Attach the certificate image downloaded automatically, then send the prepared message.");
+    } catch (shareError) {
+      if (shareError instanceof DOMException && shareError.name === "AbortError") return;
+      setError("WhatsApp sharing could not open on this device. Download the certificate and share it from WhatsApp.");
     }
   };
 
@@ -273,6 +345,7 @@ export function PushpanjaliCampaign() {
       <section className="pushpanjali-modal" role="dialog" aria-modal="true" aria-labelledby="pushpanjali-title">
         <button className="pushpanjali-close" type="button" onClick={closeCampaign} aria-label="Close Pushpanjali">×</button>
         <header className="pushpanjali-heading">
+          <div className="pushpanjali-counter" aria-live="polite"><strong>{offeringCount.toLocaleString("en-IN")}</strong><span>certificates generated</span></div>
           <p>15 AUGUST 2026 · SRI AUROBINDO’S BIRTHDAY DARSHAN</p>
           <h2 id="pushpanjali-title">Pushpanjali to Sri Aurobindo</h2>
           <span>Offer a flower in gratitude, aspiration and remembrance.</span>
@@ -302,6 +375,7 @@ export function PushpanjaliCampaign() {
             <div className="pushpanjali-fields">
               <label>Your name<input required value={name} onChange={event => setName(event.target.value)} maxLength={100} autoComplete="name" placeholder="Enter your full name"/></label>
               <label>Email for your certificate<input required value={email} onChange={event => setEmail(event.target.value)} type="email" maxLength={180} autoComplete="email" placeholder="you@example.com"/></label>
+              <label className="pushpanjali-phone">WhatsApp mobile number<input required value={phone} onChange={event => setPhone(event.target.value)} type="tel" inputMode="numeric" maxLength={16} autoComplete="tel" placeholder="+91 98765 43210" pattern="(?:\+?91[ -]?)?[6-9][0-9 -]{9,12}" title="Enter a valid 10-digit Indian mobile number"/></label>
             </div>
             <fieldset>
               <legend>Select your pushpa for Pushpanjali</legend>
@@ -314,7 +388,7 @@ export function PushpanjaliCampaign() {
               </div>
             </fieldset>
             <label className="pushpanjali-honeypot" aria-hidden="true">Website<input tabIndex={-1} autoComplete="off"/></label>
-            <p className="pushpanjali-privacy">Your email is used only to deliver this certificate. It is not added to a mailing list.</p>
+            <p className="pushpanjali-privacy">Your email and mobile number are used only to deliver and share this certificate. They are not added to a mailing list.</p>
             {error && <p className="pushpanjali-error" role="alert">{error}</p>}
             <button className="pushpanjali-submit" type="submit" disabled={status === "submitting"}>
               {status === "submitting" ? "Preparing your offering…" : "Offer Pushpanjali & receive certificate"}<span aria-hidden="true">→</span>
@@ -323,6 +397,7 @@ export function PushpanjaliCampaign() {
             <span className="pushpanjali-success-symbol" aria-hidden="true">✦</span>
             <p>YOUR PUSHPA HAS BEEN OFFERED</p>
             <h3>With gratitude, {name.trim()}.</h3>
+            <p className="pushpanjali-thanks">Thank you for offering your Pushpanjali to Sri Aurobindo. May this gesture of aspiration remain with you.</p>
             <blockquote>“{selectedFlower.meaning}”</blockquote>
             <small>{selectedFlower.name} · The Mother</small>
             <div className="pushpanjali-reference">Offering {String(result?.offeringNumber || 1).padStart(4, "0")}<b>{result?.reference}</b></div>
@@ -332,8 +407,10 @@ export function PushpanjaliCampaign() {
             {error && <p className="pushpanjali-error" role="alert">{error}</p>}
             <div className="pushpanjali-success-actions">
               <button type="button" onClick={downloadCertificate}>Download e-Certificate</button>
+              <button className="pushpanjali-whatsapp" type="button" onClick={shareCertificateOnWhatsApp}>Share certificate on WhatsApp</button>
               <a href="https://www.facebook.com/saslucknow" target="_blank" rel="noreferrer">Follow SAS Lucknow on Facebook <span aria-hidden="true">↗</span></a>
             </div>
+            {shareNotice && <p className="pushpanjali-share-notice" role="status">{shareNotice}</p>}
             <button className="pushpanjali-finish" type="button" onClick={closeCampaign}>Return to the website</button>
           </div>}
         </div>

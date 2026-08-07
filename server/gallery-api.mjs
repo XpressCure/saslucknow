@@ -34,18 +34,21 @@ const pushpanjaliFlowers = new Map([
     meaning: "A flower that is said to blossom even in the desert.",
     botanical: "Punica granatum · orange-red, double",
     image: "https://www.saslucknow.in/pushpanjali-divine-love.jpg",
+    cutout: "https://www.saslucknow.in/pushpanjali-divine-love-cutout.png",
   }],
   ["integral-love", {
     name: "Integral Love for the Divine",
     meaning: "Pure, complete, irrevocable, a love that gives itself for ever.",
     botanical: "Rosa · white",
     image: "https://www.saslucknow.in/pushpanjali-integral-love.jpg",
+    cutout: "https://www.saslucknow.in/pushpanjali-integral-love-cutout.png",
   }],
   ["supramental-power", {
     name: "Power of the Supramental Consciousness",
     meaning: "Organising and active, irresistible in its influence.",
     botanical: "Hibiscus rosa-sinensis ‘Rukmini’ · deep gold, double",
     image: "https://www.saslucknow.in/pushpanjali-supramental-power.jpg",
+    cutout: "https://www.saslucknow.in/pushpanjali-supramental-power-cutout.png",
   }],
 ]);
 
@@ -62,7 +65,7 @@ function pushpanjaliCors(request) {
     || origin === "https://aurobindo-mission-lucknow.xpresscure.chatgpt.site";
   return allowed ? {
     "Access-Control-Allow-Origin": origin,
-    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type",
     Vary: "Origin",
   } : {};
@@ -225,6 +228,16 @@ async function savePushpanjaliOffering(document) {
   }
 }
 
+async function countPushpanjaliOfferings() {
+  try {
+    const files = await readdir(PUSHPANJALI_DIR);
+    return files.filter(name => name.endsWith(".json")).length;
+  } catch (error) {
+    if (error?.code === "ENOENT") return 0;
+    throw error;
+  }
+}
+
 async function emailPushpanjaliCertificate({ name, email, flower, reference, offeringNumber }) {
   if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASSWORD) {
     console.warn(`Pushpanjali ${reference}: SMTP is not configured; certificate email was not sent.`);
@@ -248,13 +261,13 @@ async function emailPushpanjaliCertificate({ name, email, flower, reference, off
         <div style="margin-top:5px;color:#9b6428;font-size:11px;letter-spacing:1.5px">GOMTI NAGAR CENTRE (UC-02)</div>
         <h1 style="margin:24px 0 6px;font:42px Georgia,serif">Certificate of Pushpanjali</h1>
         <div style="margin:18px auto;width:190px;height:250px;overflow:hidden;border:2px solid #c49345;border-radius:12px">
-          <img src="https://www.saslucknow.in/sri-aurobindo-portrait.jpg" alt="Sri Aurobindo" style="width:100%;height:100%;object-fit:cover">
+          <img src="https://www.saslucknow.in/pushpanjali-sri-aurobindo.jpg" alt="Sri Aurobindo" style="width:100%;height:100%;object-fit:cover">
         </div>
         <p style="margin:18px 0 5px;color:#59686c">This certifies that</p>
         <h2 style="margin:0;font:38px Georgia,serif;color:#173846">${escapedName}</h2>
         <p style="margin:18px 0 4px;color:#59686c">has lovingly offered</p>
         <table role="presentation" style="margin:8px auto;border-collapse:collapse"><tr>
-          <td><img src="${flower.image}" alt="${escapedFlower}" width="92" height="92" style="display:block;object-fit:cover;border:2px solid #c49345;border-radius:50%"></td>
+          <td><img src="${flower.cutout}" alt="${escapedFlower}" width="110" height="110" style="display:block;object-fit:contain"></td>
           <td style="padding-left:18px;text-align:left"><strong style="font:24px Georgia,serif;color:#9b6428">${escapedFlower}</strong><br><em style="font:17px Georgia,serif;color:#526269">“${escapedMeaning}”</em><br><small style="color:#8b6b3a">Spiritual significance given by the Mother</small></td>
         </tr></table>
         <div style="margin-top:24px;padding-top:18px;border-top:1px solid #d5b879;font-weight:700;letter-spacing:1.2px">15 AUGUST 2026 · SRI AUROBINDO’S BIRTHDAY DARSHAN</div>
@@ -277,6 +290,14 @@ async function emailPushpanjaliCertificate({ name, email, flower, reference, off
 async function handlePushpanjali(request, response) {
   const headers = pushpanjaliCors(request);
   if (request.method === "OPTIONS") return json(response, 204, {}, headers);
+  if (request.method === "GET") {
+    try {
+      return json(response, 200, { ok: true, count: await countPushpanjaliOfferings() }, headers);
+    } catch (error) {
+      console.error("Pushpanjali count failed", error);
+      return json(response, 500, { error: "The certificate count is temporarily unavailable." }, headers);
+    }
+  }
   if (request.method !== "POST") return json(response, 405, { error: "Method not allowed" }, headers);
   if (!String(request.headers["content-type"] || "").toLowerCase().startsWith("application/json")) {
     return json(response, 400, { error: "Please submit the Pushpanjali form." }, headers);
@@ -289,10 +310,12 @@ async function handlePushpanjali(request, response) {
     if (payload.website) return json(response, 201, { ok: true, reference: "received", offeringNumber: 1, emailed: false }, headers);
     const name = cleanText(payload.name, 100);
     const email = String(payload.email || "").trim().toLowerCase().slice(0, 180);
+    const phoneDigits = String(payload.phone || "").replace(/\D/g, "");
+    const phone = phoneDigits.length === 10 ? `+91${phoneDigits}` : phoneDigits.length === 12 && phoneDigits.startsWith("91") ? `+${phoneDigits}` : "";
     const flowerId = cleanText(payload.flowerId, 60);
     const flower = pushpanjaliFlowers.get(flowerId);
-    if (name.length < 2 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !flower) {
-      return json(response, 400, { error: "Please enter your name, a valid email address and select one flower." }, headers);
+    if (name.length < 2 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !phone || !flower) {
+      return json(response, 400, { error: "Please enter your name, a valid email address, a 10-digit Indian mobile number and select one flower." }, headers);
     }
 
     const offeringId = randomUUID();
@@ -300,7 +323,7 @@ async function handlePushpanjali(request, response) {
     const document = {
       offeringId,
       reference,
-      participant: { name, email },
+      participant: { name, email, phone },
       flowerId,
       flower,
       ceremonyDate: "2026-08-15",
