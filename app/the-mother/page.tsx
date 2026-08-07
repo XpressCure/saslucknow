@@ -1,3 +1,14 @@
+import type { Metadata } from "next";
+import { createPageMetadata } from "../seo";
+
+export const metadata: Metadata = createPageMetadata({
+  title: "The Mother (Mirra Alfassa): Life & Teachings | SAS Lucknow",
+  description: "Explore the life and teachings of the Mother, Mirra Alfassa—her work with Sri Aurobindo, Integral Yoga, education, Pondicherry and Auroville.",
+  path: "/the-mother",
+  keywords: ["Mirra Alfassa biography", "The Mother teachings", "Mother of Sri Aurobindo Ashram", "Auroville founder"],
+  image: "/the-mother-portrait.jpg",
+});
+
 const sections = [
   { id: "introduction", title: "Introduction", paragraphs: ["The Mother was born Mirra Alfassa in Paris on 21 February 1878. She studied at the Académie Julian and became an accomplished artist. Her gifts also extended to music and writing, yet from childhood her deepest concern was the discovery and development of consciousness.", "Her search led her to study occult knowledge in Tlemcen, Algeria, during 1905 and 1906. In Paris she gathered groups of spiritual seekers and shared what she was learning through talks and collective study."] },
   { id: "on-herself", title: "On Herself", paragraphs: ["The Mother’s accounts of her early life describe a spiritual awareness present long before she possessed a language for it. Through disciplined observation, artistic work and inner experience, she sought to make every part of life conscious.", "In 1914 she travelled to Pondicherry and met Sri Aurobindo. She recognised him as the spiritual presence that had guided her inwardly for many years. The First World War required her to return to France after eleven months; she later spent four years in Japan before coming back to Pondicherry in April 1920."] },

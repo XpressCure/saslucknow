@@ -1,3 +1,14 @@
+import type { Metadata } from "next";
+import { createPageMetadata } from "../../seo";
+
+export const metadata: Metadata = createPageMetadata({
+  title: "Sri Aurobindo Life Sketch: Freedom to Pondicherry | SAS Lucknow",
+  description: "Read Sri Aurobindo's chronological life story—from education and India's independence movement to Pondicherry, Integral Yoga, the Ashram and Savitri.",
+  path: "/sri-aurobindo/life-sketch",
+  keywords: ["Sri Aurobindo life sketch", "Indian freedom movement", "Alipore Jail", "Pondicherry Integral Yoga"],
+  image: "/sri-aurobindo-portrait.jpg",
+});
+
 const chapters = [
   {
     label: "1872–1893",

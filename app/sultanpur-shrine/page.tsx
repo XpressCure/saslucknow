@@ -1,3 +1,14 @@
+import type { Metadata } from "next";
+import { createPageMetadata } from "../seo";
+
+export const metadata: Metadata = createPageMetadata({
+  title: "Sri Aurobindo Sultanpur Shrine | SAS Lucknow",
+  description: "Discover the Sri Aurobindo Society shrine at Sultanpur, Uttar Pradesh, home to Sri Aurobindo's sacred relics, meditation and spiritual education.",
+  path: "/sultanpur-shrine",
+  keywords: ["Sri Aurobindo Sultanpur", "Sultanpur shrine", "Sri Aurobindo relics", "meditation Sultanpur"],
+  image: "/sri-aurobindo-portrait.jpg",
+});
+
 export default function SultanpurShrinePage() {
   return (
     <div className="detail-page">

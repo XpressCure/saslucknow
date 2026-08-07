@@ -1,3 +1,14 @@
+import type { Metadata } from "next";
+import { createPageMetadata } from "../seo";
+
+export const metadata: Metadata = createPageMetadata({
+  title: "Darshan Divas: Sri Aurobindo & The Mother | SAS Lucknow",
+  description: "Learn the dates and spiritual significance of Sri Aurobindo Ashram Darshan Days, from the birthdays of Sri Aurobindo and the Mother to Siddhi Day.",
+  path: "/darshan-divas",
+  keywords: ["Darshan Days significance", "Sri Aurobindo birthday", "Mother birthday", "Siddhi Day", "Supramental Manifestation Day"],
+  image: "/sri-aurobindo-portrait.jpg",
+});
+
 const darshanDays = [
   {
     date: "15 August",

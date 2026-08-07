@@ -76,7 +76,7 @@ const copy = {
     nav: ["e-Library", "Events", "Community"],
     eyebrow: "Sri Aurobindo Society · Lucknow Centre",
     title: "A quiet space for inner growth.",
-    intro: "Discover the vision of Sri Aurobindo and the Mother. Study, reflect, participate, and grow together.",
+    intro: "Discover the vision of Sri Aurobindo and the Mother through Integral Yoga, meditation, Indian spirituality and a living culture of inner growth.",
     explore: "Begin exploring", event: "View next gathering", today: "A thought for today",
     quote: "Man is a transitional being, he is not final.",
     vision: "A path towards a more conscious life",
@@ -369,7 +369,7 @@ export function MissionHome() {
       <section className="people section" aria-labelledby="guides-title">
         <div className="section-title"><div><p className="kicker">LIVES & VISION</p><h2 id="guides-title">Meet Sri Aurobindo and the Mother</h2></div><p>Two lives joined in a work for the evolution of consciousness and the transformation of life.</p></div>
         <div className="people-grid">
-          <article className="person-card"><img src="/sri-aurobindo-portrait.jpg" alt="Portrait of Sri Aurobindo" loading="lazy"/><div><small>1872–1950</small><h3>Sri Aurobindo</h3><p>Philosopher, poet, yogi and a leader of India’s awakening, he developed Integral Yoga as a path of inner and earthly transformation.</p><a href="/sri-aurobindo/life-sketch">Explore his life sketch →</a></div></article>
+          <article className="person-card"><img src="/sri-aurobindo-portrait.jpg" alt="Portrait of Sri Aurobindo" loading="lazy"/><div><small>1872–1950</small><h3>Sri Aurobindo</h3><p>Philosopher, poet, yogi and a leader of India’s independence movement, he developed Integral Yoga as a path of inner and earthly transformation.</p><a href="/sri-aurobindo/life-sketch">Explore his life sketch →</a></div></article>
           <article className="person-card"><img src="/the-mother-portrait.jpg" alt="Portrait of the Mother, Mirra Alfassa" loading="lazy"/><div><small>1878–1973</small><h3>The Mother</h3><p>Born Mirra Alfassa, the Mother was Sri Aurobindo’s spiritual collaborator and guided the Ashram’s many-sided life for nearly fifty years.</p><a href="/the-mother">Explore the Mother’s life →</a></div></article>
         </div>
         <p className="image-credit">Portraits displayed from the Sri Aurobindo Ashram website. Permission for permanent production use should be confirmed with the Ashram Photo Section.</p>
@@ -377,7 +377,7 @@ export function MissionHome() {
 
       <section className="vision section" id="pathways"><div><p className="kicker">THE VISION</p><h2>{t.vision}</h2><p>{t.visionText}</p></div><div className="pillars">{t.cards.map((x,i)=><article key={x}><b>0{i+1}</b><span>{x}</span><p>{t.cardNotes[i]}</p></article>)}</div></section>
 
-      <section className="roots section" aria-labelledby="roots-title"><div className="section-title"><div><p className="kicker">A LIVING MOVEMENT</p><h2 id="roots-title">From Puducherry to Lucknow</h2></div><p>Sri Aurobindo Society was started by the Mother on 19 September 1960 and has grown into an international organisation carrying spirituality into many fields of life.</p></div><div className="roots-grid">
+      <section className="roots section" aria-labelledby="roots-title"><div className="section-title"><div><p className="kicker">A LIVING MOVEMENT</p><h2 id="roots-title">From Puducherry to Lucknow</h2></div><p>Founded by the Mother in Pondicherry on 19 September 1960, Sri Aurobindo Society carries Indian spirituality into meditation, education, culture and everyday life, drawing on the deeper spirit of India and its philosophical heritage.</p></div><div className="roots-grid">
         <article><span>01</span><h3>Puducherry</h3><p>The Society’s administrative headquarters and Society House are in Puducherry, close to the wider spiritual, cultural and educational life inspired by Sri Aurobindo and the Mother.</p><a href="https://aurosociety.org/society/index/About-Sri-Aurobindo-Society" target="_blank" rel="noreferrer">About the Society ↗</a></article>
         <article><span>02</span><h3>Auroville</h3><p>Founded by the Mother in 1968, Auroville is an international township dedicated to human unity, unending education and material and spiritual research.</p><a href="https://auroville.org/page/history" target="_blank" rel="noreferrer">Explore Auroville ↗</a></article>
         <article><span>03</span><h3>Sultanpur</h3><p>A sacred centre housing Sri Aurobindo’s relics and nurturing collective meditation, study and educational activities.</p><a href="/sultanpur-shrine">Explore the Sultanpur Shrine →</a></article>

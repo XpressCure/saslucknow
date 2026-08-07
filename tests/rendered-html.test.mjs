@@ -39,6 +39,54 @@ test("uses the transparent Society logo as the browser icon", async () => {
   assert.match(source, /https:\/\/www\.saslucknow\.in/);
 });
 
+test("publishes complete homepage SEO metadata and organization data", async () => {
+  const response = await render();
+  assert.equal(response.status, 200);
+  const html = await response.text();
+  assert.match(html, /<title>Sri Aurobindo Society Lucknow \| Meditation &amp; Culture<\/title>/);
+  assert.match(html, /name="description" content="Explore Sri Aurobindo, the Mother \(Mirra Alfassa\), Integral Yoga, Savitri, meditation/);
+  assert.match(html, /rel="canonical" href="https:\/\/www\.saslucknow\.in\/"/);
+  assert.match(html, /name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"/);
+  assert.match(html, /type="application\/ld\+json"/);
+  assert.match(html, /"@type":"Organization"/);
+  assert.match(html, /"@type":"WebSite"/);
+  assert.match(html, /4\/668, Vijayant Khand, Gomti Nagar/);
+});
+
+test("gives every public guide a unique title, description and canonical URL", async () => {
+  const pages = [
+    ["/sri-aurobindo", "Sri Aurobindo: Life, Integral Yoga", "independence movement"],
+    ["/sri-aurobindo/life-sketch", "Sri Aurobindo Life Sketch", "chronological life story"],
+    ["/the-mother", "The Mother (Mirra Alfassa)", "Pondicherry and Auroville"],
+    ["/darshan-divas", "Darshan Divas", "spiritual significance"],
+    ["/sultanpur-shrine", "Sri Aurobindo Sultanpur Shrine", "sacred relics"],
+  ];
+  for (const [route, title, description] of pages) {
+    const response = await render(route);
+    assert.equal(response.status, 200);
+    const html = await response.text();
+    assert.match(html, new RegExp(`<title>${title.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`));
+    assert.match(html, new RegExp(description));
+    assert.match(html, new RegExp(`rel="canonical" href="https:\\/\\/www\\.saslucknow\\.in${route.replaceAll("/", "\\/")}"`));
+  }
+});
+
+test("publishes crawl rules and a sitemap for every public page", async () => {
+  const robotsResponse = await render("/robots.txt");
+  assert.equal(robotsResponse.status, 200);
+  const robots = await robotsResponse.text();
+  assert.match(robots, /User-Agent: \*/);
+  assert.match(robots, /Disallow: \/api\//);
+  assert.match(robots, /Sitemap: https:\/\/www\.saslucknow\.in\/sitemap\.xml/);
+
+  const sitemapResponse = await render("/sitemap.xml");
+  assert.equal(sitemapResponse.status, 200);
+  const sitemap = await sitemapResponse.text();
+  for (const route of ["/sri-aurobindo", "/sri-aurobindo/life-sketch", "/the-mother", "/darshan-divas", "/sultanpur-shrine"]) {
+    assert.match(sitemap, new RegExp(`https:\\/\\/www\\.saslucknow\\.in${route.replaceAll("/", "\\/")}`));
+  }
+});
+
 test("applies phone-safe layouts to every page family and floating experience", async () => {
   const css = await readFile(new URL("../app/globals.css", import.meta.url), "utf8");
   assert.match(css, /Full-site responsive hardening/);

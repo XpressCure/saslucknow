@@ -1,3 +1,14 @@
+import type { Metadata } from "next";
+import { createPageMetadata } from "../seo";
+
+export const metadata: Metadata = createPageMetadata({
+  title: "Sri Aurobindo: Life, Integral Yoga & Writings | SAS Lucknow",
+  description: "Discover Sri Aurobindo's life, role in India's independence movement, Integral Yoga, Savitri, writings and spiritual work in Pondicherry.",
+  path: "/sri-aurobindo",
+  keywords: ["Sri Aurobindo biography", "Sri Aurobindo writings", "Integral Yoga philosophy", "Savitri poem"],
+  image: "/sri-aurobindo-portrait.jpg",
+});
+
 const sections = [
   { id: "introduction", title: "Introduction", text: "Sri Aurobindo was a poet, philosopher, yogi and one of the early leaders of India’s freedom movement. Born in Calcutta on 15 August 1872 and educated in England, he returned to India in 1893. His spiritual work came to centre on Integral Yoga: a path seeking not only inner liberation, but the transformation of life by a higher consciousness.", href: "https://www.sriaurobindoashram.org/sriaurobindo/" },
   { id: "life-sketch", title: "Life Sketch", text: "After thirteen years in Baroda, Sri Aurobindo entered the nationalist movement in Bengal. A decisive spiritual experience during his imprisonment in the Alipore case deepened the direction of his life. He settled in Pondicherry in 1910, devoted himself to Yoga and writing, and worked with the Mother from 1914 onward. The Sri Aurobindo Ashram took shape around them in 1926.", href: "/sri-aurobindo/life-sketch", internal: true },
@@ -11,7 +22,7 @@ export default function SriAurobindoPage() {
   return <div className="detail-page biography-page">
     <header className="detail-header"><a className="brand" href="/"><img className="society-logo" src="/society-logo-transparent.png" alt="Sri Aurobindo Society symbol"/><span>Sri Aurobindo Society<small>LUCKNOW · GOMTI NAGAR CENTRE</small></span></a><nav aria-label="Page navigation"><a href="/">Home</a><a href="/#wisdom">e-Library</a><a href="/the-mother">The Mother</a></nav></header>
     <main>
-      <section className="biography-hero"><div className="biography-copy"><p className="kicker">A LIFE DIVINE · 1872–1950</p><h1>Sri Aurobindo</h1><p className="lead">A life dedicated to India’s awakening and the evolutionary possibilities of the human spirit.</p></div><figure><img src="https://www.sriaurobindoashram.org/sriaurobindo/images/sa_37.jpg" alt="Portrait of Sri Aurobindo"/><figcaption>Portrait from the Sri Aurobindo Ashram website</figcaption></figure></section>
+      <section className="biography-hero"><div className="biography-copy"><p className="kicker">A LIFE DIVINE · 1872–1950</p><h1>Sri Aurobindo</h1><p className="lead">A life dedicated to India’s awakening and the evolutionary possibilities of the human spirit.</p></div><figure><img src="/sri-aurobindo-portrait.jpg" alt="Portrait of Sri Aurobindo in Pondicherry"/><figcaption>Sri Aurobindo · Pondicherry</figcaption></figure></section>
       <nav className="biography-index" aria-label="Sri Aurobindo page sections">{sections.map((section, i)=><a href={`#${section.id}`} key={section.id}><span>{String(i+1).padStart(2,"0")}</span>{section.title}</a>)}</nav>
       <div className="biography-sections">{sections.map((section, i)=><section id={section.id} key={section.id} className="biography-section"><span className="biography-number">{String(i+1).padStart(2,"0")}</span><div><p className="kicker">SRI AUROBINDO</p><h2>{section.title}</h2><p>{section.text}</p><a href={section.href} {...(section.internal ? {} : {target:"_blank", rel:"noreferrer"})}>{section.internal ? "Explore the illustrated life sketch →" : "Read this section on the official Ashram website ↗"}</a></div></section>)}</div>
       <aside className="biography-source"><p className="kicker">SOURCE NOTE</p><p>These original summaries follow the structure and factual material of the official Sri Aurobindo Ashram pages. Follow the source links for the complete, authoritative texts.</p><a className="button primary" href="https://www.sriaurobindoashram.org/sriaurobindo/" target="_blank" rel="noreferrer">Visit official source ↗</a></aside>
