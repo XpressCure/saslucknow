@@ -179,7 +179,7 @@ export function PushpanjaliCampaign() {
         loadImage("/pushpanjali-certificate-ornamental-bg.png"),
         loadImage("/pushpanjali-sri-aurobindo.jpg"),
         loadImage(selectedFlower.cutout),
-        loadImage("/society-logo.jpg"),
+        loadImage("/society-logo-transparent.png"),
       ]);
       const canvas = document.createElement("canvas");
       canvas.width = 1600;
@@ -189,14 +189,7 @@ export function PushpanjaliCampaign() {
 
       context.drawImage(ornamentalBackground, 0, 0, canvas.width, canvas.height);
 
-      context.save();
-      context.fillStyle = "rgba(255,253,246,.88)";
-      context.shadowColor = "rgba(117,78,22,.14)";
-      context.shadowBlur = 15;
-      roundedRect(context, 82, 78, 112, 98, 15);
-      context.fill();
-      context.restore();
-      context.drawImage(logo, 93, 88, 90, 77);
+      context.drawImage(logo, 86, 75, 110, 94);
 
       context.fillStyle = "#173846";
       context.textAlign = "center";

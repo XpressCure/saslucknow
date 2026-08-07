@@ -7,7 +7,7 @@ OUTPUT = ROOT / "output" / "pushpanjali-certificate-sample.png"
 BACKGROUND = ROOT / "public" / "pushpanjali-certificate-ornamental-bg.png"
 PORTRAIT = ROOT / "public" / "pushpanjali-sri-aurobindo.jpg"
 FLOWER = ROOT / "public" / "pushpanjali-divine-love-cutout.png"
-LOGO = ROOT / "public" / "society-logo.jpg"
+LOGO = ROOT / "public" / "society-logo-transparent.png"
 
 GEORGIA = "C:/Windows/Fonts/georgia.ttf"
 GEORGIA_BOLD = "C:/Windows/Fonts/georgiab.ttf"
@@ -47,15 +47,14 @@ def main() -> None:
 
     wash = Image.new("RGBA", canvas.size, (0, 0, 0, 0))
     wash_draw = ImageDraw.Draw(wash)
-    wash_draw.rounded_rectangle((82, 78, 194, 176), radius=15, fill=(255, 253, 246, 226))
     wash_draw.rounded_rectangle((93, 213, 547, 927), radius=26, fill=(255, 253, 246, 158))
     wash_draw.rounded_rectangle((570, 210, 1500, 1000), radius=28, fill=(255, 253, 246, 122))
     canvas = Image.alpha_composite(canvas.convert("RGBA"), wash)
     draw = ImageDraw.Draw(canvas)
 
-    logo = Image.open(LOGO).convert("RGB")
-    logo.thumbnail((90, 77), Image.Resampling.LANCZOS)
-    canvas.paste(logo, (93, 88))
+    logo = Image.open(LOGO).convert("RGBA")
+    logo.thumbnail((110, 94), Image.Resampling.LANCZOS)
+    canvas.paste(logo, (86, 75), logo)
 
     centered(draw, (800, 112), "SRI AUROBINDO SOCIETY · LUCKNOW", font(ARIAL_BOLD, 32), "#173846")
     centered(draw, (800, 148), "GOMTI NAGAR CENTRE (UC-02)", font(ARIAL_BOLD, 18), "#9a621b")

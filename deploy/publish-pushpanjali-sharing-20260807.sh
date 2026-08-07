@@ -51,6 +51,7 @@ grep -q 'countPushpanjaliOfferings' "$candidate/server/gallery-api.mjs"
 grep -q 'UC02-' "$candidate/server/gallery-api.mjs"
 [[ -f "$candidate/scripts/migrate-pushpanjali-certificate-numbers.mjs" ]]
 [[ -s "$candidate/public/pushpanjali-certificate-ornamental-bg.png" ]]
+[[ -s "$candidate/public/society-logo-transparent.png" ]]
 
 stop_smoke
 mkdir -p /tmp/saslucknow-pushpanjali-sharing-smoke

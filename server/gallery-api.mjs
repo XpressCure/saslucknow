@@ -301,7 +301,7 @@ async function emailPushpanjaliCertificate({ name, email, flower, reference }) {
     <div style="margin:0;padding:28px;background:#efe6d5;font-family:Arial,sans-serif;color:#173846">
       <div style="max-width:900px;margin:auto;border:2px solid #c58b27;background:#fffdf8 url('https://www.saslucknow.in/pushpanjali-certificate-ornamental-bg.png') center/100% 100% no-repeat;padding:52px 58px">
         <table role="presentation" width="100%" style="border-collapse:collapse"><tr>
-          <td width="90"><img src="https://www.saslucknow.in/society-logo.jpg" alt="Sri Aurobindo Society" width="82" style="display:block;width:82px;height:auto"></td>
+          <td width="90"><img src="https://www.saslucknow.in/society-logo-transparent.png" alt="Sri Aurobindo Society" width="82" style="display:block;width:82px;height:auto"></td>
           <td style="text-align:center"><div style="font-size:16px;font-weight:700;letter-spacing:2px">SRI AUROBINDO SOCIETY · LUCKNOW</div><div style="margin-top:6px;color:#9b6428;font-size:12px;letter-spacing:1.5px">GOMTI NAGAR CENTRE (UC-02)</div></td>
           <td width="90">&nbsp;</td>
         </tr></table>

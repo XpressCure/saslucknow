@@ -77,6 +77,7 @@ test("renders the 15 August Pushpanjali campaign entry point", async () => {
   const source = await readFile(new URL("../app/pushpanjali-campaign.tsx", import.meta.url), "utf8");
   for (const asset of [
     "pushpanjali-certificate-ornamental-bg.png",
+    "society-logo-transparent.png",
     "pushpanjali-sri-aurobindo.jpg",
     "pushpanjali-divine-love-cutout.png",
     "pushpanjali-integral-love-cutout.png",
@@ -86,7 +87,7 @@ test("renders the 15 August Pushpanjali campaign entry point", async () => {
     assert.ok((await stat(new URL(`../public/${asset}`, import.meta.url))).size > 10_000);
   }
   assert.match(source, /1872–1950/);
-  assert.match(source, /society-logo\.jpg/);
+  assert.match(source, /society-logo-transparent\.png/);
   assert.match(source, /ornamentalBackground/);
   assert.match(source, /const \[open, setOpen\] = useState\(true\)/);
   assert.doesNotMatch(source, /sas-pushpanjali-2026-seen|550/);
