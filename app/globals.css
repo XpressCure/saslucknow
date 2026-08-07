@@ -442,10 +442,14 @@ main section[id]{scroll-margin-top:96px}
 .pushpanjali-reference{display:flex;gap:.8rem;align-items:center;margin:.65rem 0 0;padding:.5rem .85rem;border:1px solid #d8bd88;border-radius:999px;background:rgba(255,255,255,.6);color:#657175;font-size:.6rem;text-transform:uppercase;letter-spacing:.07em}
 .pushpanjali-reference b{color:#173846;font-size:.7rem}
 .pushpanjali-email-status{margin:.4rem 0 .55rem;color:#667377;font-size:.64rem}
-.pushpanjali-success-actions{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+.pushpanjali-success-actions{width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.75rem}
 .pushpanjali-success-actions button,.pushpanjali-success-actions a{min-height:43px;display:flex;align-items:center;justify-content:center;padding:.55rem .85rem;border-radius:8px;font-size:.63rem;font-weight:800;letter-spacing:.03em;text-decoration:none;cursor:pointer}
 .pushpanjali-success-actions button{border:0;background:#173846;color:#fff}.pushpanjali-success-actions a{border:1px solid #ae7936;background:#fffaf0;color:#8d5a20}
-.pushpanjali-success-actions .pushpanjali-whatsapp{background:#187b45}.pushpanjali-success-actions button:disabled{cursor:wait;opacity:.55}.pushpanjali-success-actions a{grid-column:1/-1}.pushpanjali-share-notice{max-width:620px;margin:.55rem 0 0;color:#52656b;font-size:.62rem;line-height:1.4}
+.pushpanjali-success-actions .pushpanjali-whatsapp{background:#187b45}
+.pushpanjali-success-actions .pushpanjali-facebook{background:#1e56a8}
+.pushpanjali-success-actions .pushpanjali-instagram{background:linear-gradient(120deg,#feda75,#fa7e1e,#d62976,#962fbf,#4f5bd5)}
+.pushpanjali-success-actions button:disabled{cursor:wait;opacity:.55}
+.pushpanjali-share-notice{max-width:620px;margin:.55rem 0 0;color:#52656b;font-size:.62rem;line-height:1.4}
 .pushpanjali-finish{margin-top:.5rem;border:0;background:transparent;color:#52656c;font-size:.62rem;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 .pushpanjali-footer{position:relative;z-index:1;padding:.55rem 1rem;border-top:1px solid #dec89d;background:#173846;color:#e8cc94;text-align:center;font-size:.54rem;font-weight:700;letter-spacing:.11em;text-transform:uppercase}
 .pushpanjali-reopen{position:fixed;left:18px;bottom:20px;z-index:44;display:grid;grid-template-columns:38px auto;grid-template-rows:1fr 1fr;column-gap:.6rem;min-height:54px;padding:.45rem .85rem .45rem .5rem;border:1px solid #c79548;border-radius:999px;background:linear-gradient(135deg,#fff7e4,#edcf91);box-shadow:0 14px 32px rgba(35,42,41,.2);color:#173846;cursor:pointer;text-align:left}
