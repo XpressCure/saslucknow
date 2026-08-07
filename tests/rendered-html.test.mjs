@@ -93,7 +93,10 @@ test("applies phone-safe layouts to every page family and floating experience", 
   assert.match(css, /@media\(max-width:480px\)/);
   assert.match(css, /env\(safe-area-inset-bottom\)/);
   assert.match(css, /\.pushpanjali-aurobindo\{[^}]*object-position:30% 30%/);
-  assert.match(css, /\.pushpanjali-counter\{[^}]*grid-column:3[^}]*align-items:flex-end[^}]*text-align:right/);
+  assert.match(css, /\.pushpanjali-heading\{[^}]*grid-template-areas:"empty eyebrow counter"/);
+  assert.match(css, /\.pushpanjali-counter\{[^}]*grid-area:counter[^}]*align-items:flex-end[^}]*text-align:right/);
+  assert.match(css, /\.pushpanjali-form\{[^}]*display:grid[^}]*grid-template-rows:auto minmax\(0,1fr\) auto auto/);
+  assert.match(css, /\.pushpanjali-flowers>label\{[^}]*display:grid[^}]*grid-template-rows:96px minmax\(0,1fr\)/);
   assert.match(css, /\.pushpanjali-success h3\{[^}]*flex-direction:column/);
   for (const selector of [
     ".site-header",

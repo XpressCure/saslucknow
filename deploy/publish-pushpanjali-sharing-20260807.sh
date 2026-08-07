@@ -3,12 +3,12 @@ set -euo pipefail
 
 releases=/var/www/saslucknow/releases
 current="$releases/current"
-candidate="$releases/pushpanjali-counter-20260807-v10"
-backup="$releases/pre-pushpanjali-counter-20260807-v10"
-failed="$releases/failed-pushpanjali-counter-20260807-v10"
-archive=/tmp/saslucknow-pushpanjali-counter-20260807-v10.tgz
-site_smoke=saslucknow-pushpanjali-counter-site-smoke-v10
-api_smoke=saslucknow-pushpanjali-counter-api-smoke-v10
+candidate="$releases/pushpanjali-modal-grid-20260807-v11"
+backup="$releases/pre-pushpanjali-modal-grid-20260807-v11"
+failed="$releases/failed-pushpanjali-modal-grid-20260807-v11"
+archive=/tmp/saslucknow-pushpanjali-modal-grid-20260807-v11.tgz
+site_smoke=saslucknow-pushpanjali-modal-grid-site-smoke-v11
+api_smoke=saslucknow-pushpanjali-modal-grid-api-smoke-v11
 cutover_started=0
 services_stopped=0
 
@@ -53,7 +53,9 @@ grep -R -q 'Flower offered' "$candidate/dist/client/assets"
 grep -R -q 'With gratitude,' "$candidate/dist/client/assets"
 grep -R -q 'Being prepared' "$candidate/dist/client/assets"
 grep -R -q 'object-position:30% 30%' "$candidate/dist/client/assets"
-grep -R -q 'grid-area:1/3/4' "$candidate/dist/client/assets"
+grep -R -q 'grid-template-areas:"empty eyebrow counter"' "$candidate/dist/client/assets"
+grep -R -q 'grid-area:counter' "$candidate/dist/client/assets"
+grep -R -q 'grid-template-rows:auto minmax(0,1fr) auto auto' "$candidate/dist/client/assets"
 grep -R -q 'align-items:flex-end' "$candidate/dist/client/assets"
 grep -R -q 'Sri Aurobindo Society Lucknow' "$candidate/dist/server"
 grep -R -q 'application/ld+json' "$candidate/dist/server"
