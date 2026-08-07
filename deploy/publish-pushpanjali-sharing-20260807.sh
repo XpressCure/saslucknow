@@ -3,12 +3,12 @@ set -euo pipefail
 
 releases=/var/www/saslucknow/releases
 current="$releases/current"
-candidate="$releases/pushpanjali-certificate-20260807-v4"
-backup="$releases/pre-pushpanjali-certificate-20260807-v4"
-failed="$releases/failed-pushpanjali-certificate-20260807-v4"
-archive=/tmp/pushpanjali-certificate-20260807-v4.tgz
-site_smoke=saslucknow-pushpanjali-certificate-site-smoke-v4
-api_smoke=saslucknow-pushpanjali-certificate-api-smoke-v4
+candidate="$releases/pushpanjali-instant-20260807-v5"
+backup="$releases/pre-pushpanjali-instant-20260807-v5"
+failed="$releases/failed-pushpanjali-instant-20260807-v5"
+archive=/tmp/pushpanjali-instant-20260807-v5.tgz
+site_smoke=saslucknow-pushpanjali-instant-site-smoke-v5
+api_smoke=saslucknow-pushpanjali-instant-api-smoke-v5
 cutover_started=0
 services_stopped=0
 

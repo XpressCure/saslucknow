@@ -87,7 +87,7 @@ function wrapText(context: CanvasRenderingContext2D, text: string, x: number, y:
 }
 
 export function PushpanjaliCampaign() {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
   const [selectedId, setSelectedId] = useState<Flower["id"]>("divine-love");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -115,16 +115,7 @@ export function PushpanjaliCampaign() {
         if (active && Number.isFinite(count)) setOfferingCount(count);
       })
       .catch(() => {});
-    if (new URLSearchParams(window.location.search).get("pushpanjali") === "1") {
-      setOpen(true);
-      return () => { active = false; };
-    }
-    if (window.sessionStorage.getItem("sas-pushpanjali-2026-seen")) return () => { active = false; };
-    const timer = window.setTimeout(() => setOpen(true), 550);
-    return () => {
-      active = false;
-      window.clearTimeout(timer);
-    };
+    return () => { active = false; };
   }, []);
 
   useEffect(() => {
@@ -142,7 +133,6 @@ export function PushpanjaliCampaign() {
   }, [open]);
 
   const closeCampaign = () => {
-    window.sessionStorage.setItem("sas-pushpanjali-2026-seen", "yes");
     setOpen(false);
   };
 
@@ -172,7 +162,6 @@ export function PushpanjaliCampaign() {
       setResult(offeringResult);
       setOfferingCount(current => Math.max(current, offeringResult.offeringNumber));
       setStatus("offered");
-      window.sessionStorage.setItem("sas-pushpanjali-2026-seen", "yes");
       try {
         const blob = await buildCertificate(offeringResult);
         setCertificateBlob(blob);
