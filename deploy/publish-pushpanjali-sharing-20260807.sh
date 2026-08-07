@@ -3,12 +3,12 @@ set -euo pipefail
 
 releases=/var/www/saslucknow/releases
 current="$releases/current"
-candidate="$releases/pushpanjali-layout-20260807-v9"
-backup="$releases/pre-pushpanjali-layout-20260807-v9"
-failed="$releases/failed-pushpanjali-layout-20260807-v9"
-archive=/tmp/saslucknow-pushpanjali-layout-20260807-v9.tgz
-site_smoke=saslucknow-pushpanjali-layout-site-smoke-v9
-api_smoke=saslucknow-pushpanjali-layout-api-smoke-v9
+candidate="$releases/pushpanjali-counter-20260807-v10"
+backup="$releases/pre-pushpanjali-counter-20260807-v10"
+failed="$releases/failed-pushpanjali-counter-20260807-v10"
+archive=/tmp/saslucknow-pushpanjali-counter-20260807-v10.tgz
+site_smoke=saslucknow-pushpanjali-counter-site-smoke-v10
+api_smoke=saslucknow-pushpanjali-counter-api-smoke-v10
 cutover_started=0
 services_stopped=0
 
@@ -53,6 +53,8 @@ grep -R -q 'Flower offered' "$candidate/dist/client/assets"
 grep -R -q 'With gratitude,' "$candidate/dist/client/assets"
 grep -R -q 'Being prepared' "$candidate/dist/client/assets"
 grep -R -q 'object-position:30% 30%' "$candidate/dist/client/assets"
+grep -R -q 'grid-column:3' "$candidate/dist/client/assets"
+grep -R -q 'align-items:flex-end' "$candidate/dist/client/assets"
 grep -R -q 'Sri Aurobindo Society Lucknow' "$candidate/dist/server"
 grep -R -q 'application/ld+json' "$candidate/dist/server"
 grep -R -q 'sitemap.xml' "$candidate/dist/server"
