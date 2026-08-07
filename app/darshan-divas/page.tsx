@@ -46,7 +46,7 @@ const darshanDays = [
 export default function DarshanDivasPage() {
   return <div className="detail-page darshan-page">
     <header className="detail-header">
-      <a className="brand" href="/"><img className="society-logo" src="/society-logo.jpg" alt="Sri Aurobindo Society symbol"/><span>Sri Aurobindo Society<small>LUCKNOW · GOMTI NAGAR CENTRE</small></span></a>
+      <a className="brand" href="/"><img className="society-logo" src="/society-logo-transparent.png" alt="Sri Aurobindo Society symbol"/><span>Sri Aurobindo Society<small>LUCKNOW · GOMTI NAGAR CENTRE</small></span></a>
       <nav aria-label="Page navigation"><a href="/">Home</a><a href="/sri-aurobindo">Sri Aurobindo</a><a href="/the-mother">The Mother</a><a href="/#wisdom">e-Library</a></nav>
     </header>
     <main>

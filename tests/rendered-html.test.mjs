@@ -36,6 +36,24 @@ test("uses the transparent Society logo as the browser icon", async () => {
   const source = await readFile(new URL("../app/layout.tsx", import.meta.url), "utf8");
   assert.match(source, /icons:/);
   assert.match(source, /society-logo-transparent\.png/);
+  assert.match(source, /https:\/\/www\.saslucknow\.in/);
+});
+
+test("applies phone-safe layouts to every page family and floating experience", async () => {
+  const css = await readFile(new URL("../app/globals.css", import.meta.url), "utf8");
+  assert.match(css, /Full-site responsive hardening/);
+  assert.match(css, /@media\(max-width:480px\)/);
+  assert.match(css, /env\(safe-area-inset-bottom\)/);
+  for (const selector of [
+    ".site-header",
+    ".detail-header",
+    ".biography-hero",
+    ".life-sketch-hero",
+    ".darshan-grid article",
+    ".gallery-slide",
+    ".pushpanjali-modal",
+    ".sakhi-window",
+  ]) assert.match(css, new RegExp(selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
 });
 
 test("renders the Sultanpur Shrine detail page", async () => {
@@ -185,7 +203,7 @@ test("renders official Society identity, email, roots and sourced wisdom", async
   const response = await render();
   const html = await response.text();
   assert.match(html, /Sri Aurobindo Society/);
-  assert.match(html, /sas-symbol%281%29\.jpg/);
+  assert.match(html, /society-logo-transparent\.png/);
   assert.match(html, /info\.saslucknow@gmail\.com/);
   assert.match(html, /From Puducherry to Lucknow/);
   assert.match(html, /Auroville is an international township/);

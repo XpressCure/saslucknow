@@ -3,7 +3,7 @@ export default function SultanpurShrinePage() {
     <div className="detail-page">
       <header className="detail-header">
         <a className="brand" href="/">
-          <img className="society-logo" src="https://cms.aurosociety.org/kcfinder/images/images/sas-symbol%281%29.jpg" alt="Sri Aurobindo Society symbol"/>
+          <img className="society-logo" src="/society-logo-transparent.png" alt="Sri Aurobindo Society symbol"/>
           <span>Sri Aurobindo Society<small>LUCKNOW · GOMTI NAGAR CENTRE</small></span>
         </a>
         <nav aria-label="Shrine page navigation">

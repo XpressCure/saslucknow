@@ -47,6 +47,8 @@ grep -R -q 'certificates generated' "$candidate/dist/client/assets"
 grep -R -q 'Share certificate on WhatsApp' "$candidate/dist/client/assets"
 grep -R -q 'CERTIFICATE NUMBER:' "$candidate/dist/client/assets"
 grep -R -q 'pushpanjali-certificate-ornamental-bg.png' "$candidate/dist/client/assets"
+grep -R -q 'safe-area-inset-bottom' "$candidate/dist/client/assets"
+grep -R -q 'society-logo-transparent.png' "$candidate/dist/client/assets"
 grep -q 'countPushpanjaliOfferings' "$candidate/server/gallery-api.mjs"
 grep -q 'UC02-' "$candidate/server/gallery-api.mjs"
 [[ -f "$candidate/scripts/migrate-pushpanjali-certificate-numbers.mjs" ]]

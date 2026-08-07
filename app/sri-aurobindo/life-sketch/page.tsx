@@ -39,7 +39,7 @@ const chapters = [
 
 export default function LifeSketchPage() {
   return <div className="detail-page life-sketch-page">
-    <header className="detail-header"><a className="brand" href="/"><img className="society-logo" src="/society-logo.jpg" alt="Sri Aurobindo Society symbol"/><span>Sri Aurobindo Society<small>LUCKNOW · GOMTI NAGAR CENTRE</small></span></a><nav aria-label="Page navigation"><a href="/">Home</a><a href="/sri-aurobindo">Sri Aurobindo</a><a href="/the-mother">The Mother</a></nav></header>
+    <header className="detail-header"><a className="brand" href="/"><img className="society-logo" src="/society-logo-transparent.png" alt="Sri Aurobindo Society symbol"/><span>Sri Aurobindo Society<small>LUCKNOW · GOMTI NAGAR CENTRE</small></span></a><nav aria-label="Page navigation"><a href="/">Home</a><a href="/sri-aurobindo">Sri Aurobindo</a><a href="/the-mother">The Mother</a></nav></header>
     <main>
       <section className="life-sketch-hero"><div><p className="kicker">1872–1950 · A CHRONOLOGICAL PORTRAIT</p><h1>A life devoted to the future</h1><p className="lead">The story of a poet, revolutionary and yogi—moving from India to England and back, from political action to a spiritual work for the transformation of life.</p><blockquote>“Man is a transitional being, he is not final.”</blockquote><small>— Sri Aurobindo · CWSA Vol. 12, p. 157</small></div><figure><img src="/sri-aurobindo-portrait.jpg" alt="Sri Aurobindo seated in Pondicherry"/><figcaption>Sri Aurobindo · Pondicherry</figcaption></figure></section>
       <div className="life-sketch-nav" aria-label="Life sketch chapters">{chapters.map((chapter,i)=><a href={`#chapter-${i+1}`} key={chapter.title}><span>{chapter.label}</span>{chapter.title}</a>)}</div>

@@ -338,7 +338,7 @@ export function MissionHome() {
   return <div className={lang === "hi" ? "hindi" : ""}>
     <a href="#main" className="skip">Skip to content</a>
     <header className="site-header">
-      <a className="brand" href="#"><img className="society-logo" src="https://cms.aurosociety.org/kcfinder/images/images/sas-symbol%281%29.jpg" alt="Sri Aurobindo Society symbol"/><span>Sri Aurobindo Society<small>LUCKNOW · GOMTI NAGAR CENTRE</small></span></a>
+      <a className="brand" href="#"><img className="society-logo" src="/society-logo-transparent.png" alt="Sri Aurobindo Society symbol"/><span>Sri Aurobindo Society<small>LUCKNOW · GOMTI NAGAR CENTRE</small></span></a>
       <button className="menu-button" onClick={() => setMenu(!menu)} aria-expanded={menu} aria-label="Toggle navigation">☰</button>
       <nav className={menu ? "open" : ""} aria-label="Main navigation">
         {primaryNav.map(item => <a key={item.label} href={item.href} onClick={() => setMenu(false)}>{item.label}</a>)}
@@ -420,7 +420,7 @@ export function MissionHome() {
       <section className="support section"><div><p className="kicker">A QUIET INVITATION</p><h2>{t.support}</h2><p>{t.supportText}</p></div><button className="button quiet light" onClick={()=>open("contribute")}>{t.contribute} →</button></section>
     </main>
 
-    <footer><div className="brand inverse"><img className="society-logo" src="https://cms.aurosociety.org/kcfinder/images/images/sas-symbol%281%29.jpg" alt="Sri Aurobindo Society symbol"/><span>Sri Aurobindo Society<small>LUCKNOW · GOMTI NAGAR CENTRE</small></span></div><p>{t.footer}</p><div><a href="#wisdom">Wisdom</a><a href="#events">Events</a><a href="mailto:info.saslucknow@gmail.com">Email</a></div><small>{t.disclaimer}</small></footer>
+    <footer><div className="brand inverse"><img className="society-logo" src="/society-logo-transparent.png" alt="Sri Aurobindo Society symbol"/><span>Sri Aurobindo Society<small>LUCKNOW · GOMTI NAGAR CENTRE</small></span></div><p>{t.footer}</p><div><a href="#wisdom">Wisdom</a><a href="#events">Events</a><a href="mailto:info.saslucknow@gmail.com">Email</a></div><small>{t.disclaimer}</small></footer>
 
     <aside className={`sakhi-widget ${sakhiOpen ? "open" : ""}`} aria-label="Savitri Sakhi AI assistant">
       {sakhiOpen && <section className="sakhi-window" role="dialog" aria-label="Chat with Savitri Sakhi">

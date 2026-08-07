@@ -9,7 +9,7 @@ const sections = [
 
 export default function SriAurobindoPage() {
   return <div className="detail-page biography-page">
-    <header className="detail-header"><a className="brand" href="/"><img className="society-logo" src="https://cms.aurosociety.org/kcfinder/images/images/sas-symbol%281%29.jpg" alt="Sri Aurobindo Society symbol"/><span>Sri Aurobindo Society<small>LUCKNOW · GOMTI NAGAR CENTRE</small></span></a><nav aria-label="Page navigation"><a href="/">Home</a><a href="/#wisdom">e-Library</a><a href="/the-mother">The Mother</a></nav></header>
+    <header className="detail-header"><a className="brand" href="/"><img className="society-logo" src="/society-logo-transparent.png" alt="Sri Aurobindo Society symbol"/><span>Sri Aurobindo Society<small>LUCKNOW · GOMTI NAGAR CENTRE</small></span></a><nav aria-label="Page navigation"><a href="/">Home</a><a href="/#wisdom">e-Library</a><a href="/the-mother">The Mother</a></nav></header>
     <main>
       <section className="biography-hero"><div className="biography-copy"><p className="kicker">A LIFE DIVINE · 1872–1950</p><h1>Sri Aurobindo</h1><p className="lead">A life dedicated to India’s awakening and the evolutionary possibilities of the human spirit.</p></div><figure><img src="https://www.sriaurobindoashram.org/sriaurobindo/images/sa_37.jpg" alt="Portrait of Sri Aurobindo"/><figcaption>Portrait from the Sri Aurobindo Ashram website</figcaption></figure></section>
       <nav className="biography-index" aria-label="Sri Aurobindo page sections">{sections.map((section, i)=><a href={`#${section.id}`} key={section.id}><span>{String(i+1).padStart(2,"0")}</span>{section.title}</a>)}</nav>
