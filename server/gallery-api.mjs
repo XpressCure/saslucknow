@@ -300,8 +300,11 @@ async function emailPushpanjaliCertificate({ name, email, flower, reference }) {
   const certificateHtml = `
     <div style="margin:0;padding:28px;background:#efe6d5;font-family:Arial,sans-serif;color:#173846">
       <div style="max-width:900px;margin:auto;border:4px double #b98335;background:linear-gradient(135deg,#fffdf8,#f6e3b8);padding:34px">
-        <div style="text-align:center;font-size:16px;font-weight:700;letter-spacing:2px">SRI AUROBINDO SOCIETY · LUCKNOW</div>
-        <div style="margin-top:6px;text-align:center;color:#9b6428;font-size:12px;letter-spacing:1.5px">GOMTI NAGAR CENTRE (UC-02)</div>
+        <table role="presentation" width="100%" style="border-collapse:collapse"><tr>
+          <td width="90"><img src="https://www.saslucknow.in/society-logo.jpg" alt="Sri Aurobindo Society" width="82" style="display:block;width:82px;height:auto"></td>
+          <td style="text-align:center"><div style="font-size:16px;font-weight:700;letter-spacing:2px">SRI AUROBINDO SOCIETY · LUCKNOW</div><div style="margin-top:6px;color:#9b6428;font-size:12px;letter-spacing:1.5px">GOMTI NAGAR CENTRE (UC-02)</div></td>
+          <td width="90">&nbsp;</td>
+        </tr></table>
         <table role="presentation" width="100%" style="margin-top:28px;border-collapse:collapse"><tr>
           <td width="34%" valign="top" style="padding-right:28px">
             <img src="https://www.saslucknow.in/pushpanjali-sri-aurobindo.jpg" alt="Sri Aurobindo" style="display:block;width:100%;max-width:280px;height:420px;object-fit:cover;border:2px solid #c49345;border-radius:12px">
@@ -310,7 +313,7 @@ async function emailPushpanjaliCertificate({ name, email, flower, reference }) {
             <h1 style="margin:0 0 26px;text-align:center;font:42px Georgia,serif;color:#173846">Certificate of Pushpanjali</h1>
             <p style="margin:0;text-align:center;color:#59686c;font-size:17px">This certifies that</p>
             <h2 style="display:block;margin:10px 0 18px;padding-bottom:7px;border-bottom:1px solid #9b6428;text-align:center;font:38px Georgia,serif;color:#173846">${escapedName}</h2>
-            <p style="margin:0 0 24px;text-align:center;color:#455b63;font:19px/1.55 Georgia,serif">has lovingly offered Pushpanjali to Sri Aurobindo on his <strong>154th Birthday</strong>.</p>
+            <p style="margin:0 0 24px;text-align:center;color:#455b63;font:19px/1.55 Georgia,serif">has lovingly offered Pushpanjali to Sri Aurobindo<br><strong style="white-space:nowrap;color:#9b6428">on his 154th Birthday</strong></p>
             <table role="presentation" width="100%" style="border-collapse:collapse"><tr>
               <td valign="middle" style="padding-right:18px;text-align:left">
                 <div style="color:#9b6428;font:26px Georgia,serif">${escapedFlower}</div>
@@ -323,7 +326,6 @@ async function emailPushpanjaliCertificate({ name, email, flower, reference }) {
         </tr></table>
         <div style="margin-top:25px;padding-top:18px;border-top:1px solid #d5b879;text-align:center;font-weight:700;letter-spacing:1.2px">15 AUGUST 2026&nbsp;&nbsp;|&nbsp;&nbsp;DARSHAN DIVAS</div>
         <div style="margin-top:10px;text-align:center;color:#8a6b3d;font-size:13px">CERTIFICATE NUMBER: <strong>${escapedReference}</strong></div>
-        <p style="margin:20px 0 0;text-align:center;font:italic 17px Georgia,serif">With gratitude and aspiration</p>
       </div>
       <p style="max-width:900px;margin:18px auto 0;text-align:center;font-size:13px;color:#58666b">Your virtual Pushpanjali has been recorded by SAS Lucknow. <a href="https://www.facebook.com/saslucknow" style="color:#8e5c22">Follow SAS Lucknow on Facebook</a>.</p>
     </div>`;
@@ -332,7 +334,7 @@ async function emailPushpanjaliCertificate({ name, email, flower, reference }) {
     to: email,
     replyTo: process.env.EMAIL_REPLY_TO || "info.saslucknow@gmail.com",
     subject: `Your Pushpanjali Certificate ${reference} · 15 August 2026`,
-    text: `Dear ${name},\n\nThis certifies that you have lovingly offered Pushpanjali to Sri Aurobindo on his 154th Birthday.\n\nSelected pushpa: ${flower.name}\n“${flower.meaning}” — Spiritual significance given by the Mother\n\n15 August 2026 | Darshan Divas\nCertificate Number: ${reference}\n\nWith gratitude and aspiration,\nSri Aurobindo Society, Lucknow · Gomti Nagar Centre (UC-02)\n\nFollow SAS Lucknow: https://www.facebook.com/saslucknow`,
+    text: `Dear ${name},\n\nThis certifies that you have lovingly offered Pushpanjali to Sri Aurobindo on his 154th Birthday.\n\nSelected pushpa: ${flower.name}\n“${flower.meaning}” — Spiritual significance given by the Mother\n\n15 August 2026 | Darshan Divas\nCertificate Number: ${reference}\n\nFollow SAS Lucknow: https://www.facebook.com/saslucknow`,
     html: certificateHtml,
   });
   return true;
@@ -361,18 +363,16 @@ async function handlePushpanjali(request, response) {
     if (payload.website) return json(response, 201, { ok: true, reference: "received", offeringNumber: 1, emailed: false }, headers);
     const name = cleanText(payload.name, 100);
     const email = String(payload.email || "").trim().toLowerCase().slice(0, 180);
-    const phoneDigits = String(payload.phone || "").replace(/\D/g, "");
-    const phone = phoneDigits.length === 10 ? `+91${phoneDigits}` : phoneDigits.length === 12 && phoneDigits.startsWith("91") ? `+${phoneDigits}` : "";
     const flowerId = cleanText(payload.flowerId, 60);
     const flower = pushpanjaliFlowers.get(flowerId);
-    if (name.length < 2 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !phone || !flower) {
-      return json(response, 400, { error: "Please enter your name, a valid email address, a 10-digit Indian mobile number and select one flower." }, headers);
+    if (name.length < 2 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !flower) {
+      return json(response, 400, { error: "Please enter your name, a valid email address and select one flower." }, headers);
     }
 
     const offeringId = randomUUID();
     const document = {
       offeringId,
-      participant: { name, email, phone },
+      participant: { name, email },
       flowerId,
       flower,
       ceremonyDate: "2026-08-15",

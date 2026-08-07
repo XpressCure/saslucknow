@@ -44,7 +44,7 @@ const flowers: Flower[] = [
   },
 ];
 
-const flowerPositions = [8, 16, 25, 34, 43, 52, 61, 70, 79, 88, 13, 29, 47, 65, 83];
+const flowerPositions = [5, 10, 16, 22, 28, 34, 40, 46, 52, 58, 64, 70, 76, 82, 88, 94, 8, 19, 31, 43, 55, 67, 79, 91, 13, 25, 37, 49, 61, 73, 85];
 const whatsappLandingUrl = "https://www.saslucknow.in/?pushpanjali=1";
 
 function offeringEndpoint() {
@@ -91,7 +91,6 @@ export function PushpanjaliCampaign() {
   const [selectedId, setSelectedId] = useState<Flower["id"]>("divine-love");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
   const [status, setStatus] = useState<"ready" | "submitting" | "offered">("ready");
   const [error, setError] = useState("");
   const [result, setResult] = useState<OfferingResult | null>(null);
@@ -145,7 +144,7 @@ export function PushpanjaliCampaign() {
       const response = await fetch(offeringEndpoint(), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, phone, flowerId: selectedFlower.id, website: "" }),
+        body: JSON.stringify({ name, email, flowerId: selectedFlower.id, website: "" }),
       });
       const payload = await response.json().catch(() => ({})) as {
         error?: string;
@@ -176,9 +175,10 @@ export function PushpanjaliCampaign() {
   };
 
   const buildCertificate = async (certificateResult: OfferingResult) => {
-      const [portrait, flower] = await Promise.all([
+      const [portrait, flower, logo] = await Promise.all([
         loadImage("/pushpanjali-sri-aurobindo.jpg"),
         loadImage(selectedFlower.cutout),
+        loadImage("/society-logo.jpg"),
       ]);
       const canvas = document.createElement("canvas");
       canvas.width = 1600;
@@ -198,6 +198,8 @@ export function PushpanjaliCampaign() {
       context.strokeStyle = "rgba(185,131,53,.55)";
       context.lineWidth = 1.5;
       context.strokeRect(55, 55, 1490, 990);
+
+      context.drawImage(logo, 82, 72, 90, 77);
 
       context.fillStyle = "#173846";
       context.textAlign = "center";
@@ -271,7 +273,10 @@ export function PushpanjaliCampaign() {
 
       context.fillStyle = "#455b63";
       context.font = "26px Georgia";
-      wrapText(context, "has lovingly offered Pushpanjali to Sri Aurobindo on his 154th Birthday.", contentCenter, 462, 800, 38);
+      context.fillText("has lovingly offered Pushpanjali to Sri Aurobindo", contentCenter, 462);
+      context.fillStyle = "#a86d27";
+      context.font = "bold 29px Georgia";
+      context.fillText("on his 154th Birthday", contentCenter, 508);
 
       context.textAlign = "left";
       context.fillStyle = "#a86d27";
@@ -300,16 +305,10 @@ export function PushpanjaliCampaign() {
       context.stroke();
       context.fillStyle = "#173846";
       context.font = "bold 28px Arial";
-      context.fillText("15 AUGUST 2026  |  DARSHAN DIVAS", contentCenter, 890);
+      context.fillText("15 AUGUST 2026  |  DARSHAN DIVAS", contentCenter, 925);
       context.fillStyle = "#8b6a35";
       context.font = "bold 21px Arial";
-      context.fillText(`CERTIFICATE NUMBER: ${certificateResult.reference}`, contentCenter, 938);
-      context.fillStyle = "#173846";
-      context.font = "italic 24px Georgia";
-      context.fillText("With gratitude and aspiration", contentCenter, 988);
-      context.fillStyle = "#756340";
-      context.font = "15px Arial";
-      context.fillText("Presented by Sri Aurobindo Society, Lucknow · Gomti Nagar Centre (UC-02)", contentCenter, 1025);
+      context.fillText(`CERTIFICATE NUMBER: ${certificateResult.reference}`, contentCenter, 982);
 
       return await new Promise<Blob>((resolve, reject) => {
         canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error("Certificate image could not be created")), "image/png");
@@ -341,7 +340,7 @@ export function PushpanjaliCampaign() {
     if (!result) return;
     setError("");
     setShareNotice("");
-    const message = `🙏 Thank you for offering your Pushpanjali to Sri Aurobindo on his Birthday Darshan, 15 August 2026.\n\nYour certificate is attached.\n\nTo get your certificate, click the link:\n${whatsappLandingUrl}`;
+    const message = `🙏 Thank you for offering ${selectedFlower.name} in Pushpanjali to Sri Aurobindo on his Birthday Darshan, 15 August 2026.\n\n“${selectedFlower.meaning}” — The Mother\n\nYour certificate is attached.\n\nTo get your certificate, click the link:\n${whatsappLandingUrl}`;
     try {
       const blob = certificateBlob || await buildCertificate(result);
       setCertificateBlob(blob);
@@ -352,9 +351,8 @@ export function PushpanjaliCampaign() {
         setShareNotice("Certificate image shared. Select WhatsApp and the intended contact if prompted.");
         return;
       }
-      const digits = phone.replace(/\D/g, "").replace(/^0+/, "");
-      window.open(`https://wa.me/${digits.length === 10 ? `91${digits}` : digits}?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer");
-      setShareNotice("WhatsApp has opened for the entered number. Attach the certificate image downloaded automatically, then send the prepared message.");
+      window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer");
+      setShareNotice("WhatsApp has opened. Select the intended contact, attach the downloaded certificate image if prompted, and send the prepared message.");
     } catch (shareError) {
       if (shareError instanceof DOMException && shareError.name === "AbortError") return;
       setError("WhatsApp sharing could not open on this device. Download the certificate and share it from WhatsApp.");
@@ -400,7 +398,6 @@ export function PushpanjaliCampaign() {
             <div className="pushpanjali-fields">
               <label>Your name<input required value={name} onChange={event => setName(event.target.value)} maxLength={100} autoComplete="name" placeholder="Enter your full name"/></label>
               <label>Email for your certificate<input required value={email} onChange={event => setEmail(event.target.value)} type="email" maxLength={180} autoComplete="email" placeholder="you@example.com"/></label>
-              <label className="pushpanjali-phone">WhatsApp mobile number<input required value={phone} onChange={event => setPhone(event.target.value)} type="tel" inputMode="numeric" maxLength={16} autoComplete="tel" placeholder="+91 98765 43210" pattern="(?:\+?91[ -]?)?[6-9][0-9 -]{9,12}" title="Enter a valid 10-digit Indian mobile number"/></label>
             </div>
             <fieldset>
               <legend>Select your pushpa for Pushpanjali</legend>
@@ -413,7 +410,7 @@ export function PushpanjaliCampaign() {
               </div>
             </fieldset>
             <label className="pushpanjali-honeypot" aria-hidden="true">Website<input tabIndex={-1} autoComplete="off"/></label>
-            <p className="pushpanjali-privacy">Your email and mobile number are used only to deliver and share this certificate. They are not added to a mailing list.</p>
+            <p className="pushpanjali-privacy">Your email is used only to deliver this certificate. It is not added to a mailing list.</p>
             {error && <p className="pushpanjali-error" role="alert">{error}</p>}
             <button className="pushpanjali-submit" type="submit" disabled={status === "submitting"}>
               {status === "submitting" ? "Preparing your offering…" : "Offer Pushpanjali & receive certificate"}<span aria-hidden="true">→</span>
@@ -423,8 +420,10 @@ export function PushpanjaliCampaign() {
             <p>YOUR PUSHPA HAS BEEN OFFERED</p>
             <h3>With gratitude, {name.trim()}.</h3>
             <p className="pushpanjali-thanks">Thank you for offering your Pushpanjali to Sri Aurobindo. May this gesture of aspiration remain with you.</p>
-            <blockquote>“{selectedFlower.meaning}”</blockquote>
-            <small>{selectedFlower.name} · The Mother</small>
+            <div className="pushpanjali-thank-flower">
+              <div><strong>{selectedFlower.name}</strong><span>Spiritual significance given by the Mother</span><q>{selectedFlower.meaning}</q></div>
+              <img src={selectedFlower.cutout} alt={selectedFlower.name}/>
+            </div>
             <div className="pushpanjali-reference"><span>Certificate Number</span><b>{result?.reference}</b></div>
             <p className="pushpanjali-email-status">{result?.emailed
               ? `Your e-Certificate has been sent to ${email}.`

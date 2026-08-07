@@ -62,6 +62,10 @@ def main() -> None:
     draw.rectangle((35, 35, 1565, 1065), outline="#b98335", width=5)
     draw.rectangle((55, 55, 1545, 1045), outline="#d5b476", width=2)
 
+    logo = Image.open(LOGO).convert("RGB")
+    logo.thumbnail((90, 77), Image.Resampling.LANCZOS)
+    canvas.paste(logo, (82, 72))
+
     centered(draw, (800, 108), "SRI AUROBINDO SOCIETY · LUCKNOW", font(ARIAL_BOLD, 30), "#173846")
     centered(draw, (800, 145), "GOMTI NAGAR CENTRE (UC-02)", font(ARIAL, 19), "#a86d27")
     draw.line((105, 174, 1495, 174), fill="#d5b476", width=2)
@@ -85,12 +89,8 @@ def main() -> None:
     centered(draw, (content_center, 375), "Sample Devotee", font(GEORGIA, 54), "#173846")
     draw.line((760, 402, 1315, 402), fill="#a86d27", width=2)
 
-    statement_face = font(GEORGIA, 26)
-    statement_lines = wrap(draw, "has lovingly offered Pushpanjali to Sri Aurobindo on his 154th Birthday.", statement_face, 800)
-    statement_y = 450
-    for line in statement_lines:
-        centered(draw, (content_center, statement_y), line, statement_face, "#455b63")
-        statement_y += 38
+    centered(draw, (content_center, 450), "has lovingly offered Pushpanjali to Sri Aurobindo", font(GEORGIA, 26), "#455b63")
+    centered(draw, (content_center, 500), "on his 154th Birthday", font(GEORGIA_BOLD, 29), "#a86d27")
 
     draw.text((content_left, 558), "Divine Love", font=font(GEORGIA_BOLD, 36), fill="#a86d27")
     draw.text((content_left, 612), "SPIRITUAL SIGNIFICANCE GIVEN BY THE MOTHER", font=font(ARIAL_BOLD, 16), fill="#78643f")
@@ -110,10 +110,8 @@ def main() -> None:
     canvas.paste(flower, (1245 + (240 - flower.width) // 2, 555 + (240 - flower.height) // 2), flower)
 
     draw.line((content_left, 835, content_right, 835), fill="#d5b476", width=2)
-    centered(draw, (content_center, 890), "15 AUGUST 2026  |  DARSHAN DIVAS", font(ARIAL_BOLD, 28), "#173846")
-    centered(draw, (content_center, 938), "CERTIFICATE NUMBER: UC02-000001", font(ARIAL_BOLD, 21), "#8b6a35")
-    centered(draw, (content_center, 988), "With gratitude and aspiration", font(GEORGIA_ITALIC, 24), "#173846")
-    centered(draw, (content_center, 1025), "Presented by Sri Aurobindo Society, Lucknow · Gomti Nagar Centre (UC-02)", font(ARIAL, 15), "#756340")
+    centered(draw, (content_center, 925), "15 AUGUST 2026  |  DARSHAN DIVAS", font(ARIAL_BOLD, 28), "#173846")
+    centered(draw, (content_center, 982), "CERTIFICATE NUMBER: UC02-000001", font(ARIAL_BOLD, 21), "#8b6a35")
 
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     canvas.save(OUTPUT, format="PNG", optimize=True)

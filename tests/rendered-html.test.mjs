@@ -85,8 +85,12 @@ test("renders the 15 August Pushpanjali campaign entry point", async () => {
     assert.ok((await stat(new URL(`../public/${asset}`, import.meta.url))).size > 10_000);
   }
   assert.match(source, /1872–1950/);
+  assert.match(source, /society-logo\.jpg/);
   assert.match(source, /const \[open, setOpen\] = useState\(true\)/);
   assert.doesNotMatch(source, /sas-pushpanjali-2026-seen|550/);
+  assert.doesNotMatch(source, /WhatsApp mobile number|setPhone/);
+  assert.match(source, /pushpanjali-thank-flower/);
+  assert.ok((source.match(/const flowerPositions = \[([^\]]+)/)?.[1].split(",").length || 0) >= 30);
   assert.match(source, /154th Birthday/);
   assert.match(source, /15 AUGUST 2026  \|  DARSHAN DIVAS/);
   assert.match(source, /CERTIFICATE NUMBER:/);
@@ -113,7 +117,7 @@ test("records a Pushpanjali offering and returns a certificate reference", async
     const response = await fetch(`http://127.0.0.1:${address.port}/api/pushpanjali-offerings`, {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ name: "Test Devotee", email: "devotee@example.com", phone: "+91 98765 43210", flowerId: "integral-love" }),
+      body: JSON.stringify({ name: "Test Devotee", email: "devotee@example.com", flowerId: "integral-love" }),
     });
     assert.equal(response.status, 201);
     const result = await response.json();
@@ -125,12 +129,12 @@ test("records a Pushpanjali offering and returns a certificate reference", async
     const offeringFiles = files.filter(name => name.endsWith(".json"));
     assert.equal(offeringFiles.length, 1);
     const document = JSON.parse(await readFile(path.join(directory, offeringFiles[0]), "utf8"));
-    assert.equal(document.participant.phone, "+919876543210");
+    assert.equal(document.participant.phone, undefined);
     assert.equal(document.certificateNumber, "UC02-000001");
     const secondResponse = await fetch(`http://127.0.0.1:${address.port}/api/pushpanjali-offerings`, {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ name: "Second Devotee", email: "second@example.com", phone: "9123456789", flowerId: "divine-love" }),
+      body: JSON.stringify({ name: "Second Devotee", email: "second@example.com", flowerId: "divine-love" }),
     });
     assert.equal(secondResponse.status, 201);
     const secondResult = await secondResponse.json();
