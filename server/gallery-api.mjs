@@ -255,22 +255,28 @@ async function saveLocalPushpanjaliOffering(document) {
   }
 }
 
-async function savePushpanjaliOffering(document) {
-  const local = await saveLocalPushpanjaliOffering(document);
-  if (!process.env.MONGODB_URI) {
-    return { mongo: false, offeringNumber: local.offeringNumber, reference: local.reference };
-  }
+async function mirrorPushpanjaliOfferingToMongo(storedDocument) {
   try {
     mongoClientPromise ||= new MongoClient(process.env.MONGODB_URI, { serverSelectionTimeoutMS: 8000 }).connect();
     const client = await mongoClientPromise;
     const database = client.db(process.env.MONGODB_DB || "saslucknow");
-    await database.collection("pushpanjaliOfferings").insertOne(local.storedDocument);
-    return { mongo: true, offeringNumber: local.offeringNumber, reference: local.reference };
+    await database.collection("pushpanjaliOfferings").insertOne(storedDocument);
   } catch (error) {
     console.error("Pushpanjali MongoDB save failed; local record retained", error instanceof Error ? error.message : error);
     mongoClientPromise = undefined;
-    return { mongo: false, offeringNumber: local.offeringNumber, reference: local.reference };
   }
+}
+
+async function savePushpanjaliOffering(document) {
+  const local = await saveLocalPushpanjaliOffering(document);
+  const mongoQueued = Boolean(process.env.MONGODB_URI);
+  if (mongoQueued) void mirrorPushpanjaliOfferingToMongo(local.storedDocument);
+  return {
+    mongo: false,
+    mongoQueued,
+    offeringNumber: local.offeringNumber,
+    reference: local.reference,
+  };
 }
 
 async function countPushpanjaliOfferings() {
@@ -302,23 +308,24 @@ async function emailPushpanjaliCertificate({ name, email, flower, reference }) {
       <div style="max-width:900px;margin:auto;border:2px solid #c58b27;background:#fffdf8 url('https://www.saslucknow.in/pushpanjali-certificate-ornamental-bg.png') center/100% 100% no-repeat;padding:52px 58px">
         <table role="presentation" width="100%" style="border-collapse:collapse"><tr>
           <td width="90"><img src="https://www.saslucknow.in/society-logo-transparent.png" alt="Sri Aurobindo Society" width="82" style="display:block;width:82px;height:auto"></td>
-          <td style="text-align:center"><div style="font-size:16px;font-weight:700;letter-spacing:2px">SRI AUROBINDO SOCIETY · LUCKNOW</div><div style="margin-top:6px;color:#9b6428;font-size:12px;letter-spacing:1.5px">GOMTI NAGAR CENTRE (UC-02)</div></td>
+          <td style="text-align:center"><div style="font-size:22px;font-weight:700;letter-spacing:2px">SRI AUROBINDO SOCIETY · LUCKNOW</div><div style="margin-top:6px;color:#9b6428;font-size:11px;letter-spacing:1.5px">GOMTI NAGAR CENTRE (UC-02)</div></td>
           <td width="90">&nbsp;</td>
         </tr></table>
         <table role="presentation" width="100%" style="margin-top:28px;border-collapse:collapse"><tr>
           <td width="34%" valign="top" style="padding-right:28px">
-            <img src="https://www.saslucknow.in/pushpanjali-sri-aurobindo.jpg" alt="Sri Aurobindo" style="display:block;width:100%;max-width:280px;height:420px;object-fit:cover;border:2px solid #c49345;border-radius:12px">
+            <img src="https://www.saslucknow.in/pushpanjali-sri-aurobindo.jpg" alt="Sri Aurobindo" style="display:block;width:100%;max-width:280px;height:420px;object-fit:cover;object-position:30% 30%;border:2px solid #c49345;border-radius:12px">
           </td>
           <td valign="top">
-            <h1 style="margin:0 0 26px;padding-bottom:10px;border-bottom:1px solid #c89c56;text-align:center;font:700 42px Georgia,serif;color:#173846">Certificate of Pushpanjali</h1>
-            <p style="margin:0;text-align:center;color:#59686c;font-size:17px">This certifies that</p>
-            <h2 style="display:block;margin:10px 0 18px;padding-bottom:7px;border-bottom:1px solid #9b6428;text-align:center;font:italic 38px Georgia,serif;color:#a66a16">${escapedName}</h2>
-            <p style="margin:0 0 24px;text-align:center;color:#455b63;font:19px/1.55 Georgia,serif">has lovingly offered Pushpanjali to Sri Aurobindo<br><strong style="white-space:nowrap;color:#9b6428">on his 154th Birthday</strong></p>
+            <h1 style="margin:0 0 22px;padding-bottom:9px;border-bottom:1px solid #c89c56;text-align:center;font:700 28px Georgia,serif;color:#173846">Certificate of Pushpanjali</h1>
+            <p style="margin:0;text-align:center;color:#59686c;font-size:15px">This certifies that</p>
+            <h2 style="display:block;margin:9px 0 16px;padding-bottom:7px;border-bottom:1px solid #9b6428;text-align:center;font:italic 44px Georgia,serif;color:#a66a16">${escapedName}</h2>
+            <p style="margin:0 0 22px;text-align:center;color:#455b63;font:17px/1.5 Georgia,serif">has lovingly offered Pushpanjali to Sri Aurobindo<br><strong style="white-space:nowrap;color:#9b6428">on his 154th Birthday</strong></p>
             <table role="presentation" width="100%" style="border-collapse:collapse"><tr>
               <td valign="middle" style="padding-right:18px;text-align:left">
-                <div style="color:#9b6428;font:26px Georgia,serif">${escapedFlower}</div>
-                <div style="margin-top:9px;color:#78643f;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase">Spiritual significance given by the Mother</div>
-                <div style="margin-top:7px;color:#526269;font:italic 18px/1.5 Georgia,serif">“${escapedMeaning}”</div>
+                <div style="color:#69767a;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase">Flower offered</div>
+                <div style="margin-top:4px;color:#9b6428;font:20px Georgia,serif">${escapedFlower}</div>
+                <div style="margin-top:7px;color:#78643f;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase">Spiritual significance given by the Mother</div>
+                <div style="margin-top:6px;color:#526269;font:italic 15px/1.45 Georgia,serif">“${escapedMeaning}”</div>
               </td>
               <td width="145" valign="middle"><img src="${flower.cutout}" alt="${escapedFlower}" width="145" height="145" style="display:block;object-fit:contain"></td>
             </tr></table>
@@ -381,18 +388,20 @@ async function handlePushpanjali(request, response) {
     };
     const persistence = await savePushpanjaliOffering(document);
     const reference = persistence.reference;
-    let emailed = false;
-    try {
-      emailed = await emailPushpanjaliCertificate({ name, email, flower, reference });
-    } catch (error) {
-      console.error(`Pushpanjali ${reference}: certificate email failed`, error instanceof Error ? error.message : error);
+    const emailQueued = Boolean(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASSWORD);
+    if (emailQueued) {
+      void emailPushpanjaliCertificate({ name, email, flower, reference }).catch(error => {
+        console.error(`Pushpanjali ${reference}: certificate email failed`, error instanceof Error ? error.message : error);
+      });
     }
     return json(response, 201, {
       ok: true,
       reference,
       offeringNumber: persistence.offeringNumber,
-      emailed,
+      emailed: false,
+      emailQueued,
       metadataStoredInMongo: persistence.mongo,
+      metadataStorageQueued: persistence.mongoQueued,
     }, headers);
   } catch (error) {
     const status = Number(error?.statusCode || 500);

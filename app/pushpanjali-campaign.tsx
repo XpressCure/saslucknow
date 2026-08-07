@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 
 type Flower = {
   id: "divine-love" | "integral-love" | "supramental-power";
@@ -15,6 +15,7 @@ type OfferingResult = {
   reference: string;
   offeringNumber: number;
   emailed: boolean;
+  emailQueued: boolean;
 };
 
 const flowers: Flower[] = [
@@ -53,13 +54,19 @@ function offeringEndpoint() {
     : "/api/pushpanjali-offerings";
 }
 
+const imageCache = new Map<string, Promise<HTMLImageElement>>();
+
 function loadImage(src: string) {
-  return new Promise<HTMLImageElement>((resolve, reject) => {
+  if (imageCache.has(src)) return imageCache.get(src)!;
+  const pendingImage = new Promise<HTMLImageElement>((resolve, reject) => {
     const image = new Image();
     image.onload = () => resolve(image);
     image.onerror = reject;
     image.src = src;
   });
+  imageCache.set(src, pendingImage);
+  pendingImage.catch(() => imageCache.delete(src));
+  return pendingImage;
 }
 
 function roundedRect(context: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, radius: number) {
@@ -87,6 +94,7 @@ function wrapText(context: CanvasRenderingContext2D, text: string, x: number, y:
 }
 
 export function PushpanjaliCampaign() {
+  const modalRef = useRef<HTMLElement>(null);
   const [open, setOpen] = useState(true);
   const [selectedId, setSelectedId] = useState<Flower["id"]>("divine-love");
   const [name, setName] = useState("");
@@ -118,6 +126,20 @@ export function PushpanjaliCampaign() {
   }, []);
 
   useEffect(() => {
+    [
+      "/pushpanjali-certificate-ornamental-bg.png",
+      "/pushpanjali-sri-aurobindo.jpg",
+      "/society-logo-transparent.png",
+      ...flowers.map(flower => flower.cutout),
+    ].forEach(source => { void loadImage(source).catch(() => {}); });
+  }, []);
+
+  useEffect(() => {
+    if (status !== "offered") return;
+    window.requestAnimationFrame(() => modalRef.current?.scrollTo({ top: 0, behavior: "auto" }));
+  }, [status]);
+
+  useEffect(() => {
     if (!open) return;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -138,8 +160,11 @@ export function PushpanjaliCampaign() {
   const submitOffering = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (status === "submitting") return;
-    setStatus("submitting");
+    setStatus("offered");
     setError("");
+    setResult(null);
+    setCertificateBlob(null);
+    setShareNotice("");
     try {
       const response = await fetch(offeringEndpoint(), {
         method: "POST",
@@ -151,16 +176,17 @@ export function PushpanjaliCampaign() {
         reference?: string;
         offeringNumber?: number;
         emailed?: boolean;
+        emailQueued?: boolean;
       };
       if (!response.ok) throw new Error(payload.error || "Your Pushpanjali could not be recorded. Please try again.");
       const offeringResult = {
         reference: String(payload.reference || "SAS-PUSHPA-2026"),
         offeringNumber: Number(payload.offeringNumber || 1),
         emailed: Boolean(payload.emailed),
+        emailQueued: Boolean(payload.emailQueued),
       };
       setResult(offeringResult);
       setOfferingCount(current => Math.max(current, offeringResult.offeringNumber));
-      setStatus("offered");
       try {
         const blob = await buildCertificate(offeringResult);
         setCertificateBlob(blob);
@@ -193,10 +219,10 @@ export function PushpanjaliCampaign() {
 
       context.fillStyle = "#173846";
       context.textAlign = "center";
-      context.font = "700 32px Arial";
+      context.font = "700 39px Arial";
       context.fillText("SRI AUROBINDO SOCIETY · LUCKNOW", 800, 112);
       context.fillStyle = "#9a621b";
-      context.font = "700 18px Arial";
+      context.font = "700 16px Arial";
       context.fillText("GOMTI NAGAR CENTRE (UC-02)", 800, 148);
 
       const portraitX = 105;
@@ -218,7 +244,11 @@ export function PushpanjaliCampaign() {
       const frameRatio = portraitWidth / portraitHeight;
       const drawWidth = portraitRatio > frameRatio ? portraitHeight * portraitRatio : portraitWidth;
       const drawHeight = portraitRatio > frameRatio ? portraitHeight : portraitWidth / portraitRatio;
-      context.drawImage(portrait, portraitX + (portraitWidth - drawWidth) / 2, portraitY + (portraitHeight - drawHeight) / 2, drawWidth, drawHeight);
+      const scale = drawWidth / portrait.width;
+      const focalX = portrait.width * .59;
+      const desiredDrawX = portraitX + portraitWidth / 2 - focalX * scale;
+      const drawX = Math.min(portraitX, Math.max(portraitX + portraitWidth - drawWidth, desiredDrawX));
+      context.drawImage(portrait, drawX, portraitY + (portraitHeight - drawHeight) / 2, drawWidth, drawHeight);
       context.restore();
       context.strokeStyle = "#c99a51";
       context.lineWidth = 3;
@@ -246,7 +276,7 @@ export function PushpanjaliCampaign() {
       context.restore();
       context.textAlign = "center";
       context.fillStyle = "#173846";
-      context.font = "bold 55px Georgia";
+      context.font = "bold 34px Georgia";
       context.fillText("Certificate of Pushpanjali", contentCenter, 275);
       context.strokeStyle = "rgba(173,112,28,.65)";
       context.lineWidth = 2;
@@ -255,15 +285,15 @@ export function PushpanjaliCampaign() {
       context.lineTo(contentCenter + 240, 300);
       context.stroke();
       context.fillStyle = "#4b5c62";
-      context.font = "23px Arial";
+      context.font = "19px Arial";
       context.fillText("This certifies that", contentCenter, 345);
 
-      let nameFontSize = 58;
+      let nameFontSize = 66;
       do {
         context.font = `italic ${nameFontSize}px Georgia`;
         if (context.measureText(name.trim()).width <= 790) break;
         nameFontSize -= 2;
-      } while (nameFontSize > 30);
+      } while (nameFontSize > 34);
       context.fillStyle = "#a66a16";
       context.fillText(name.trim(), contentCenter, 420);
       const underlineWidth = Math.min(810, Math.max(420, context.measureText(name.trim()).width + 70));
@@ -275,22 +305,25 @@ export function PushpanjaliCampaign() {
       context.stroke();
 
       context.fillStyle = "#455b63";
-      context.font = "25px Georgia";
+      context.font = "23px Georgia";
       context.fillText("has lovingly offered Pushpanjali to Sri Aurobindo", contentCenter, 497);
       context.fillStyle = "#a86d27";
-      context.font = "bold 29px Georgia";
+      context.font = "bold 26px Georgia";
       context.fillText("on his 154th Birthday", contentCenter, 542);
 
       context.textAlign = "left";
+      context.fillStyle = "#69767a";
+      context.font = "bold 12px Arial";
+      context.fillText("FLOWER OFFERED", contentLeft, 596);
       context.fillStyle = "#a86d27";
-      context.font = "bold 36px Georgia";
-      context.fillText(selectedFlower.name, contentLeft, 625);
+      context.font = "bold 25px Georgia";
+      context.fillText(selectedFlower.name, contentLeft, 630);
       context.fillStyle = "#78643f";
-      context.font = "bold 16px Arial";
-      context.fillText("SPIRITUAL SIGNIFICANCE GIVEN BY THE MOTHER", contentLeft, 665);
+      context.font = "bold 13px Arial";
+      context.fillText("SPIRITUAL SIGNIFICANCE GIVEN BY THE MOTHER", contentLeft, 670);
       context.fillStyle = "#4b5c62";
-      context.font = "italic 27px Georgia";
-      wrapText(context, `“${selectedFlower.meaning}”`, contentLeft, 715, 575, 38);
+      context.font = "italic 21px Georgia";
+      wrapText(context, `“${selectedFlower.meaning}”`, contentLeft, 710, 575, 31);
 
       context.save();
       context.shadowColor = "rgba(63,43,18,.25)";
@@ -368,7 +401,7 @@ export function PushpanjaliCampaign() {
     </button>}
 
     {open && <div className="pushpanjali-backdrop" role="presentation">
-      <section className="pushpanjali-modal" role="dialog" aria-modal="true" aria-labelledby="pushpanjali-title">
+      <section ref={modalRef} className="pushpanjali-modal" role="dialog" aria-modal="true" aria-labelledby="pushpanjali-title">
         <button className="pushpanjali-close" type="button" onClick={closeCampaign} aria-label="Close Pushpanjali">×</button>
         <header className="pushpanjali-heading">
           <div className="pushpanjali-counter" aria-live="polite"><strong>{offeringCount.toLocaleString("en-IN")}</strong><span>certificates generated</span></div>
@@ -421,20 +454,24 @@ export function PushpanjaliCampaign() {
           </form> : <div className="pushpanjali-success" aria-live="polite">
             <span className="pushpanjali-success-symbol" aria-hidden="true">✦</span>
             <p>YOUR PUSHPA HAS BEEN OFFERED</p>
-            <h3>With gratitude, {name.trim()}.</h3>
+            <h3><span>With gratitude,</span><em>{name.trim()}.</em></h3>
             <p className="pushpanjali-thanks">Thank you for offering your Pushpanjali to Sri Aurobindo. May this gesture of aspiration remain with you.</p>
             <div className="pushpanjali-thank-flower">
-              <div><strong>{selectedFlower.name}</strong><span>Spiritual significance given by the Mother</span><q>{selectedFlower.meaning}</q></div>
+              <div><span className="pushpanjali-flower-label">Flower offered</span><strong>{selectedFlower.name}</strong><span>Spiritual significance given by the Mother</span><q>{selectedFlower.meaning}</q></div>
               <img src={selectedFlower.cutout} alt={selectedFlower.name}/>
             </div>
-            <div className="pushpanjali-reference"><span>Certificate Number</span><b>{result?.reference}</b></div>
-            <p className="pushpanjali-email-status">{result?.emailed
-              ? `Your e-Certificate has been sent to ${email}.`
-              : "Your certificate is ready below. Email delivery is being completed."}</p>
+            <div className="pushpanjali-reference"><span>Certificate Number</span><b>{result?.reference || "Being prepared…"}</b></div>
+            <p className="pushpanjali-email-status">{!result
+              ? "Your offering is being recorded and your certificate is being prepared…"
+              : result.emailed
+                ? `Your e-Certificate has been sent to ${email}.`
+                : result.emailQueued
+                  ? `Your certificate is ready. A copy is being sent to ${email} in the background.`
+                  : "Your certificate is ready below."}</p>
             {error && <p className="pushpanjali-error" role="alert">{error}</p>}
             <div className="pushpanjali-success-actions">
-              <button type="button" onClick={downloadCertificate}>Download e-Certificate</button>
-              <button className="pushpanjali-whatsapp" type="button" onClick={shareCertificateOnWhatsApp}>Share certificate on WhatsApp</button>
+              <button type="button" onClick={downloadCertificate} disabled={!result}>Download e-Certificate</button>
+              <button className="pushpanjali-whatsapp" type="button" onClick={shareCertificateOnWhatsApp} disabled={!result}>Share certificate on WhatsApp</button>
               <a href="https://www.facebook.com/saslucknow" target="_blank" rel="noreferrer">Follow SAS Lucknow on Facebook <span aria-hidden="true">↗</span></a>
             </div>
             {shareNotice && <p className="pushpanjali-share-notice" role="status">{shareNotice}</p>}

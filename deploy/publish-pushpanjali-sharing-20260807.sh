@@ -3,19 +3,19 @@ set -euo pipefail
 
 releases=/var/www/saslucknow/releases
 current="$releases/current"
-candidate="$releases/seo-20260807-v8"
-backup="$releases/pre-seo-20260807-v8"
-failed="$releases/failed-seo-20260807-v8"
-archive=/tmp/saslucknow-seo-20260807-v8.tgz
-site_smoke=saslucknow-seo-site-smoke-v8
-api_smoke=saslucknow-seo-api-smoke-v8
+candidate="$releases/pushpanjali-layout-20260807-v9"
+backup="$releases/pre-pushpanjali-layout-20260807-v9"
+failed="$releases/failed-pushpanjali-layout-20260807-v9"
+archive=/tmp/saslucknow-pushpanjali-layout-20260807-v9.tgz
+site_smoke=saslucknow-pushpanjali-layout-site-smoke-v9
+api_smoke=saslucknow-pushpanjali-layout-api-smoke-v9
 cutover_started=0
 services_stopped=0
 
 stop_smoke() {
   sudo systemctl stop "$site_smoke.service" "$api_smoke.service" >/dev/null 2>&1 || true
   sudo systemctl reset-failed "$site_smoke.service" "$api_smoke.service" >/dev/null 2>&1 || true
-  rm -rf /tmp/saslucknow-seo-smoke
+  rm -rf /tmp/saslucknow-pushpanjali-layout-smoke
 }
 
 rollback() {
@@ -49,17 +49,23 @@ grep -R -q 'CERTIFICATE NUMBER:' "$candidate/dist/client/assets"
 grep -R -q 'pushpanjali-certificate-ornamental-bg.png' "$candidate/dist/client/assets"
 grep -R -q 'safe-area-inset-bottom' "$candidate/dist/client/assets"
 grep -R -q 'society-logo-transparent.png' "$candidate/dist/client/assets"
+grep -R -q 'Flower offered' "$candidate/dist/client/assets"
+grep -R -q 'With gratitude,' "$candidate/dist/client/assets"
+grep -R -q 'Being prepared' "$candidate/dist/client/assets"
+grep -R -q 'object-position:30% 30%' "$candidate/dist/client/assets"
 grep -R -q 'Sri Aurobindo Society Lucknow' "$candidate/dist/server"
 grep -R -q 'application/ld+json' "$candidate/dist/server"
 grep -R -q 'sitemap.xml' "$candidate/dist/server"
 grep -q 'countPushpanjaliOfferings' "$candidate/server/gallery-api.mjs"
 grep -q 'UC02-' "$candidate/server/gallery-api.mjs"
+grep -q 'void emailPushpanjaliCertificate' "$candidate/server/gallery-api.mjs"
+grep -q 'metadataStorageQueued' "$candidate/server/gallery-api.mjs"
 [[ -f "$candidate/scripts/migrate-pushpanjali-certificate-numbers.mjs" ]]
 [[ -s "$candidate/public/pushpanjali-certificate-ornamental-bg.png" ]]
 [[ -s "$candidate/public/society-logo-transparent.png" ]]
 
 stop_smoke
-mkdir -p /tmp/saslucknow-seo-smoke
+mkdir -p /tmp/saslucknow-pushpanjali-layout-smoke
 sudo systemd-run \
   --unit="$site_smoke" \
   --property="User=ec2-user" \
@@ -75,7 +81,7 @@ sudo systemd-run \
   --property="WorkingDirectory=$candidate" \
   --setenv=NODE_ENV=production \
   --setenv=PORT=3011 \
-  --setenv=PUSHPANJALI_DIR=/tmp/saslucknow-seo-smoke \
+  --setenv=PUSHPANJALI_DIR=/tmp/saslucknow-pushpanjali-layout-smoke \
   /usr/bin/node server/gallery-api.mjs >/dev/null
 
 site_ready=0
@@ -134,4 +140,4 @@ grep -q 'https://www.saslucknow.in/sri-aurobindo/life-sketch' /tmp/saslucknow-se
 
 cutover_started=0
 trap - ERR
-printf '%s\n' 'saslucknow-seo-live'
+printf '%s\n' 'saslucknow-pushpanjali-layout-live'

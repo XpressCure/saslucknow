@@ -92,6 +92,8 @@ test("applies phone-safe layouts to every page family and floating experience", 
   assert.match(css, /Full-site responsive hardening/);
   assert.match(css, /@media\(max-width:480px\)/);
   assert.match(css, /env\(safe-area-inset-bottom\)/);
+  assert.match(css, /\.pushpanjali-aurobindo\{[^}]*object-position:30% 30%/);
+  assert.match(css, /\.pushpanjali-success h3\{[^}]*flex-direction:column/);
   for (const selector of [
     ".site-header",
     ".detail-header",
@@ -169,6 +171,13 @@ test("renders the 15 August Pushpanjali campaign entry point", async () => {
   assert.doesNotMatch(source, /sas-pushpanjali-2026-seen|550/);
   assert.doesNotMatch(source, /WhatsApp mobile number|setPhone/);
   assert.match(source, /pushpanjali-thank-flower/);
+  assert.match(source, /pushpanjali-flower-label[^>]*>Flower offered/);
+  assert.match(source, /<h3><span>With gratitude,<\/span><em>\{name\.trim\(\)\}\.<\/em><\/h3>/);
+  assert.match(source, /const focalX = portrait\.width \* \.59/);
+  assert.match(source, /context\.font = "bold 34px Georgia"/);
+  assert.match(source, /let nameFontSize = 66/);
+  assert.match(source, /context\.fillText\("FLOWER OFFERED", contentLeft, 596\)/);
+  assert.match(source, /setStatus\("offered"\)[\s\S]*?await fetch\(offeringEndpoint\(\)/);
   assert.ok((source.match(/const flowerPositions = \[([^\]]+)/)?.[1].split(",").length || 0) >= 30);
   assert.match(source, /154th Birthday/);
   assert.match(source, /15 AUGUST 2026  \|  DARSHAN DIVAS/);
@@ -202,6 +211,8 @@ test("records a Pushpanjali offering and returns a certificate reference", async
     const result = await response.json();
     assert.equal(result.ok, true);
     assert.equal(result.emailed, false);
+    assert.equal(result.emailQueued, false);
+    assert.equal(result.metadataStorageQueued, false);
     assert.equal(result.offeringNumber, 1);
     assert.equal(result.reference, "UC02-000001");
     const files = await readdir(directory);
@@ -228,6 +239,15 @@ test("records a Pushpanjali offering and returns a certificate reference", async
     if (previousMongo === undefined) delete process.env.MONGODB_URI; else process.env.MONGODB_URI = previousMongo;
     if (previousSmtpHost === undefined) delete process.env.SMTP_HOST; else process.env.SMTP_HOST = previousSmtpHost;
   }
+});
+
+test("queues Pushpanjali email and Mongo work without blocking the confirmation response", async () => {
+  const source = await readFile(new URL("../server/gallery-api.mjs", import.meta.url), "utf8");
+  assert.match(source, /void mirrorPushpanjaliOfferingToMongo\(local\.storedDocument\)/);
+  assert.match(source, /void emailPushpanjaliCertificate\(\{ name, email, flower, reference \}\)\.catch/);
+  assert.doesNotMatch(source, /emailed = await emailPushpanjaliCertificate/);
+  assert.match(source, /emailQueued,/);
+  assert.match(source, /metadataStorageQueued: persistence\.mongoQueued/);
 });
 
 test("assigns sequential UC-02 certificate numbers to legacy offerings", async () => {
