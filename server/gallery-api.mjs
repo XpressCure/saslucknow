@@ -1,11 +1,10 @@
-import http from "node:http";
+﻿import http from "node:http";
 import { createReadStream, createWriteStream } from "node:fs";
-import { mkdir, open, readFile, readdir, rename, rm, stat, unlink, writeFile } from "node:fs/promises";
+import { mkdir, readFile, readdir, rename, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { pipeline } from "node:stream/promises";
 import { pathToFileURL } from "node:url";
 import { randomUUID } from "node:crypto";
-import { setTimeout as delay } from "node:timers/promises";
 import Busboy from "busboy";
 import { MongoClient } from "mongodb";
 import nodemailer from "nodemailer";
@@ -16,9 +15,6 @@ const PORT = Number(process.env.PORT || 3001);
 const UPLOAD_DIR = process.env.UPLOAD_DIR || path.resolve("work/gallery-submissions");
 const TEMP_DIR = path.join(UPLOAD_DIR, ".tmp");
 const MANIFEST_DIR = path.join(UPLOAD_DIR, "manifests");
-const PUSHPANJALI_DIR = process.env.PUSHPANJALI_DIR || path.resolve("work/pushpanjali-offerings");
-const PUSHPANJALI_COUNTER_FILE = path.join(PUSHPANJALI_DIR, ".certificate-counter");
-const PUSHPANJALI_COUNTER_LOCK = path.join(PUSHPANJALI_DIR, ".certificate-counter.lock");
 const MAX_REQUEST_BYTES = 130 * 1024 * 1024;
 const MAX_VIDEO_BYTES = 80 * 1024 * 1024;
 const MAX_IMAGE_BYTES = 12 * 1024 * 1024;
@@ -35,21 +31,21 @@ const pushpanjaliFlowers = new Map([
   ["divine-love", {
     name: "Divine Love",
     meaning: "A flower that is said to blossom even in the desert.",
-    botanical: "Punica granatum · orange-red, double",
+    botanical: "Punica granatum Â· orange-red, double",
     image: "https://www.saslucknow.in/pushpanjali-divine-love.jpg",
     cutout: "https://www.saslucknow.in/pushpanjali-divine-love-cutout.png",
   }],
   ["integral-love", {
     name: "Integral Love for the Divine",
     meaning: "Pure, complete, irrevocable, a love that gives itself for ever.",
-    botanical: "Rosa · white",
+    botanical: "Rosa Â· white",
     image: "https://www.saslucknow.in/pushpanjali-integral-love.jpg",
     cutout: "https://www.saslucknow.in/pushpanjali-integral-love-cutout.png",
   }],
   ["supramental-power", {
     name: "Power of the Supramental Consciousness",
     meaning: "Organising and active, irresistible in its influence.",
-    botanical: "Hibiscus rosa-sinensis ‘Rukmini’ · deep gold, double",
+    botanical: "Hibiscus rosa-sinensis â€˜Rukminiâ€™ Â· deep gold, double",
     image: "https://www.saslucknow.in/pushpanjali-supramental-power.jpg",
     cutout: "https://www.saslucknow.in/pushpanjali-supramental-power-cutout.png",
   }],
@@ -204,88 +200,22 @@ async function readJsonBody(request, maxBytes = 12_000) {
   }
 }
 
-async function currentPushpanjaliCount() {
-  let storedCounter = 0;
-  let fileCount = 0;
-  try {
-    storedCounter = Number.parseInt(await readFile(PUSHPANJALI_COUNTER_FILE, "utf8"), 10) || 0;
-  } catch (error) {
-    if (error?.code !== "ENOENT") throw error;
-  }
-  try {
-    const files = await readdir(PUSHPANJALI_DIR);
-    fileCount = files.filter(name => name.endsWith(".json")).length;
-  } catch (error) {
-    if (error?.code !== "ENOENT") throw error;
-  }
-  return Math.max(storedCounter, fileCount);
-}
-
-async function saveLocalPushpanjaliOffering(document) {
-  await mkdir(PUSHPANJALI_DIR, { recursive: true });
-  let lockHandle;
-  for (let attempt = 0; attempt < 120; attempt += 1) {
-    try {
-      lockHandle = await open(PUSHPANJALI_COUNTER_LOCK, "wx");
-      break;
-    } catch (error) {
-      if (error?.code !== "EEXIST" || attempt === 119) throw error;
-      if (attempt > 40) {
-        try {
-          const details = await stat(PUSHPANJALI_COUNTER_LOCK);
-          if (Date.now() - details.mtimeMs > 30_000) await unlink(PUSHPANJALI_COUNTER_LOCK);
-        } catch (cleanupError) {
-          if (cleanupError?.code !== "ENOENT") throw cleanupError;
-        }
-      }
-      await delay(25);
-    }
-  }
-  if (!lockHandle) throw new Error("Certificate counter lock could not be acquired");
-  try {
-    const offeringNumber = (await currentPushpanjaliCount()) + 1;
-    const certificateNumber = `UC02-${String(offeringNumber).padStart(6, "0")}`;
-    const storedDocument = { ...document, reference: certificateNumber, certificateNumber, offeringNumber };
-    await writeFile(path.join(PUSHPANJALI_DIR, `${document.offeringId}.json`), JSON.stringify(storedDocument, null, 2), { flag: "wx" });
-    await writeFile(PUSHPANJALI_COUNTER_FILE, String(offeringNumber), "utf8");
-    return { storedDocument, offeringNumber, reference: certificateNumber };
-  } finally {
-    await lockHandle.close().catch(() => {});
-    await unlink(PUSHPANJALI_COUNTER_LOCK).catch(() => {});
-  }
-}
-
-async function mirrorPushpanjaliOfferingToMongo(storedDocument) {
-  try {
-    mongoClientPromise ||= new MongoClient(process.env.MONGODB_URI, { serverSelectionTimeoutMS: 8000 }).connect();
-    const client = await mongoClientPromise;
-    const database = client.db(process.env.MONGODB_DB || "saslucknow");
-    await database.collection("pushpanjaliOfferings").insertOne(storedDocument);
-  } catch (error) {
-    console.error("Pushpanjali MongoDB save failed; local record retained", error instanceof Error ? error.message : error);
-    mongoClientPromise = undefined;
-  }
+function nextInMemoryReference() {
+  return `UC02-${Date.now().toString(36).toUpperCase()}-${Math.floor(Math.random() * 1_000_000).toString(36).toUpperCase()}`;
 }
 
 async function savePushpanjaliOffering(document) {
-  const local = await saveLocalPushpanjaliOffering(document);
-  const mongoQueued = Boolean(process.env.MONGODB_URI);
-  if (mongoQueued) void mirrorPushpanjaliOfferingToMongo(local.storedDocument);
+  void document;
   return {
     mongo: false,
-    mongoQueued,
-    offeringNumber: local.offeringNumber,
-    reference: local.reference,
+    mongoQueued: false,
+    offeringNumber: 0,
+    reference: nextInMemoryReference(),
   };
 }
 
 async function countPushpanjaliOfferings() {
-  try {
-    return await currentPushpanjaliCount();
-  } catch (error) {
-    if (error?.code === "ENOENT") return 0;
-    throw error;
-  }
+  return 0;
 }
 
 async function emailPushpanjaliCertificate({ name, email, flower, reference }) {
@@ -305,47 +235,103 @@ async function emailPushpanjaliCertificate({ name, email, flower, reference }) {
   const escapedBotanical = safeHtml(flower.botanical);
   const escapedReference = safeHtml(reference);
   const certificateHtml = `
-    <div style="margin:0;padding:28px;background:#efe6d5;font-family:Arial,sans-serif;color:#173846">
-      <div style="max-width:900px;margin:auto;border:2px solid #c58b27;background:#fffdf8 url('https://www.saslucknow.in/pushpanjali-certificate-ornamental-bg.png') center/100% 100% no-repeat;padding:52px 58px">
-        <table role="presentation" width="100%" style="border-collapse:collapse"><tr><td align="center">
-          <table role="presentation" style="margin:auto;border-collapse:collapse"><tr>
-            <td width="78" style="padding-right:14px"><img src="https://www.saslucknow.in/society-logo-transparent.png" alt="Sri Aurobindo Society" width="72" style="display:block;width:72px;height:auto"></td>
-            <td style="text-align:center"><div style="font-size:22px;font-weight:700;letter-spacing:2px">SRI AUROBINDO SOCIETY · LUCKNOW</div><div style="margin-top:6px;color:#9b6428;font-size:11px;letter-spacing:1.5px">GOMTI NAGAR CENTRE (UC-02)</div></td>
-          </tr></table>
-        </td></tr></table>
-        <table role="presentation" width="100%" style="margin-top:28px;border-collapse:collapse"><tr>
-          <td width="34%" valign="top" style="padding-right:28px">
-            <img src="https://www.saslucknow.in/pushpanjali-sri-aurobindo.jpg" alt="Sri Aurobindo" style="display:block;width:100%;max-width:280px;height:570px;object-fit:cover;object-position:40% 50%;border:2px solid #c49345;border-radius:12px">
-          </td>
-          <td valign="top">
-            <h1 style="margin:0 0 22px;padding-bottom:9px;border-bottom:1px solid #c89c56;text-align:center;font:700 28px Georgia,serif;color:#173846">Certificate of Pushpanjali</h1>
-            <p style="margin:0;text-align:center;color:#59686c;font-size:15px">This certifies that</p>
-            <h2 style="display:block;margin:9px 0 16px;padding-bottom:7px;border-bottom:1px solid #9b6428;text-align:center;font:italic 44px Georgia,serif;color:#a66a16">${escapedName}</h2>
-            <p style="margin:0 0 34px;text-align:center;color:#455b63;font:17px/1.5 Georgia,serif">has lovingly offered Pushpanjali to Sri Aurobindo<br><strong style="white-space:nowrap;color:#9b6428">on his 154th Birthday.</strong></p>
-            <table role="presentation" width="100%" style="border-collapse:collapse"><tr>
-              <td valign="middle" style="padding-right:18px;text-align:left">
-                <div style="color:#173846;font:700 23px Georgia,serif">Flower Offered</div>
-                <div style="margin-top:10px;color:#78643f;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase">Botanical name / variety</div>
-                <div style="margin-top:5px;color:#526269;font-size:13px;line-height:1.35">${escapedBotanical}</div>
-                <div style="margin-top:12px;color:#78643f;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase">Spiritual significance given by the Mother</div>
-                <div style="margin-top:5px;color:#526269;font:italic 15px/1.45 Georgia,serif">“${escapedMeaning}”</div>
-                <div style="margin-top:14px;color:#9b6428;font:700 20px/1.2 Georgia,serif">${escapedFlower}</div>
-              </td>
-              <td width="145" valign="middle"><img src="${flower.cutout}" alt="${escapedFlower}" width="145" height="145" style="display:block;object-fit:contain"></td>
-            </tr></table>
-            <div style="margin-top:28px;padding-top:18px;border-top:1px solid #d5b879;text-align:center;font-weight:700;letter-spacing:1.2px">15 AUGUST 2026&nbsp;&nbsp;|&nbsp;&nbsp;DARSHAN DIVAS</div>
-            <div style="margin-top:10px;text-align:center;color:#8a6b3d;font-size:13px">CERTIFICATE NUMBER: <strong>${escapedReference}</strong></div>
-          </td>
-        </tr></table>
-      </div>
-      <p style="max-width:900px;margin:18px auto 0;text-align:center;font-size:13px;color:#58666b">Your virtual Pushpanjali has been recorded by SAS Lucknow. <a href="https://www.facebook.com/saslucknow" style="color:#8e5c22">Follow SAS Lucknow on Facebook</a>.</p>
-    </div>`;
-  await transport.sendMail({
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta charSet="UTF-8">
+        <style>
+          @media only screen and (max-width: 700px) {
+            .pp-wrap { padding: 8px !important; }
+            .pp-card { padding: 18px 12px !important; }
+            .pp-title { font-size: 28px !important; line-height: 1.2 !important; }
+            .pp-name { font-size: 28px !important; }
+            .pp-brand-title { font-size: 20px !important; letter-spacing: 1px !important; }
+            .pp-two-col { display: block !important; width: 100% !important; }
+            .pp-left-col { padding-right: 0 !important; width: 100% !important; }
+            .pp-right-col { padding-top: 18px !important; width: 100% !important; }
+            .pp-divider { margin-top: 16px !important; }
+          }
+        </style>
+      </head>
+      <body style="margin:0;padding:0;background:#efe6d5;font-family:Arial,sans-serif;color:#173846">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:0;border-collapse:collapse;background:#efe6d5;">
+          <tr>
+            <td align="center" style="padding:14px 8px;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" class="pp-card" style="max-width:680px;width:100%;border:2px solid #c58b27;background:#fffdf8 url('https://www.saslucknow.in/pushpanjali-certificate-ornamental-bg.png') center/100% 100% no-repeat;padding:36px 20px 24px;border-radius:8px;box-sizing:border-box;overflow:hidden;">
+                <tr>
+                  <td align="center" style="padding:0 6px 24px;">
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;width:100%;max-width:620px;margin:0 auto;">
+                      <tr>
+                        <td style="width:72px;padding-right:12px;" valign="middle">
+                          <img src="https://www.saslucknow.in/society-logo-transparent.png" alt="Sri Aurobindo Society logo" width="72" style="display:block;width:72px;height:auto;max-width:72px;border:0;outline:none;text-decoration:none;">
+                        </td>
+                        <td valign="middle" style="text-align:left;">
+                          <div class="pp-brand-title" style="font-size:22px;line-height:1.15;font-weight:700;letter-spacing:1px;color:#173846;">SRI AUROBINDO SOCIETY · LUCKNOW</div>
+                          <div style="margin-top:6px;color:#9b6428;font-size:11px;letter-spacing:1.3px;line-height:1.25;">GOMTI NAGAR CENTRE (UC-02)</div>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <h1 style="margin:0 0 14px;padding-bottom:10px;border-bottom:1px solid #c89c56;text-align:center;font:700 32px Georgia,serif;color:#173846;line-height:1.15;" class="pp-title">Certificate of Pushpanjali</h1>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="text-align:center;color:#59686c;font-size:15px;line-height:1.45;">This certifies that</td>
+                </tr>
+                <tr>
+                  <td align="center" style="padding:4px 0 18px 0;">
+                    <div class="pp-name" style="font-style:italic;font-size:40px;line-height:1.15;font-family:Georgia,serif;color:#a66a16;margin:0 0 8px 0;padding:0 6px 10px 6px;border-bottom:1px solid #9b6428;max-width:100%;word-break:break-word;">${escapedName}</div>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="text-align:center;color:#455b63;font:17px/1.55 Georgia,serif;padding-bottom:20px;">has lovingly offered Pushpanjali to Sri Aurobindo<br><strong style="white-space:nowrap;color:#9b6428;">on his 154th Birthday.</strong></td>
+                </tr>
+                <tr>
+                  <td>
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;">
+                      <tr>
+                        <td class="pp-two-col pp-left-col" width="35%" valign="top" style="padding-right:20px;">
+                          <img src="https://www.saslucknow.in/pushpanjali-sri-aurobindo.jpg" alt="Sri Aurobindo" width="280" style="display:block;max-width:100%;width:100%;height:auto;border:2px solid #c49345;border-radius:12px;object-fit:cover;object-position:40% 50%;font-family:Georgia,serif;">
+                        </td>
+                        <td class="pp-two-col pp-right-col" valign="top" style="padding-left:2px;">
+                          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;">
+                            <tr>
+                              <td style="padding:0;">
+                                <div style="color:#173846;font:700 24px/1.2 Georgia,serif;">Flower Offered</div>
+                                <div style="margin-top:12px;color:#78643f;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Botanical name / variety</div>
+                                <div style="margin-top:5px;color:#526269;font-size:14px;line-height:1.4;">${escapedBotanical}</div>
+                                <div style="margin-top:14px;color:#78643f;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Spiritual significance given by the Mother</div>
+                                <div style="margin-top:5px;color:#526269;font:italic 17px/1.45 Georgia,serif;">“${escapedMeaning}”</div>
+                                <div style="margin-top:12px;color:#9b6428;font:700 19px/1.25 Georgia,serif;">${escapedFlower}</div>
+                              </td>
+                              <td width="140" style="width:140px;padding-left:16px;text-align:center;vertical-align:middle;">
+                                <img src="${flower.cutout}" alt="${escapedFlower}" width="124" style="display:block;width:124px;height:auto;max-width:124px;margin:0 auto;object-fit:contain;">
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                    </table>
+                    <div class="pp-divider" style="margin-top:28px;padding-top:18px;border-top:1px solid #d5b879;text-align:center;font-weight:700;letter-spacing:1.2px;color:#173846;font-size:19px;line-height:1.35;">15 AUGUST 2026&nbsp;&nbsp;|&nbsp;&nbsp;DARSHAN DIVAS</div>
+                    <div style="margin-top:10px;text-align:center;color:#8a6b3d;font-size:14px;line-height:1.45;">CERTIFICATE NUMBER: <strong>${escapedReference}</strong></div>
+                  </td>
+                </tr>
+              </table>
+              <p style="margin:14px auto 0;text-align:center;font-size:13px;line-height:1.45;color:#58666b;max-width:680px;padding:0 8px;">Your virtual Pushpanjali has been recorded by SAS Lucknow. <a href="https://www.facebook.com/saslucknow" style="color:#8e5c22;text-decoration:underline;">Follow SAS Lucknow on Facebook</a>.</p>
+            </td>
+          </tr>
+        </table>
+      </body>
+    </html>`;  await transport.sendMail({
     from: process.env.EMAIL_FROM || `SAS Lucknow <${process.env.SMTP_USER}>`,
     to: email,
     replyTo: process.env.EMAIL_REPLY_TO || "info.saslucknow@gmail.com",
-    subject: `Your Pushpanjali Certificate ${reference} · 15 August 2026`,
-    text: `Dear ${name},\n\nThis certifies that you have lovingly offered Pushpanjali to Sri Aurobindo on his 154th Birthday.\n\nFlower Offered\nBotanical name / variety: ${flower.botanical}\nSpiritual significance given by the Mother: “${flower.meaning}”\n${flower.name}\n\n15 August 2026 | Darshan Divas\nCertificate Number: ${reference}\n\nFollow SAS Lucknow: https://www.facebook.com/saslucknow`,
+    subject: `Your Pushpanjali Certificate ${reference} Â· 15 August 2026`,
+    text: `Dear ${name},\n\nThis certifies that you have lovingly offered Pushpanjali to Sri Aurobindo on his 154th Birthday.\n\nFlower Offered\nBotanical name / variety: ${flower.botanical}\nSpiritual significance given by the Mother: â€œ${flower.meaning}â€\n${flower.name}\n\n15 August 2026 | Darshan Divas\nCertificate Number: ${reference}\n\nFollow SAS Lucknow: https://www.facebook.com/saslucknow`,
     html: certificateHtml,
   });
   return true;
@@ -371,7 +357,7 @@ async function handlePushpanjali(request, response) {
 
   try {
     const payload = await readJsonBody(request);
-    if (payload.website) return json(response, 201, { ok: true, reference: "received", offeringNumber: 1, emailed: false }, headers);
+    if (payload.website) return json(response, 201, { ok: true, reference: "received", offeringNumber: 0, emailed: false }, headers);
     const name = cleanText(payload.name, 100);
     const email = String(payload.email || "").trim().toLowerCase().slice(0, 180);
     const flowerId = cleanText(payload.flowerId, 60);
@@ -404,8 +390,6 @@ async function handlePushpanjali(request, response) {
       offeringNumber: persistence.offeringNumber,
       emailed: false,
       emailQueued,
-      metadataStoredInMongo: persistence.mongo,
-      metadataStorageQueued: persistence.mongoQueued,
     }, headers);
   } catch (error) {
     const status = Number(error?.statusCode || 500);
@@ -569,3 +553,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   await mkdir(UPLOAD_DIR, { recursive: true });
   createGalleryServer().listen(PORT, "127.0.0.1", () => console.log(`Gallery submission service listening on 127.0.0.1:${PORT}`));
 }
+
+
+
+

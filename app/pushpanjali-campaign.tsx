@@ -93,6 +93,11 @@ function wrapText(context: CanvasRenderingContext2D, text: string, x: number, y:
   return currentY;
 }
 
+function isMobileBrowser() {
+  if (typeof navigator === "undefined" || typeof navigator.userAgent !== "string") return false;
+  return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+}
+
 export function PushpanjaliCampaign() {
   const modalRef = useRef<HTMLElement>(null);
   const [open, setOpen] = useState(true);
@@ -181,12 +186,12 @@ export function PushpanjaliCampaign() {
       if (!response.ok) throw new Error(payload.error || "Your Pushpanjali could not be recorded. Please try again.");
       const offeringResult = {
         reference: String(payload.reference || "SAS-PUSHPA-2026"),
-        offeringNumber: Number(payload.offeringNumber || 1),
+        offeringNumber: Number(payload.offeringNumber || 0),
         emailed: Boolean(payload.emailed),
         emailQueued: Boolean(payload.emailQueued),
       };
       setResult(offeringResult);
-      setOfferingCount(current => Math.max(current, offeringResult.offeringNumber));
+      setOfferingCount(current => current + 1);
       try {
         const blob = await buildCertificate(offeringResult);
         setCertificateBlob(blob);
@@ -400,8 +405,12 @@ export function PushpanjaliCampaign() {
         setShareNotice("Certificate image shared. Select WhatsApp and the intended contact if prompted.");
         return;
       }
-      window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer");
-      setShareNotice("WhatsApp has opened. Select the intended contact, attach the downloaded certificate image if prompted, and send the prepared message.");
+      const encodedMessage = encodeURIComponent(message);
+      const whatsappUrl = isMobileBrowser() ? `https://wa.me/?text=${encodedMessage}` : `https://web.whatsapp.com/send?text=${encodedMessage}`;
+      window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+      setShareNotice(isMobileBrowser()
+        ? "WhatsApp has opened. Select the intended contact, attach the downloaded certificate image, and send the prepared message."
+        : "WhatsApp Web has opened. Attach the downloaded certificate image in WhatsApp Web and send the prepared message.");
     } catch (shareError) {
       if (shareError instanceof DOMException && shareError.name === "AbortError") return;
       setError("WhatsApp sharing could not open on this device. Download the certificate and share it from WhatsApp.");
