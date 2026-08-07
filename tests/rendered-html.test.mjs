@@ -177,15 +177,25 @@ test("renders the 15 August Pushpanjali campaign entry point", async () => {
   assert.match(source, /pushpanjali-thank-flower/);
   assert.match(source, /pushpanjali-flower-label[^>]*>Flower offered/);
   assert.match(source, /<h3><span>With gratitude,<\/span><em>\{name\.trim\(\)\}\.<\/em><\/h3>/);
-  assert.match(source, /const focalX = portrait\.width \* \.59/);
+  assert.match(source, /const portraitHeight = 763/);
+  assert.match(source, /const focalX = portrait\.width \* \.432/);
   assert.match(source, /context\.font = "bold 34px Georgia"/);
   assert.match(source, /let nameFontSize = 66/);
-  assert.match(source, /context\.fillText\("FLOWER OFFERED", contentLeft, 596\)/);
+  assert.match(source, /const headerWidth = logoWidth \+ headerGap \+ societyWidth/);
+  assert.match(source, /context\.fillText\("Flower Offered", contentLeft, 610\)/);
+  assert.match(source, /context\.fillText\("BOTANICAL NAME \/ VARIETY", contentLeft, 650\)/);
+  assert.match(source, /context\.fillText\(selectedFlower\.botanical, contentLeft, 675\)/);
+  assert.match(source, /context\.fillText\(selectedFlower\.name, contentLeft, 795\)/);
+  assert.match(source, /context\.drawImage\(flower, 1235, 610, 220, 220\)/);
   assert.match(source, /setStatus\("offered"\)[\s\S]*?await fetch\(offeringEndpoint\(\)/);
   assert.ok((source.match(/const flowerPositions = \[([^\]]+)/)?.[1].split(",").length || 0) >= 30);
-  assert.match(source, /154th Birthday/);
+  assert.match(source, /154th Birthday\./);
   assert.match(source, /15 AUGUST 2026  \|  DARSHAN DIVAS/);
   assert.match(source, /CERTIFICATE NUMBER:/);
+  const apiSource = await readFile(new URL("../server/gallery-api.mjs", import.meta.url), "utf8");
+  assert.match(apiSource, /const escapedBotanical = safeHtml\(flower\.botanical\)/);
+  assert.match(apiSource, /object-position:40% 50%/);
+  assert.match(apiSource, />Flower Offered<\/div>[\s\S]*?Botanical name \/ variety[\s\S]*?Spiritual significance given by the Mother[\s\S]*?\$\{escapedFlower\}/);
 });
 
 test("records a Pushpanjali offering and returns a certificate reference", async () => {

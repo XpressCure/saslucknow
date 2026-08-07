@@ -215,20 +215,27 @@ export function PushpanjaliCampaign() {
 
       context.drawImage(ornamentalBackground, 0, 0, canvas.width, canvas.height);
 
-      context.drawImage(logo, 86, 75, 110, 94);
-
       context.fillStyle = "#173846";
       context.textAlign = "center";
       context.font = "700 39px Arial";
-      context.fillText("SRI AUROBINDO SOCIETY · LUCKNOW", 800, 112);
+      const societyName = "SRI AUROBINDO SOCIETY · LUCKNOW";
+      const logoWidth = 96;
+      const logoHeight = 82;
+      const headerGap = 22;
+      const societyWidth = context.measureText(societyName).width;
+      const headerWidth = logoWidth + headerGap + societyWidth;
+      const headerLeft = (canvas.width - headerWidth) / 2;
+      const societyCenter = headerLeft + logoWidth + headerGap + societyWidth / 2;
+      context.drawImage(logo, headerLeft, 73, logoWidth, logoHeight);
+      context.fillText(societyName, societyCenter, 112);
       context.fillStyle = "#9a621b";
       context.font = "700 16px Arial";
-      context.fillText("GOMTI NAGAR CENTRE (UC-02)", 800, 148);
+      context.fillText("GOMTI NAGAR CENTRE (UC-02)", societyCenter, 148);
 
       const portraitX = 105;
       const portraitY = 225;
       const portraitWidth = 430;
-      const portraitHeight = 690;
+      const portraitHeight = 763;
       context.save();
       context.fillStyle = "rgba(255,253,246,.62)";
       context.shadowColor = "rgba(86,59,21,.18)";
@@ -245,7 +252,7 @@ export function PushpanjaliCampaign() {
       const drawWidth = portraitRatio > frameRatio ? portraitHeight * portraitRatio : portraitWidth;
       const drawHeight = portraitRatio > frameRatio ? portraitHeight : portraitWidth / portraitRatio;
       const scale = drawWidth / portrait.width;
-      const focalX = portrait.width * .59;
+      const focalX = portrait.width * .432;
       const desiredDrawX = portraitX + portraitWidth / 2 - focalX * scale;
       const drawX = Math.min(portraitX, Math.max(portraitX + portraitWidth - drawWidth, desiredDrawX));
       context.drawImage(portrait, drawX, portraitY + (portraitHeight - drawHeight) / 2, drawWidth, drawHeight);
@@ -309,27 +316,33 @@ export function PushpanjaliCampaign() {
       context.fillText("has lovingly offered Pushpanjali to Sri Aurobindo", contentCenter, 497);
       context.fillStyle = "#a86d27";
       context.font = "bold 26px Georgia";
-      context.fillText("on his 154th Birthday", contentCenter, 542);
+      context.fillText("on his 154th Birthday.", contentCenter, 542);
 
       context.textAlign = "left";
-      context.fillStyle = "#69767a";
+      context.fillStyle = "#173846";
+      context.font = "bold 28px Georgia";
+      context.fillText("Flower Offered", contentLeft, 610);
+      context.fillStyle = "#78643f";
       context.font = "bold 12px Arial";
-      context.fillText("FLOWER OFFERED", contentLeft, 596);
-      context.fillStyle = "#a86d27";
-      context.font = "bold 25px Georgia";
-      context.fillText(selectedFlower.name, contentLeft, 630);
+      context.fillText("BOTANICAL NAME / VARIETY", contentLeft, 650);
+      context.fillStyle = "#4b5c62";
+      context.font = "15px Arial";
+      context.fillText(selectedFlower.botanical, contentLeft, 675);
       context.fillStyle = "#78643f";
       context.font = "bold 13px Arial";
-      context.fillText("SPIRITUAL SIGNIFICANCE GIVEN BY THE MOTHER", contentLeft, 670);
+      context.fillText("SPIRITUAL SIGNIFICANCE GIVEN BY THE MOTHER", contentLeft, 710);
       context.fillStyle = "#4b5c62";
       context.font = "italic 21px Georgia";
-      wrapText(context, `“${selectedFlower.meaning}”`, contentLeft, 710, 575, 31);
+      wrapText(context, `“${selectedFlower.meaning}”`, contentLeft, 738, 575, 31);
+      context.fillStyle = "#a86d27";
+      context.font = "bold 25px Georgia";
+      context.fillText(selectedFlower.name, contentLeft, 795);
 
       context.save();
       context.shadowColor = "rgba(63,43,18,.25)";
       context.shadowBlur = 18;
       context.shadowOffsetY = 8;
-      context.drawImage(flower, 1235, 590, 220, 220);
+      context.drawImage(flower, 1235, 610, 220, 220);
       context.restore();
 
       context.textAlign = "center";

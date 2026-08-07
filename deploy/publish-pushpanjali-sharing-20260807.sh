@@ -3,12 +3,12 @@ set -euo pipefail
 
 releases=/var/www/saslucknow/releases
 current="$releases/current"
-candidate="$releases/pushpanjali-modal-grid-20260807-v11"
-backup="$releases/pre-pushpanjali-modal-grid-20260807-v11"
-failed="$releases/failed-pushpanjali-modal-grid-20260807-v11"
-archive=/tmp/saslucknow-pushpanjali-modal-grid-20260807-v11.tgz
-site_smoke=saslucknow-pushpanjali-modal-grid-site-smoke-v11
-api_smoke=saslucknow-pushpanjali-modal-grid-api-smoke-v11
+candidate="$releases/pushpanjali-certificate-final-20260807-v12"
+backup="$releases/pre-pushpanjali-certificate-final-20260807-v12"
+failed="$releases/failed-pushpanjali-certificate-final-20260807-v12"
+archive=/tmp/saslucknow-pushpanjali-certificate-final-20260807-v12.tgz
+site_smoke=saslucknow-pushpanjali-certificate-final-site-smoke-v12
+api_smoke=saslucknow-pushpanjali-certificate-final-api-smoke-v12
 cutover_started=0
 services_stopped=0
 
@@ -57,6 +57,9 @@ grep -R -q 'grid-template-areas:"empty eyebrow counter"' "$candidate/dist/client
 grep -R -q 'grid-area:counter' "$candidate/dist/client/assets"
 grep -R -q 'grid-template-rows:auto minmax(0,1fr) auto auto' "$candidate/dist/client/assets"
 grep -R -q 'align-items:flex-end' "$candidate/dist/client/assets"
+grep -R -q 'BOTANICAL NAME / VARIETY' "$candidate/dist/client/assets"
+grep -R -q 'Flower Offered' "$candidate/dist/client/assets"
+grep -R -q '154th Birthday\.' "$candidate/dist/client/assets"
 grep -R -q 'Sri Aurobindo Society Lucknow' "$candidate/dist/server"
 grep -R -q 'application/ld+json' "$candidate/dist/server"
 grep -R -q 'sitemap.xml' "$candidate/dist/server"
@@ -64,6 +67,8 @@ grep -q 'countPushpanjaliOfferings' "$candidate/server/gallery-api.mjs"
 grep -q 'UC02-' "$candidate/server/gallery-api.mjs"
 grep -q 'void emailPushpanjaliCertificate' "$candidate/server/gallery-api.mjs"
 grep -q 'metadataStorageQueued' "$candidate/server/gallery-api.mjs"
+grep -q 'escapedBotanical' "$candidate/server/gallery-api.mjs"
+grep -q 'object-position:40% 50%' "$candidate/server/gallery-api.mjs"
 [[ -f "$candidate/scripts/migrate-pushpanjali-certificate-numbers.mjs" ]]
 [[ -s "$candidate/public/pushpanjali-certificate-ornamental-bg.png" ]]
 [[ -s "$candidate/public/society-logo-transparent.png" ]]

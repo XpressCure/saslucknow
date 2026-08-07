@@ -302,37 +302,41 @@ async function emailPushpanjaliCertificate({ name, email, flower, reference }) {
   const escapedName = safeHtml(name);
   const escapedFlower = safeHtml(flower.name);
   const escapedMeaning = safeHtml(flower.meaning);
+  const escapedBotanical = safeHtml(flower.botanical);
   const escapedReference = safeHtml(reference);
   const certificateHtml = `
     <div style="margin:0;padding:28px;background:#efe6d5;font-family:Arial,sans-serif;color:#173846">
       <div style="max-width:900px;margin:auto;border:2px solid #c58b27;background:#fffdf8 url('https://www.saslucknow.in/pushpanjali-certificate-ornamental-bg.png') center/100% 100% no-repeat;padding:52px 58px">
-        <table role="presentation" width="100%" style="border-collapse:collapse"><tr>
-          <td width="90"><img src="https://www.saslucknow.in/society-logo-transparent.png" alt="Sri Aurobindo Society" width="82" style="display:block;width:82px;height:auto"></td>
-          <td style="text-align:center"><div style="font-size:22px;font-weight:700;letter-spacing:2px">SRI AUROBINDO SOCIETY · LUCKNOW</div><div style="margin-top:6px;color:#9b6428;font-size:11px;letter-spacing:1.5px">GOMTI NAGAR CENTRE (UC-02)</div></td>
-          <td width="90">&nbsp;</td>
-        </tr></table>
+        <table role="presentation" width="100%" style="border-collapse:collapse"><tr><td align="center">
+          <table role="presentation" style="margin:auto;border-collapse:collapse"><tr>
+            <td width="78" style="padding-right:14px"><img src="https://www.saslucknow.in/society-logo-transparent.png" alt="Sri Aurobindo Society" width="72" style="display:block;width:72px;height:auto"></td>
+            <td style="text-align:center"><div style="font-size:22px;font-weight:700;letter-spacing:2px">SRI AUROBINDO SOCIETY · LUCKNOW</div><div style="margin-top:6px;color:#9b6428;font-size:11px;letter-spacing:1.5px">GOMTI NAGAR CENTRE (UC-02)</div></td>
+          </tr></table>
+        </td></tr></table>
         <table role="presentation" width="100%" style="margin-top:28px;border-collapse:collapse"><tr>
           <td width="34%" valign="top" style="padding-right:28px">
-            <img src="https://www.saslucknow.in/pushpanjali-sri-aurobindo.jpg" alt="Sri Aurobindo" style="display:block;width:100%;max-width:280px;height:420px;object-fit:cover;object-position:30% 30%;border:2px solid #c49345;border-radius:12px">
+            <img src="https://www.saslucknow.in/pushpanjali-sri-aurobindo.jpg" alt="Sri Aurobindo" style="display:block;width:100%;max-width:280px;height:570px;object-fit:cover;object-position:40% 50%;border:2px solid #c49345;border-radius:12px">
           </td>
           <td valign="top">
             <h1 style="margin:0 0 22px;padding-bottom:9px;border-bottom:1px solid #c89c56;text-align:center;font:700 28px Georgia,serif;color:#173846">Certificate of Pushpanjali</h1>
             <p style="margin:0;text-align:center;color:#59686c;font-size:15px">This certifies that</p>
             <h2 style="display:block;margin:9px 0 16px;padding-bottom:7px;border-bottom:1px solid #9b6428;text-align:center;font:italic 44px Georgia,serif;color:#a66a16">${escapedName}</h2>
-            <p style="margin:0 0 22px;text-align:center;color:#455b63;font:17px/1.5 Georgia,serif">has lovingly offered Pushpanjali to Sri Aurobindo<br><strong style="white-space:nowrap;color:#9b6428">on his 154th Birthday</strong></p>
+            <p style="margin:0 0 34px;text-align:center;color:#455b63;font:17px/1.5 Georgia,serif">has lovingly offered Pushpanjali to Sri Aurobindo<br><strong style="white-space:nowrap;color:#9b6428">on his 154th Birthday.</strong></p>
             <table role="presentation" width="100%" style="border-collapse:collapse"><tr>
               <td valign="middle" style="padding-right:18px;text-align:left">
-                <div style="color:#69767a;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase">Flower offered</div>
-                <div style="margin-top:4px;color:#9b6428;font:20px Georgia,serif">${escapedFlower}</div>
-                <div style="margin-top:7px;color:#78643f;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase">Spiritual significance given by the Mother</div>
-                <div style="margin-top:6px;color:#526269;font:italic 15px/1.45 Georgia,serif">“${escapedMeaning}”</div>
+                <div style="color:#173846;font:700 23px Georgia,serif">Flower Offered</div>
+                <div style="margin-top:10px;color:#78643f;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase">Botanical name / variety</div>
+                <div style="margin-top:5px;color:#526269;font-size:13px;line-height:1.35">${escapedBotanical}</div>
+                <div style="margin-top:12px;color:#78643f;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase">Spiritual significance given by the Mother</div>
+                <div style="margin-top:5px;color:#526269;font:italic 15px/1.45 Georgia,serif">“${escapedMeaning}”</div>
+                <div style="margin-top:14px;color:#9b6428;font:700 20px/1.2 Georgia,serif">${escapedFlower}</div>
               </td>
               <td width="145" valign="middle"><img src="${flower.cutout}" alt="${escapedFlower}" width="145" height="145" style="display:block;object-fit:contain"></td>
             </tr></table>
+            <div style="margin-top:28px;padding-top:18px;border-top:1px solid #d5b879;text-align:center;font-weight:700;letter-spacing:1.2px">15 AUGUST 2026&nbsp;&nbsp;|&nbsp;&nbsp;DARSHAN DIVAS</div>
+            <div style="margin-top:10px;text-align:center;color:#8a6b3d;font-size:13px">CERTIFICATE NUMBER: <strong>${escapedReference}</strong></div>
           </td>
         </tr></table>
-        <div style="margin-top:25px;padding-top:18px;border-top:1px solid #d5b879;text-align:center;font-weight:700;letter-spacing:1.2px">15 AUGUST 2026&nbsp;&nbsp;|&nbsp;&nbsp;DARSHAN DIVAS</div>
-        <div style="margin-top:10px;text-align:center;color:#8a6b3d;font-size:13px">CERTIFICATE NUMBER: <strong>${escapedReference}</strong></div>
       </div>
       <p style="max-width:900px;margin:18px auto 0;text-align:center;font-size:13px;color:#58666b">Your virtual Pushpanjali has been recorded by SAS Lucknow. <a href="https://www.facebook.com/saslucknow" style="color:#8e5c22">Follow SAS Lucknow on Facebook</a>.</p>
     </div>`;
@@ -341,7 +345,7 @@ async function emailPushpanjaliCertificate({ name, email, flower, reference }) {
     to: email,
     replyTo: process.env.EMAIL_REPLY_TO || "info.saslucknow@gmail.com",
     subject: `Your Pushpanjali Certificate ${reference} · 15 August 2026`,
-    text: `Dear ${name},\n\nThis certifies that you have lovingly offered Pushpanjali to Sri Aurobindo on his 154th Birthday.\n\nSelected pushpa: ${flower.name}\n“${flower.meaning}” — Spiritual significance given by the Mother\n\n15 August 2026 | Darshan Divas\nCertificate Number: ${reference}\n\nFollow SAS Lucknow: https://www.facebook.com/saslucknow`,
+    text: `Dear ${name},\n\nThis certifies that you have lovingly offered Pushpanjali to Sri Aurobindo on his 154th Birthday.\n\nFlower Offered\nBotanical name / variety: ${flower.botanical}\nSpiritual significance given by the Mother: “${flower.meaning}”\n${flower.name}\n\n15 August 2026 | Darshan Divas\nCertificate Number: ${reference}\n\nFollow SAS Lucknow: https://www.facebook.com/saslucknow`,
     html: certificateHtml,
   });
   return true;
