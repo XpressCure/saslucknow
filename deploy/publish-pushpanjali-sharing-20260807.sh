@@ -3,13 +3,14 @@ set -euo pipefail
 
 releases=/var/www/saslucknow/releases
 current="$releases/current"
-candidate="$releases/pushpanjali-certificate-20260807-v3"
-backup="$releases/pre-pushpanjali-certificate-20260807-v3"
-failed="$releases/failed-pushpanjali-certificate-20260807-v3"
-archive=/tmp/pushpanjali-certificate-20260807-v3.tgz
-site_smoke=saslucknow-pushpanjali-certificate-site-smoke-v3
-api_smoke=saslucknow-pushpanjali-certificate-api-smoke-v3
+candidate="$releases/pushpanjali-certificate-20260807-v4"
+backup="$releases/pre-pushpanjali-certificate-20260807-v4"
+failed="$releases/failed-pushpanjali-certificate-20260807-v4"
+archive=/tmp/pushpanjali-certificate-20260807-v4.tgz
+site_smoke=saslucknow-pushpanjali-certificate-site-smoke-v4
+api_smoke=saslucknow-pushpanjali-certificate-api-smoke-v4
 cutover_started=0
+services_stopped=0
 
 stop_smoke() {
   sudo systemctl stop "$site_smoke.service" "$api_smoke.service" >/dev/null 2>&1 || true
@@ -25,6 +26,8 @@ rollback() {
     sudo systemctl stop saslucknow.service saslucknow-gallery.service || true
     if [[ -d "$current" && ! -e "$failed" ]]; then mv "$current" "$failed"; fi
     if [[ -d "$backup" && ! -e "$current" ]]; then mv "$backup" "$current"; fi
+    sudo systemctl restart saslucknow-gallery.service saslucknow.service || true
+  elif [[ "$services_stopped" == 1 ]]; then
     sudo systemctl restart saslucknow-gallery.service saslucknow.service || true
   fi
   exit "$exit_code"
@@ -45,6 +48,7 @@ grep -R -q 'Share certificate on WhatsApp' "$candidate/dist/client/assets"
 grep -R -q 'CERTIFICATE NUMBER:' "$candidate/dist/client/assets"
 grep -q 'countPushpanjaliOfferings' "$candidate/server/gallery-api.mjs"
 grep -q 'UC02-' "$candidate/server/gallery-api.mjs"
+[[ -f "$candidate/scripts/migrate-pushpanjali-certificate-numbers.mjs" ]]
 
 stop_smoke
 mkdir -p /tmp/saslucknow-pushpanjali-sharing-smoke
@@ -80,12 +84,18 @@ grep -q 'Pushpanjali' /tmp/saslucknow-pushpanjali-sharing-site.html
 grep -q '"count":0' /tmp/saslucknow-pushpanjali-sharing-api.json
 stop_smoke
 
+sudo systemctl stop saslucknow-gallery.service
+services_stopped=1
+/usr/bin/node "$candidate/scripts/migrate-pushpanjali-certificate-numbers.mjs" /var/www/saslucknow/shared/pushpanjali-offerings >/tmp/saslucknow-pushpanjali-certificate-migration.json
+grep -q '"counter":' /tmp/saslucknow-pushpanjali-certificate-migration.json
+
 cutover_started=1
 mv "$current" "$backup"
 mv "$candidate" "$current"
 
 sudo systemctl restart saslucknow-gallery.service
 sudo systemctl restart saslucknow.service
+services_stopped=0
 
 site_ready=0
 api_ready=0

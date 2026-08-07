@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtemp, readFile, readdir, rm, stat } from "node:fs/promises";
+import { mkdtemp, readFile, readdir, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -142,6 +142,23 @@ test("records a Pushpanjali offering and returns a certificate reference", async
     if (previousDirectory === undefined) delete process.env.PUSHPANJALI_DIR; else process.env.PUSHPANJALI_DIR = previousDirectory;
     if (previousMongo === undefined) delete process.env.MONGODB_URI; else process.env.MONGODB_URI = previousMongo;
     if (previousSmtpHost === undefined) delete process.env.SMTP_HOST; else process.env.SMTP_HOST = previousSmtpHost;
+  }
+});
+
+test("assigns sequential UC-02 certificate numbers to legacy offerings", async () => {
+  const directory = await mkdtemp(path.join(tmpdir(), "sas-pushpanjali-migration-"));
+  try {
+    await writeFile(path.join(directory, "later.json"), JSON.stringify({ offeringId: "later", reference: "legacy-b", createdAt: "2026-08-02T10:00:00.000Z" }));
+    await writeFile(path.join(directory, "earlier.json"), JSON.stringify({ offeringId: "earlier", reference: "legacy-a", createdAt: "2026-08-01T10:00:00.000Z" }));
+    const { migratePushpanjaliCertificateNumbers } = await import("../scripts/migrate-pushpanjali-certificate-numbers.mjs");
+    const result = await migratePushpanjaliCertificateNumbers(directory);
+    assert.equal(result.migrated, 2);
+    assert.equal(result.counter, 2);
+    assert.equal(JSON.parse(await readFile(path.join(directory, "earlier.json"), "utf8")).certificateNumber, "UC02-000001");
+    assert.equal(JSON.parse(await readFile(path.join(directory, "later.json"), "utf8")).certificateNumber, "UC02-000002");
+    assert.equal(await readFile(path.join(directory, ".certificate-counter"), "utf8"), "2");
+  } finally {
+    await rm(directory, { recursive: true, force: true });
   }
 });
 
