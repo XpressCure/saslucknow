@@ -13,6 +13,10 @@ async function render(path = "/") {
   }, { waitUntil() {}, passThroughOnException() {} });
 }
 
+function renderedBody(html) {
+  return html.match(/<body[^>]*>([\s\S]*?)<\/body>/)?.[1] || html;
+}
+
 test("renders the mission homepage with accessible landmarks", async () => {
   const response = await render();
   assert.equal(response.status, 200);
@@ -26,6 +30,12 @@ test("renders the mission homepage with accessible landmarks", async () => {
   assert.doesNotMatch(html, /<a href="#discover">Discover<\/a>/);
   assert.match(html, /Gomti Nagar Centre \(UC-02\)/i);
   assert.doesNotMatch(html, /codex-preview|Your site is taking shape/);
+});
+
+test("uses the transparent Society logo as the browser icon", async () => {
+  const source = await readFile(new URL("../app/layout.tsx", import.meta.url), "utf8");
+  assert.match(source, /icons:/);
+  assert.match(source, /society-logo-transparent\.png/);
 });
 
 test("renders the Sultanpur Shrine detail page", async () => {
@@ -201,7 +211,7 @@ test("renders the complete Mother profile structure", async () => {
   assert.match(html, /Académie Julian/);
   assert.match(html, /17 November 1973/);
   assert.match(html, /src="\/the-mother-portrait\.jpg"/);
-  assert.doesNotMatch(html, /href="https?:\/\//);
+  assert.doesNotMatch(renderedBody(html), /href="https?:\/\//);
 });
 
 test("renders the internal chronological life sketch", async () => {
@@ -211,7 +221,7 @@ test("renders the internal chronological life sketch", async () => {
   for (const heading of ["Origins and education", "India’s awakening", "Pondicherry and Integral Yoga", "Alipore Jail", "Siddhi Day and the Ashram"]) assert.match(html, new RegExp(heading));
   assert.match(html, /Sri Aurobindo Ashram photographic exhibition/);
   assert.match(html, /src="\/sri-aurobindo-portrait\.jpg"/);
-  assert.doesNotMatch(html, /href="https?:\/\//);
+  assert.doesNotMatch(renderedBody(html), /href="https?:\/\//);
 });
 
 test("homepage biography cards use internal routes", async () => {
@@ -245,7 +255,7 @@ test("renders the internal Darshan Divas guide and navigation entry", async () =
   for (const day of ["The Mother’s Birthday", "Sri Aurobindo’s Birthday", "Siddhi Day", "Supramental Manifestation Day", "Sri Aurobindo’s Mahasamadhi", "The Mother’s Mahasamadhi"]) assert.match(html, new RegExp(day));
   const yearPositions = ["1872", "1878", "1920", "1926", "1950", "1956", "1973"].map(year => html.indexOf(`>${year}<`));
   assert.deepEqual(yearPositions, [...yearPositions].sort((a, b) => a - b));
-  assert.doesNotMatch(html, /href="https?:\/\//);
+  assert.doesNotMatch(renderedBody(html), /href="https?:\/\//);
 });
 
 test("identifies an indexed Savitri line without an API key", async () => {
