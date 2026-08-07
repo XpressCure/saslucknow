@@ -93,6 +93,7 @@ test("applies phone-safe layouts to every page family and floating experience", 
   assert.match(css, /@media\(max-width:480px\)/);
   assert.match(css, /env\(safe-area-inset-bottom\)/);
   assert.match(css, /\.pushpanjali-aurobindo\{[^}]*object-position:30% 30%/);
+  assert.match(css, /\.pushpanjali-counter\{[^}]*grid-column:3[^}]*align-items:flex-end[^}]*text-align:right/);
   assert.match(css, /\.pushpanjali-success h3\{[^}]*flex-direction:column/);
   for (const selector of [
     ".site-header",
