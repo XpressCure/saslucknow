@@ -199,7 +199,7 @@ export function PushpanjaliCampaign() {
 
       const background = context.createLinearGradient(0, 0, 1600, 1100);
       background.addColorStop(0, "#fffaf0");
-      background.addColorStop(.48, "#f7e6bb");
+      background.addColorStop(.52, "#f7e6bb");
       background.addColorStop(1, "#fffdf7");
       context.fillStyle = background;
       context.fillRect(0, 0, 1600, 1100);
@@ -212,79 +212,115 @@ export function PushpanjaliCampaign() {
 
       context.fillStyle = "#173846";
       context.textAlign = "center";
-      context.font = "700 28px Arial";
-      context.fillText("SRI AUROBINDO SOCIETY · LUCKNOW", 800, 112);
+      context.font = "700 30px Arial";
+      context.fillText("SRI AUROBINDO SOCIETY · LUCKNOW", 800, 108);
       context.fillStyle = "#a86d27";
-      context.font = "20px Arial";
-      context.fillText("GOMTI NAGAR CENTRE (UC-02)", 800, 148);
-      context.font = "italic 32px Georgia";
-      context.fillText("Presents this", 800, 215);
-      context.fillStyle = "#173846";
-      context.font = "64px Georgia";
-      context.fillText("Certificate of Pushpanjali", 800, 285);
+      context.font = "19px Arial";
+      context.fillText("GOMTI NAGAR CENTRE (UC-02)", 800, 145);
+      context.strokeStyle = "rgba(185,131,53,.55)";
+      context.lineWidth = 2;
+      context.beginPath();
+      context.moveTo(105, 174);
+      context.lineTo(1495, 174);
+      context.stroke();
 
-      roundedRect(context, 105, 340, 390, 545, 22);
+      const portraitX = 92;
+      const portraitY = 210;
+      const portraitWidth = 430;
+      const portraitHeight = 700;
+      roundedRect(context, portraitX, portraitY, portraitWidth, portraitHeight, 22);
       context.save();
       context.clip();
       const portraitRatio = portrait.width / portrait.height;
-      const frameRatio = 390 / 545;
-      const drawWidth = portraitRatio > frameRatio ? 545 * portraitRatio : 390;
-      const drawHeight = portraitRatio > frameRatio ? 545 : 390 / portraitRatio;
-      context.drawImage(portrait, 105 + (390 - drawWidth) / 2, 340 + (545 - drawHeight) / 2, drawWidth, drawHeight);
+      const frameRatio = portraitWidth / portraitHeight;
+      const drawWidth = portraitRatio > frameRatio ? portraitHeight * portraitRatio : portraitWidth;
+      const drawHeight = portraitRatio > frameRatio ? portraitHeight : portraitWidth / portraitRatio;
+      context.drawImage(portrait, portraitX + (portraitWidth - drawWidth) / 2, portraitY + (portraitHeight - drawHeight) / 2, drawWidth, drawHeight);
       context.restore();
       context.strokeStyle = "#c99a51";
       context.lineWidth = 3;
-      roundedRect(context, 105, 340, 390, 545, 22);
+      roundedRect(context, portraitX, portraitY, portraitWidth, portraitHeight, 22);
       context.stroke();
 
       context.fillStyle = "rgba(16,43,56,.78)";
-      roundedRect(context, 126, 362, 218, 78, 10);
+      roundedRect(context, 114, 232, 230, 80, 10);
       context.fill();
       context.textAlign = "left";
       context.fillStyle = "#fffdf7";
       context.font = "26px Georgia";
-      context.fillText("Sri Aurobindo", 144, 395);
+      context.fillText("Sri Aurobindo", 132, 266);
       context.fillStyle = "#e8c884";
       context.font = "bold 16px Arial";
-      context.fillText("1872–1950", 144, 423);
+      context.fillText("1872–1950", 132, 294);
 
-      context.textAlign = "left";
-      context.fillStyle = "#4b5c62";
-      context.font = "24px Arial";
-      context.fillText("This certifies that", 575, 390);
+      const contentLeft = 585;
+      const contentRight = 1490;
+      const contentCenter = (contentLeft + contentRight) / 2;
+      context.textAlign = "center";
       context.fillStyle = "#173846";
       context.font = "58px Georgia";
-      wrapText(context, name.trim(), 575, 465, 890, 64);
+      context.fillText("Certificate of Pushpanjali", contentCenter, 250);
       context.fillStyle = "#4b5c62";
-      context.font = "25px Arial";
-      context.fillText("has lovingly offered", 575, 545);
+      context.font = "23px Arial";
+      context.fillText("This certifies that", contentCenter, 315);
+
+      let nameFontSize = 54;
+      do {
+        context.font = `${nameFontSize}px Georgia`;
+        if (context.measureText(name.trim()).width <= 790) break;
+        nameFontSize -= 2;
+      } while (nameFontSize > 30);
+      context.fillStyle = "#173846";
+      context.fillText(name.trim(), contentCenter, 385);
+      const underlineWidth = Math.min(810, Math.max(420, context.measureText(name.trim()).width + 70));
+      context.strokeStyle = "#a86d27";
+      context.lineWidth = 2;
+      context.beginPath();
+      context.moveTo(contentCenter - underlineWidth / 2, 402);
+      context.lineTo(contentCenter + underlineWidth / 2, 402);
+      context.stroke();
+
+      context.fillStyle = "#455b63";
+      context.font = "26px Georgia";
+      wrapText(context, "has lovingly offered Pushpanjali to Sri Aurobindo on his 154th Birthday.", contentCenter, 462, 800, 38);
+
+      context.textAlign = "left";
       context.fillStyle = "#a86d27";
-      context.font = "bold 38px Georgia";
-      context.fillText(selectedFlower.name, 575, 602);
+      context.font = "bold 36px Georgia";
+      context.fillText(selectedFlower.name, contentLeft, 590);
+      context.fillStyle = "#78643f";
+      context.font = "bold 16px Arial";
+      context.fillText("SPIRITUAL SIGNIFICANCE GIVEN BY THE MOTHER", contentLeft, 630);
       context.fillStyle = "#4b5c62";
       context.font = "italic 27px Georgia";
-      const meaningEnd = wrapText(context, `“${selectedFlower.meaning}”`, 575, 660, 780, 38);
-      context.fillStyle = "#78643f";
-      context.font = "19px Arial";
-      context.fillText("— Spiritual significance given by the Mother", 575, meaningEnd + 38);
+      wrapText(context, `“${selectedFlower.meaning}”`, contentLeft, 682, 610, 38);
 
       context.save();
       context.shadowColor = "rgba(63,43,18,.25)";
       context.shadowBlur = 18;
       context.shadowOffsetY = 8;
-      context.drawImage(flower, 1275, 635, 230, 230);
+      context.drawImage(flower, 1245, 555, 240, 240);
       context.restore();
 
       context.textAlign = "center";
+      context.strokeStyle = "rgba(185,131,53,.55)";
+      context.lineWidth = 2;
+      context.beginPath();
+      context.moveTo(contentLeft, 835);
+      context.lineTo(contentRight, 835);
+      context.stroke();
       context.fillStyle = "#173846";
       context.font = "bold 28px Arial";
-      context.fillText("15 AUGUST 2026 · DARSHAN DAY", 980, 870);
+      context.fillText("15 AUGUST 2026  |  DARSHAN DIVAS", contentCenter, 890);
       context.fillStyle = "#8b6a35";
-      context.font = "20px Arial";
-      context.fillText(`Offering ${String(certificateResult.offeringNumber).padStart(4, "0")} · ${certificateResult.reference}`, 980, 915);
+      context.font = "bold 21px Arial";
+      context.fillText(`CERTIFICATE NUMBER: ${certificateResult.reference}`, contentCenter, 938);
       context.fillStyle = "#173846";
       context.font = "italic 24px Georgia";
-      context.fillText("With gratitude and aspiration", 800, 992);
+      context.fillText("With gratitude and aspiration", contentCenter, 988);
+      context.fillStyle = "#756340";
+      context.font = "15px Arial";
+      context.fillText("Presented by Sri Aurobindo Society, Lucknow · Gomti Nagar Centre (UC-02)", contentCenter, 1025);
 
       return await new Promise<Blob>((resolve, reject) => {
         canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error("Certificate image could not be created")), "image/png");
@@ -400,7 +436,7 @@ export function PushpanjaliCampaign() {
             <p className="pushpanjali-thanks">Thank you for offering your Pushpanjali to Sri Aurobindo. May this gesture of aspiration remain with you.</p>
             <blockquote>“{selectedFlower.meaning}”</blockquote>
             <small>{selectedFlower.name} · The Mother</small>
-            <div className="pushpanjali-reference">Offering {String(result?.offeringNumber || 1).padStart(4, "0")}<b>{result?.reference}</b></div>
+            <div className="pushpanjali-reference"><span>Certificate Number</span><b>{result?.reference}</b></div>
             <p className="pushpanjali-email-status">{result?.emailed
               ? `Your e-Certificate has been sent to ${email}.`
               : "Your certificate is ready below. Email delivery is being completed."}</p>

@@ -3,12 +3,12 @@ set -euo pipefail
 
 releases=/var/www/saslucknow/releases
 current="$releases/current"
-candidate="$releases/pushpanjali-sharing-20260807-v2"
-backup="$releases/pre-pushpanjali-sharing-20260807-v2"
-failed="$releases/failed-pushpanjali-sharing-20260807-v2"
-archive=/tmp/pushpanjali-sharing-20260807-v2.tgz
-site_smoke=saslucknow-pushpanjali-sharing-site-smoke-v2
-api_smoke=saslucknow-pushpanjali-sharing-api-smoke-v2
+candidate="$releases/pushpanjali-certificate-20260807-v3"
+backup="$releases/pre-pushpanjali-certificate-20260807-v3"
+failed="$releases/failed-pushpanjali-certificate-20260807-v3"
+archive=/tmp/pushpanjali-certificate-20260807-v3.tgz
+site_smoke=saslucknow-pushpanjali-certificate-site-smoke-v3
+api_smoke=saslucknow-pushpanjali-certificate-api-smoke-v3
 cutover_started=0
 
 stop_smoke() {
@@ -42,7 +42,9 @@ tar -xzf "$archive" -C "$candidate"
 
 grep -R -q 'certificates generated' "$candidate/dist/client/assets"
 grep -R -q 'Share certificate on WhatsApp' "$candidate/dist/client/assets"
+grep -R -q 'CERTIFICATE NUMBER:' "$candidate/dist/client/assets"
 grep -q 'countPushpanjaliOfferings' "$candidate/server/gallery-api.mjs"
+grep -q 'UC02-' "$candidate/server/gallery-api.mjs"
 
 stop_smoke
 mkdir -p /tmp/saslucknow-pushpanjali-sharing-smoke

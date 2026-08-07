@@ -85,6 +85,9 @@ test("renders the 15 August Pushpanjali campaign entry point", async () => {
     assert.ok((await stat(new URL(`../public/${asset}`, import.meta.url))).size > 10_000);
   }
   assert.match(source, /1872–1950/);
+  assert.match(source, /154th Birthday/);
+  assert.match(source, /15 AUGUST 2026  \|  DARSHAN DIVAS/);
+  assert.match(source, /CERTIFICATE NUMBER:/);
 });
 
 test("records a Pushpanjali offering and returns a certificate reference", async () => {
@@ -115,13 +118,24 @@ test("records a Pushpanjali offering and returns a certificate reference", async
     assert.equal(result.ok, true);
     assert.equal(result.emailed, false);
     assert.equal(result.offeringNumber, 1);
-    assert.match(result.reference, /^SAS-P2026-[A-F0-9]{8}$/);
+    assert.equal(result.reference, "UC02-000001");
     const files = await readdir(directory);
-    assert.equal(files.filter(name => name.endsWith(".json")).length, 1);
-    const document = JSON.parse(await readFile(path.join(directory, files[0]), "utf8"));
+    const offeringFiles = files.filter(name => name.endsWith(".json"));
+    assert.equal(offeringFiles.length, 1);
+    const document = JSON.parse(await readFile(path.join(directory, offeringFiles[0]), "utf8"));
     assert.equal(document.participant.phone, "+919876543210");
+    assert.equal(document.certificateNumber, "UC02-000001");
+    const secondResponse = await fetch(`http://127.0.0.1:${address.port}/api/pushpanjali-offerings`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ name: "Second Devotee", email: "second@example.com", phone: "9123456789", flowerId: "divine-love" }),
+    });
+    assert.equal(secondResponse.status, 201);
+    const secondResult = await secondResponse.json();
+    assert.equal(secondResult.reference, "UC02-000002");
+    assert.equal(secondResult.offeringNumber, 2);
     const finalCountResponse = await fetch(`http://127.0.0.1:${address.port}/api/pushpanjali-offerings`);
-    assert.equal((await finalCountResponse.json()).count, 1);
+    assert.equal((await finalCountResponse.json()).count, 2);
   } finally {
     await new Promise(resolve => server.close(resolve));
     await rm(directory, { recursive: true, force: true });

@@ -1,10 +1,11 @@
 import http from "node:http";
 import { createReadStream, createWriteStream } from "node:fs";
-import { mkdir, readFile, readdir, rename, rm, stat, writeFile } from "node:fs/promises";
+import { mkdir, open, readFile, readdir, rename, rm, stat, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { pipeline } from "node:stream/promises";
 import { pathToFileURL } from "node:url";
 import { randomUUID } from "node:crypto";
+import { setTimeout as delay } from "node:timers/promises";
 import Busboy from "busboy";
 import { MongoClient } from "mongodb";
 import nodemailer from "nodemailer";
@@ -16,6 +17,8 @@ const UPLOAD_DIR = process.env.UPLOAD_DIR || path.resolve("work/gallery-submissi
 const TEMP_DIR = path.join(UPLOAD_DIR, ".tmp");
 const MANIFEST_DIR = path.join(UPLOAD_DIR, "manifests");
 const PUSHPANJALI_DIR = process.env.PUSHPANJALI_DIR || path.resolve("work/pushpanjali-offerings");
+const PUSHPANJALI_COUNTER_FILE = path.join(PUSHPANJALI_DIR, ".certificate-counter");
+const PUSHPANJALI_COUNTER_LOCK = path.join(PUSHPANJALI_DIR, ".certificate-counter.lock");
 const MAX_REQUEST_BYTES = 130 * 1024 * 1024;
 const MAX_VIDEO_BYTES = 80 * 1024 * 1024;
 const MAX_IMAGE_BYTES = 12 * 1024 * 1024;
@@ -201,44 +204,85 @@ async function readJsonBody(request, maxBytes = 12_000) {
   }
 }
 
-async function savePushpanjaliOffering(document) {
-  await mkdir(PUSHPANJALI_DIR, { recursive: true });
-  await writeFile(path.join(PUSHPANJALI_DIR, `${document.offeringId}.json`), JSON.stringify(document, null, 2), { flag: "wx" });
-  if (!process.env.MONGODB_URI) {
+async function currentPushpanjaliCount() {
+  let storedCounter = 0;
+  let fileCount = 0;
+  try {
+    storedCounter = Number.parseInt(await readFile(PUSHPANJALI_COUNTER_FILE, "utf8"), 10) || 0;
+  } catch (error) {
+    if (error?.code !== "ENOENT") throw error;
+  }
+  try {
     const files = await readdir(PUSHPANJALI_DIR);
-    return { mongo: false, offeringNumber: files.filter(name => name.endsWith(".json")).length };
+    fileCount = files.filter(name => name.endsWith(".json")).length;
+  } catch (error) {
+    if (error?.code !== "ENOENT") throw error;
+  }
+  return Math.max(storedCounter, fileCount);
+}
+
+async function saveLocalPushpanjaliOffering(document) {
+  await mkdir(PUSHPANJALI_DIR, { recursive: true });
+  let lockHandle;
+  for (let attempt = 0; attempt < 120; attempt += 1) {
+    try {
+      lockHandle = await open(PUSHPANJALI_COUNTER_LOCK, "wx");
+      break;
+    } catch (error) {
+      if (error?.code !== "EEXIST" || attempt === 119) throw error;
+      if (attempt > 40) {
+        try {
+          const details = await stat(PUSHPANJALI_COUNTER_LOCK);
+          if (Date.now() - details.mtimeMs > 30_000) await unlink(PUSHPANJALI_COUNTER_LOCK);
+        } catch (cleanupError) {
+          if (cleanupError?.code !== "ENOENT") throw cleanupError;
+        }
+      }
+      await delay(25);
+    }
+  }
+  if (!lockHandle) throw new Error("Certificate counter lock could not be acquired");
+  try {
+    const offeringNumber = (await currentPushpanjaliCount()) + 1;
+    const certificateNumber = `UC02-${String(offeringNumber).padStart(6, "0")}`;
+    const storedDocument = { ...document, reference: certificateNumber, certificateNumber, offeringNumber };
+    await writeFile(path.join(PUSHPANJALI_DIR, `${document.offeringId}.json`), JSON.stringify(storedDocument, null, 2), { flag: "wx" });
+    await writeFile(PUSHPANJALI_COUNTER_FILE, String(offeringNumber), "utf8");
+    return { storedDocument, offeringNumber, reference: certificateNumber };
+  } finally {
+    await lockHandle.close().catch(() => {});
+    await unlink(PUSHPANJALI_COUNTER_LOCK).catch(() => {});
+  }
+}
+
+async function savePushpanjaliOffering(document) {
+  const local = await saveLocalPushpanjaliOffering(document);
+  if (!process.env.MONGODB_URI) {
+    return { mongo: false, offeringNumber: local.offeringNumber, reference: local.reference };
   }
   try {
     mongoClientPromise ||= new MongoClient(process.env.MONGODB_URI, { serverSelectionTimeoutMS: 8000 }).connect();
     const client = await mongoClientPromise;
     const database = client.db(process.env.MONGODB_DB || "saslucknow");
-    const counter = await database.collection("siteCounters").findOneAndUpdate(
-      { _id: "pushpanjali-2026" },
-      { $inc: { value: 1 }, $setOnInsert: { createdAt: new Date() } },
-      { upsert: true, returnDocument: "after" },
-    );
-    const offeringNumber = Number(counter?.value || 1);
-    await database.collection("pushpanjaliOfferings").insertOne({ ...document, offeringNumber });
-    return { mongo: true, offeringNumber };
+    await database.collection("pushpanjaliOfferings").insertOne(local.storedDocument);
+    return { mongo: true, offeringNumber: local.offeringNumber, reference: local.reference };
   } catch (error) {
     console.error("Pushpanjali MongoDB save failed; local record retained", error instanceof Error ? error.message : error);
     mongoClientPromise = undefined;
-    const files = await readdir(PUSHPANJALI_DIR);
-    return { mongo: false, offeringNumber: files.filter(name => name.endsWith(".json")).length };
+    return { mongo: false, offeringNumber: local.offeringNumber, reference: local.reference };
   }
 }
 
 async function countPushpanjaliOfferings() {
   try {
-    const files = await readdir(PUSHPANJALI_DIR);
-    return files.filter(name => name.endsWith(".json")).length;
+    return await currentPushpanjaliCount();
   } catch (error) {
     if (error?.code === "ENOENT") return 0;
     throw error;
   }
 }
 
-async function emailPushpanjaliCertificate({ name, email, flower, reference, offeringNumber }) {
+async function emailPushpanjaliCertificate({ name, email, flower, reference }) {
   if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASSWORD) {
     console.warn(`Pushpanjali ${reference}: SMTP is not configured; certificate email was not sent.`);
     return false;
@@ -253,35 +297,42 @@ async function emailPushpanjaliCertificate({ name, email, flower, reference, off
   const escapedFlower = safeHtml(flower.name);
   const escapedMeaning = safeHtml(flower.meaning);
   const escapedReference = safeHtml(reference);
-  const paddedNumber = String(offeringNumber).padStart(4, "0");
   const certificateHtml = `
     <div style="margin:0;padding:28px;background:#efe6d5;font-family:Arial,sans-serif;color:#173846">
-      <div style="max-width:760px;margin:auto;border:4px double #b98335;background:linear-gradient(135deg,#fffdf8,#f6e3b8);padding:34px;text-align:center">
-        <div style="font-size:14px;font-weight:700;letter-spacing:2px">SRI AUROBINDO SOCIETY · LUCKNOW</div>
-        <div style="margin-top:5px;color:#9b6428;font-size:11px;letter-spacing:1.5px">GOMTI NAGAR CENTRE (UC-02)</div>
-        <h1 style="margin:24px 0 6px;font:42px Georgia,serif">Certificate of Pushpanjali</h1>
-        <div style="margin:18px auto;width:190px;height:250px;overflow:hidden;border:2px solid #c49345;border-radius:12px">
-          <img src="https://www.saslucknow.in/pushpanjali-sri-aurobindo.jpg" alt="Sri Aurobindo" style="width:100%;height:100%;object-fit:cover">
-        </div>
-        <p style="margin:18px 0 5px;color:#59686c">This certifies that</p>
-        <h2 style="margin:0;font:38px Georgia,serif;color:#173846">${escapedName}</h2>
-        <p style="margin:18px 0 4px;color:#59686c">has lovingly offered</p>
-        <table role="presentation" style="margin:8px auto;border-collapse:collapse"><tr>
-          <td><img src="${flower.cutout}" alt="${escapedFlower}" width="110" height="110" style="display:block;object-fit:contain"></td>
-          <td style="padding-left:18px;text-align:left"><strong style="font:24px Georgia,serif;color:#9b6428">${escapedFlower}</strong><br><em style="font:17px Georgia,serif;color:#526269">“${escapedMeaning}”</em><br><small style="color:#8b6b3a">Spiritual significance given by the Mother</small></td>
+      <div style="max-width:900px;margin:auto;border:4px double #b98335;background:linear-gradient(135deg,#fffdf8,#f6e3b8);padding:34px">
+        <div style="text-align:center;font-size:16px;font-weight:700;letter-spacing:2px">SRI AUROBINDO SOCIETY · LUCKNOW</div>
+        <div style="margin-top:6px;text-align:center;color:#9b6428;font-size:12px;letter-spacing:1.5px">GOMTI NAGAR CENTRE (UC-02)</div>
+        <table role="presentation" width="100%" style="margin-top:28px;border-collapse:collapse"><tr>
+          <td width="34%" valign="top" style="padding-right:28px">
+            <img src="https://www.saslucknow.in/pushpanjali-sri-aurobindo.jpg" alt="Sri Aurobindo" style="display:block;width:100%;max-width:280px;height:420px;object-fit:cover;border:2px solid #c49345;border-radius:12px">
+          </td>
+          <td valign="top">
+            <h1 style="margin:0 0 26px;text-align:center;font:42px Georgia,serif;color:#173846">Certificate of Pushpanjali</h1>
+            <p style="margin:0;text-align:center;color:#59686c;font-size:17px">This certifies that</p>
+            <h2 style="display:block;margin:10px 0 18px;padding-bottom:7px;border-bottom:1px solid #9b6428;text-align:center;font:38px Georgia,serif;color:#173846">${escapedName}</h2>
+            <p style="margin:0 0 24px;text-align:center;color:#455b63;font:19px/1.55 Georgia,serif">has lovingly offered Pushpanjali to Sri Aurobindo on his <strong>154th Birthday</strong>.</p>
+            <table role="presentation" width="100%" style="border-collapse:collapse"><tr>
+              <td valign="middle" style="padding-right:18px;text-align:left">
+                <div style="color:#9b6428;font:26px Georgia,serif">${escapedFlower}</div>
+                <div style="margin-top:9px;color:#78643f;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase">Spiritual significance given by the Mother</div>
+                <div style="margin-top:7px;color:#526269;font:italic 18px/1.5 Georgia,serif">“${escapedMeaning}”</div>
+              </td>
+              <td width="145" valign="middle"><img src="${flower.cutout}" alt="${escapedFlower}" width="145" height="145" style="display:block;object-fit:contain"></td>
+            </tr></table>
+          </td>
         </tr></table>
-        <div style="margin-top:24px;padding-top:18px;border-top:1px solid #d5b879;font-weight:700;letter-spacing:1.2px">15 AUGUST 2026 · SRI AUROBINDO’S BIRTHDAY DARSHAN</div>
-        <div style="margin-top:8px;color:#8a6b3d;font-size:12px">OFFERING ${paddedNumber} · ${escapedReference}</div>
-        <p style="margin:22px 0 0;font:italic 17px Georgia,serif">With gratitude and aspiration</p>
+        <div style="margin-top:25px;padding-top:18px;border-top:1px solid #d5b879;text-align:center;font-weight:700;letter-spacing:1.2px">15 AUGUST 2026&nbsp;&nbsp;|&nbsp;&nbsp;DARSHAN DIVAS</div>
+        <div style="margin-top:10px;text-align:center;color:#8a6b3d;font-size:13px">CERTIFICATE NUMBER: <strong>${escapedReference}</strong></div>
+        <p style="margin:20px 0 0;text-align:center;font:italic 17px Georgia,serif">With gratitude and aspiration</p>
       </div>
-      <p style="max-width:760px;margin:18px auto 0;text-align:center;font-size:13px;color:#58666b">Your virtual Pushpanjali has been recorded by SAS Lucknow. <a href="https://www.facebook.com/saslucknow" style="color:#8e5c22">Follow SAS Lucknow on Facebook</a>.</p>
+      <p style="max-width:900px;margin:18px auto 0;text-align:center;font-size:13px;color:#58666b">Your virtual Pushpanjali has been recorded by SAS Lucknow. <a href="https://www.facebook.com/saslucknow" style="color:#8e5c22">Follow SAS Lucknow on Facebook</a>.</p>
     </div>`;
   await transport.sendMail({
     from: process.env.EMAIL_FROM || `SAS Lucknow <${process.env.SMTP_USER}>`,
     to: email,
     replyTo: process.env.EMAIL_REPLY_TO || "info.saslucknow@gmail.com",
-    subject: "Your Pushpanjali to Sri Aurobindo · 15 August 2026",
-    text: `Dear ${name},\n\nYour ${flower.name} has been offered in Pushpanjali to Sri Aurobindo for the Darshan Day of 15 August 2026.\n\n“${flower.meaning}” — The Mother\n\nOffering ${paddedNumber} · ${reference}\n\nWith gratitude and aspiration,\nSri Aurobindo Society, Lucknow · Gomti Nagar Centre (UC-02)\n\nFollow SAS Lucknow: https://www.facebook.com/saslucknow`,
+    subject: `Your Pushpanjali Certificate ${reference} · 15 August 2026`,
+    text: `Dear ${name},\n\nThis certifies that you have lovingly offered Pushpanjali to Sri Aurobindo on his 154th Birthday.\n\nSelected pushpa: ${flower.name}\n“${flower.meaning}” — Spiritual significance given by the Mother\n\n15 August 2026 | Darshan Divas\nCertificate Number: ${reference}\n\nWith gratitude and aspiration,\nSri Aurobindo Society, Lucknow · Gomti Nagar Centre (UC-02)\n\nFollow SAS Lucknow: https://www.facebook.com/saslucknow`,
     html: certificateHtml,
   });
   return true;
@@ -319,10 +370,8 @@ async function handlePushpanjali(request, response) {
     }
 
     const offeringId = randomUUID();
-    const reference = `SAS-P2026-${offeringId.replace(/-/g, "").slice(0, 8).toUpperCase()}`;
     const document = {
       offeringId,
-      reference,
       participant: { name, email, phone },
       flowerId,
       flower,
@@ -331,9 +380,10 @@ async function handlePushpanjali(request, response) {
       createdAt: new Date(),
     };
     const persistence = await savePushpanjaliOffering(document);
+    const reference = persistence.reference;
     let emailed = false;
     try {
-      emailed = await emailPushpanjaliCertificate({ name, email, flower, reference, offeringNumber: persistence.offeringNumber });
+      emailed = await emailPushpanjaliCertificate({ name, email, flower, reference });
     } catch (error) {
       console.error(`Pushpanjali ${reference}: certificate email failed`, error instanceof Error ? error.message : error);
     }

@@ -62,60 +62,58 @@ def main() -> None:
     draw.rectangle((35, 35, 1565, 1065), outline="#b98335", width=5)
     draw.rectangle((55, 55, 1545, 1045), outline="#d5b476", width=2)
 
-    logo = Image.open(LOGO).convert("RGB")
-    logo.thumbnail((100, 78), Image.Resampling.LANCZOS)
-    logo_mask = Image.new("L", logo.size, 0)
-    logo_mask_pixels = logo_mask.load()
-    logo_pixels = logo.load()
-    for y in range(logo.height):
-        for x in range(logo.width):
-            r, g, b = logo_pixels[x, y]
-            logo_mask_pixels[x, y] = max(0, 255 - min(r, g, b))
-    blue = Image.new("RGBA", logo.size, (23, 56, 70, 255))
-    canvas.paste(blue.convert("RGB"), (82, 77), logo_mask)
+    centered(draw, (800, 108), "SRI AUROBINDO SOCIETY · LUCKNOW", font(ARIAL_BOLD, 30), "#173846")
+    centered(draw, (800, 145), "GOMTI NAGAR CENTRE (UC-02)", font(ARIAL, 19), "#a86d27")
+    draw.line((105, 174, 1495, 174), fill="#d5b476", width=2)
 
-    centered(draw, (800, 112), "SRI AUROBINDO SOCIETY · LUCKNOW", font(ARIAL_BOLD, 28), "#173846")
-    centered(draw, (800, 148), "GOMTI NAGAR CENTRE (UC-02)", font(ARIAL, 20), "#a86d27")
-    centered(draw, (800, 215), "Presents this", font(GEORGIA_ITALIC, 32), "#a86d27")
-    centered(draw, (800, 285), "Certificate of Pushpanjali", font(GEORGIA, 64), "#173846")
-
-    portrait_box = (105, 340, 495, 885)
+    portrait_box = (92, 210, 522, 910)
     portrait = Image.open(PORTRAIT).convert("RGB")
-    fitted = ImageOps.fit(portrait, (390, 545), method=Image.Resampling.LANCZOS, centering=(0.5, 0.48))
+    fitted = ImageOps.fit(portrait, (430, 700), method=Image.Resampling.LANCZOS, centering=(0.5, 0.48))
     mask = Image.new("L", fitted.size, 0)
-    ImageDraw.Draw(mask).rounded_rectangle((0, 0, 389, 544), radius=22, fill=255)
-    canvas.paste(fitted, (105, 340), mask)
+    ImageDraw.Draw(mask).rounded_rectangle((0, 0, 429, 699), radius=22, fill=255)
+    canvas.paste(fitted, (92, 210), mask)
     draw.rounded_rectangle(portrait_box, radius=22, outline="#c99a51", width=3)
 
-    draw.rounded_rectangle((126, 362, 344, 440), radius=10, fill=(16, 43, 56, 205))
-    draw.text((144, 374), "Sri Aurobindo", font=font(GEORGIA, 26), fill="#fffdf7")
-    draw.text((144, 410), "1872–1950", font=font(ARIAL_BOLD, 16), fill="#e8c884")
+    draw.rounded_rectangle((114, 232, 344, 312), radius=10, fill=(16, 43, 56, 205))
+    draw.text((132, 242), "Sri Aurobindo", font=font(GEORGIA, 26), fill="#fffdf7")
+    draw.text((132, 278), "1872–1950", font=font(ARIAL_BOLD, 16), fill="#e8c884")
 
-    draw.text((575, 374), "This certifies that", font=font(ARIAL, 24), fill="#4b5c62")
-    draw.text((575, 430), "Sample Devotee", font=font(GEORGIA, 58), fill="#173846")
-    draw.text((575, 525), "has lovingly offered", font=font(ARIAL, 25), fill="#4b5c62")
-    draw.text((575, 580), "Divine Love", font=font(GEORGIA_BOLD, 38), fill="#a86d27")
+    content_left, content_right = 585, 1490
+    content_center = (content_left + content_right) // 2
+    centered(draw, (content_center, 242), "Certificate of Pushpanjali", font(GEORGIA, 58), "#173846")
+    centered(draw, (content_center, 310), "This certifies that", font(ARIAL, 23), "#4b5c62")
+    centered(draw, (content_center, 375), "Sample Devotee", font(GEORGIA, 54), "#173846")
+    draw.line((760, 402, 1315, 402), fill="#a86d27", width=2)
 
+    statement_face = font(GEORGIA, 26)
+    statement_lines = wrap(draw, "has lovingly offered Pushpanjali to Sri Aurobindo on his 154th Birthday.", statement_face, 800)
+    statement_y = 450
+    for line in statement_lines:
+        centered(draw, (content_center, statement_y), line, statement_face, "#455b63")
+        statement_y += 38
+
+    draw.text((content_left, 558), "Divine Love", font=font(GEORGIA_BOLD, 36), fill="#a86d27")
+    draw.text((content_left, 612), "SPIRITUAL SIGNIFICANCE GIVEN BY THE MOTHER", font=font(ARIAL_BOLD, 16), fill="#78643f")
     quote_face = font(GEORGIA_ITALIC, 27)
-    quote_lines = wrap(draw, "“A flower that is said to blossom even in the desert.”", quote_face, 700)
-    quote_y = 650
+    quote_lines = wrap(draw, "“A flower that is said to blossom even in the desert.”", quote_face, 610)
+    quote_y = 660
     for line in quote_lines:
         draw.text((575, quote_y), line, font=quote_face, fill="#4b5c62")
         quote_y += 38
-    draw.text((575, quote_y + 8), "— Spiritual significance given by the Mother", font=font(ARIAL, 19), fill="#78643f")
 
     flower = Image.open(FLOWER).convert("RGBA")
-    flower.thumbnail((230, 230), Image.Resampling.LANCZOS)
+    flower.thumbnail((240, 240), Image.Resampling.LANCZOS)
     shadow = Image.new("RGBA", (270, 270), (0, 0, 0, 0))
     shadow_draw = ImageDraw.Draw(shadow)
     shadow_draw.ellipse((30, 215, 240, 250), fill=(63, 43, 18, 40))
-    canvas.paste(shadow, (1255, 625), shadow)
-    canvas.paste(flower, (1275 + (230 - flower.width) // 2, 635 + (230 - flower.height) // 2), flower)
+    canvas.paste(shadow, (1225, 545), shadow)
+    canvas.paste(flower, (1245 + (240 - flower.width) // 2, 555 + (240 - flower.height) // 2), flower)
 
-    centered(draw, (980, 870), "15 AUGUST 2026 · DARSHAN DAY", font(ARIAL_BOLD, 28), "#173846")
-    centered(draw, (980, 915), "OFFERING 0001 · SAMPLE CERTIFICATE", font(ARIAL, 20), "#8b6a35")
-    centered(draw, (800, 992), "With gratitude and aspiration", font(GEORGIA_ITALIC, 24), "#173846")
-    centered(draw, (800, 1026), "Presented by Sri Aurobindo Society, Lucknow · Gomti Nagar", font(ARIAL, 15), "#756340")
+    draw.line((content_left, 835, content_right, 835), fill="#d5b476", width=2)
+    centered(draw, (content_center, 890), "15 AUGUST 2026  |  DARSHAN DIVAS", font(ARIAL_BOLD, 28), "#173846")
+    centered(draw, (content_center, 938), "CERTIFICATE NUMBER: UC02-000001", font(ARIAL_BOLD, 21), "#8b6a35")
+    centered(draw, (content_center, 988), "With gratitude and aspiration", font(GEORGIA_ITALIC, 24), "#173846")
+    centered(draw, (content_center, 1025), "Presented by Sri Aurobindo Society, Lucknow · Gomti Nagar Centre (UC-02)", font(ARIAL, 15), "#756340")
 
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     canvas.save(OUTPUT, format="PNG", optimize=True)
