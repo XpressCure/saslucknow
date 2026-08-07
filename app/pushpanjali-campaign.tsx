@@ -175,50 +175,49 @@ export function PushpanjaliCampaign() {
   };
 
   const buildCertificate = async (certificateResult: OfferingResult) => {
-      const [portrait, flower, logo] = await Promise.all([
+      const [ornamentalBackground, portrait, flower, logo] = await Promise.all([
+        loadImage("/pushpanjali-certificate-ornamental-bg.png"),
         loadImage("/pushpanjali-sri-aurobindo.jpg"),
         loadImage(selectedFlower.cutout),
         loadImage("/society-logo.jpg"),
       ]);
       const canvas = document.createElement("canvas");
       canvas.width = 1600;
-      canvas.height = 1100;
+      canvas.height = 1130;
       const context = canvas.getContext("2d");
       if (!context) throw new Error("Canvas is unavailable");
 
-      const background = context.createLinearGradient(0, 0, 1600, 1100);
-      background.addColorStop(0, "#fffaf0");
-      background.addColorStop(.52, "#f7e6bb");
-      background.addColorStop(1, "#fffdf7");
-      context.fillStyle = background;
-      context.fillRect(0, 0, 1600, 1100);
-      context.strokeStyle = "#b98335";
-      context.lineWidth = 5;
-      context.strokeRect(35, 35, 1530, 1030);
-      context.strokeStyle = "rgba(185,131,53,.55)";
-      context.lineWidth = 1.5;
-      context.strokeRect(55, 55, 1490, 990);
+      context.drawImage(ornamentalBackground, 0, 0, canvas.width, canvas.height);
 
-      context.drawImage(logo, 82, 72, 90, 77);
+      context.save();
+      context.fillStyle = "rgba(255,253,246,.88)";
+      context.shadowColor = "rgba(117,78,22,.14)";
+      context.shadowBlur = 15;
+      roundedRect(context, 82, 78, 112, 98, 15);
+      context.fill();
+      context.restore();
+      context.drawImage(logo, 93, 88, 90, 77);
 
       context.fillStyle = "#173846";
       context.textAlign = "center";
-      context.font = "700 30px Arial";
-      context.fillText("SRI AUROBINDO SOCIETY · LUCKNOW", 800, 108);
-      context.fillStyle = "#a86d27";
-      context.font = "19px Arial";
-      context.fillText("GOMTI NAGAR CENTRE (UC-02)", 800, 145);
-      context.strokeStyle = "rgba(185,131,53,.55)";
-      context.lineWidth = 2;
-      context.beginPath();
-      context.moveTo(105, 174);
-      context.lineTo(1495, 174);
-      context.stroke();
+      context.font = "700 32px Arial";
+      context.fillText("SRI AUROBINDO SOCIETY · LUCKNOW", 800, 112);
+      context.fillStyle = "#9a621b";
+      context.font = "700 18px Arial";
+      context.fillText("GOMTI NAGAR CENTRE (UC-02)", 800, 148);
 
-      const portraitX = 92;
-      const portraitY = 210;
+      const portraitX = 105;
+      const portraitY = 225;
       const portraitWidth = 430;
-      const portraitHeight = 700;
+      const portraitHeight = 690;
+      context.save();
+      context.fillStyle = "rgba(255,253,246,.62)";
+      context.shadowColor = "rgba(86,59,21,.18)";
+      context.shadowBlur = 24;
+      context.shadowOffsetY = 9;
+      roundedRect(context, portraitX - 12, portraitY - 12, portraitWidth + 24, portraitHeight + 24, 26);
+      context.fill();
+      context.restore();
       roundedRect(context, portraitX, portraitY, portraitWidth, portraitHeight, 22);
       context.save();
       context.clip();
@@ -233,82 +232,93 @@ export function PushpanjaliCampaign() {
       roundedRect(context, portraitX, portraitY, portraitWidth, portraitHeight, 22);
       context.stroke();
 
-      context.fillStyle = "rgba(16,43,56,.78)";
-      roundedRect(context, 114, 232, 230, 80, 10);
+      context.fillStyle = "rgba(16,43,56,.82)";
+      roundedRect(context, 127, 247, 230, 80, 10);
       context.fill();
       context.textAlign = "left";
       context.fillStyle = "#fffdf7";
       context.font = "26px Georgia";
-      context.fillText("Sri Aurobindo", 132, 266);
+      context.fillText("Sri Aurobindo", 145, 281);
       context.fillStyle = "#e8c884";
       context.font = "bold 16px Arial";
-      context.fillText("1872–1950", 132, 294);
+      context.fillText("1872–1950", 145, 309);
 
-      const contentLeft = 585;
-      const contentRight = 1490;
+      const contentLeft = 600;
+      const contentRight = 1475;
       const contentCenter = (contentLeft + contentRight) / 2;
+      context.save();
+      context.fillStyle = "rgba(255,253,246,.48)";
+      roundedRect(context, 570, 210, 930, 790, 28);
+      context.fill();
+      context.restore();
       context.textAlign = "center";
       context.fillStyle = "#173846";
-      context.font = "58px Georgia";
-      context.fillText("Certificate of Pushpanjali", contentCenter, 250);
+      context.font = "bold 55px Georgia";
+      context.fillText("Certificate of Pushpanjali", contentCenter, 275);
+      context.strokeStyle = "rgba(173,112,28,.65)";
+      context.lineWidth = 2;
+      context.beginPath();
+      context.moveTo(contentCenter - 240, 300);
+      context.lineTo(contentCenter + 240, 300);
+      context.stroke();
       context.fillStyle = "#4b5c62";
       context.font = "23px Arial";
-      context.fillText("This certifies that", contentCenter, 315);
+      context.fillText("This certifies that", contentCenter, 345);
 
-      let nameFontSize = 54;
+      let nameFontSize = 58;
       do {
-        context.font = `${nameFontSize}px Georgia`;
+        context.font = `italic ${nameFontSize}px Georgia`;
         if (context.measureText(name.trim()).width <= 790) break;
         nameFontSize -= 2;
       } while (nameFontSize > 30);
-      context.fillStyle = "#173846";
-      context.fillText(name.trim(), contentCenter, 385);
+      context.fillStyle = "#a66a16";
+      context.fillText(name.trim(), contentCenter, 420);
       const underlineWidth = Math.min(810, Math.max(420, context.measureText(name.trim()).width + 70));
       context.strokeStyle = "#a86d27";
-      context.lineWidth = 2;
+      context.lineWidth = 1.5;
       context.beginPath();
-      context.moveTo(contentCenter - underlineWidth / 2, 402);
-      context.lineTo(contentCenter + underlineWidth / 2, 402);
+      context.moveTo(contentCenter - underlineWidth / 2, 441);
+      context.lineTo(contentCenter + underlineWidth / 2, 441);
       context.stroke();
 
       context.fillStyle = "#455b63";
-      context.font = "26px Georgia";
-      context.fillText("has lovingly offered Pushpanjali to Sri Aurobindo", contentCenter, 462);
+      context.font = "25px Georgia";
+      context.fillText("has lovingly offered Pushpanjali to Sri Aurobindo", contentCenter, 497);
       context.fillStyle = "#a86d27";
       context.font = "bold 29px Georgia";
-      context.fillText("on his 154th Birthday", contentCenter, 508);
+      context.fillText("on his 154th Birthday", contentCenter, 542);
 
       context.textAlign = "left";
       context.fillStyle = "#a86d27";
       context.font = "bold 36px Georgia";
-      context.fillText(selectedFlower.name, contentLeft, 590);
+      context.fillText(selectedFlower.name, contentLeft, 625);
       context.fillStyle = "#78643f";
       context.font = "bold 16px Arial";
-      context.fillText("SPIRITUAL SIGNIFICANCE GIVEN BY THE MOTHER", contentLeft, 630);
+      context.fillText("SPIRITUAL SIGNIFICANCE GIVEN BY THE MOTHER", contentLeft, 665);
       context.fillStyle = "#4b5c62";
       context.font = "italic 27px Georgia";
-      wrapText(context, `“${selectedFlower.meaning}”`, contentLeft, 682, 610, 38);
+      wrapText(context, `“${selectedFlower.meaning}”`, contentLeft, 715, 575, 38);
 
       context.save();
       context.shadowColor = "rgba(63,43,18,.25)";
       context.shadowBlur = 18;
       context.shadowOffsetY = 8;
-      context.drawImage(flower, 1245, 555, 240, 240);
+      context.drawImage(flower, 1235, 590, 220, 220);
       context.restore();
 
       context.textAlign = "center";
       context.strokeStyle = "rgba(185,131,53,.55)";
       context.lineWidth = 2;
       context.beginPath();
-      context.moveTo(contentLeft, 835);
-      context.lineTo(contentRight, 835);
+      context.moveTo(contentLeft, 855);
+      context.lineTo(contentRight, 855);
       context.stroke();
       context.fillStyle = "#173846";
       context.font = "bold 28px Arial";
-      context.fillText("15 AUGUST 2026  |  DARSHAN DIVAS", contentCenter, 925);
+      context.fillText("15 AUGUST 2026  |  DARSHAN DIVAS", contentCenter, 920);
       context.fillStyle = "#8b6a35";
       context.font = "bold 21px Arial";
-      context.fillText(`CERTIFICATE NUMBER: ${certificateResult.reference}`, contentCenter, 982);
+      context.fillText(`CERTIFICATE NUMBER: ${certificateResult.reference}`, contentCenter, 974);
 
       return await new Promise<Blob>((resolve, reject) => {
         canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error("Certificate image could not be created")), "image/png");

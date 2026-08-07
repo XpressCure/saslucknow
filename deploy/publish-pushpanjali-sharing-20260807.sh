@@ -3,12 +3,12 @@ set -euo pipefail
 
 releases=/var/www/saslucknow/releases
 current="$releases/current"
-candidate="$releases/pushpanjali-polish-20260807-v6"
-backup="$releases/pre-pushpanjali-polish-20260807-v6"
-failed="$releases/failed-pushpanjali-polish-20260807-v6"
-archive=/tmp/pushpanjali-polish-20260807-v6.tgz
-site_smoke=saslucknow-pushpanjali-polish-site-smoke-v6
-api_smoke=saslucknow-pushpanjali-polish-api-smoke-v6
+candidate="$releases/pushpanjali-ornamental-20260807-v7"
+backup="$releases/pre-pushpanjali-ornamental-20260807-v7"
+failed="$releases/failed-pushpanjali-ornamental-20260807-v7"
+archive=/tmp/pushpanjali-ornamental-20260807-v7.tgz
+site_smoke=saslucknow-pushpanjali-ornamental-site-smoke-v7
+api_smoke=saslucknow-pushpanjali-ornamental-api-smoke-v7
 cutover_started=0
 services_stopped=0
 
@@ -46,9 +46,11 @@ tar -xzf "$archive" -C "$candidate"
 grep -R -q 'certificates generated' "$candidate/dist/client/assets"
 grep -R -q 'Share certificate on WhatsApp' "$candidate/dist/client/assets"
 grep -R -q 'CERTIFICATE NUMBER:' "$candidate/dist/client/assets"
+grep -R -q 'pushpanjali-certificate-ornamental-bg.png' "$candidate/dist/client/assets"
 grep -q 'countPushpanjaliOfferings' "$candidate/server/gallery-api.mjs"
 grep -q 'UC02-' "$candidate/server/gallery-api.mjs"
 [[ -f "$candidate/scripts/migrate-pushpanjali-certificate-numbers.mjs" ]]
+[[ -s "$candidate/public/pushpanjali-certificate-ornamental-bg.png" ]]
 
 stop_smoke
 mkdir -p /tmp/saslucknow-pushpanjali-sharing-smoke
@@ -115,4 +117,4 @@ grep -q '"count":' /tmp/saslucknow-pushpanjali-sharing-live-api.json
 
 cutover_started=0
 trap - ERR
-printf '%s\n' 'pushpanjali-sharing-live'
+printf '%s\n' 'pushpanjali-ornamental-live'

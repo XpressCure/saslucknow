@@ -299,7 +299,7 @@ async function emailPushpanjaliCertificate({ name, email, flower, reference }) {
   const escapedReference = safeHtml(reference);
   const certificateHtml = `
     <div style="margin:0;padding:28px;background:#efe6d5;font-family:Arial,sans-serif;color:#173846">
-      <div style="max-width:900px;margin:auto;border:4px double #b98335;background:linear-gradient(135deg,#fffdf8,#f6e3b8);padding:34px">
+      <div style="max-width:900px;margin:auto;border:2px solid #c58b27;background:#fffdf8 url('https://www.saslucknow.in/pushpanjali-certificate-ornamental-bg.png') center/100% 100% no-repeat;padding:52px 58px">
         <table role="presentation" width="100%" style="border-collapse:collapse"><tr>
           <td width="90"><img src="https://www.saslucknow.in/society-logo.jpg" alt="Sri Aurobindo Society" width="82" style="display:block;width:82px;height:auto"></td>
           <td style="text-align:center"><div style="font-size:16px;font-weight:700;letter-spacing:2px">SRI AUROBINDO SOCIETY · LUCKNOW</div><div style="margin-top:6px;color:#9b6428;font-size:12px;letter-spacing:1.5px">GOMTI NAGAR CENTRE (UC-02)</div></td>
@@ -310,9 +310,9 @@ async function emailPushpanjaliCertificate({ name, email, flower, reference }) {
             <img src="https://www.saslucknow.in/pushpanjali-sri-aurobindo.jpg" alt="Sri Aurobindo" style="display:block;width:100%;max-width:280px;height:420px;object-fit:cover;border:2px solid #c49345;border-radius:12px">
           </td>
           <td valign="top">
-            <h1 style="margin:0 0 26px;text-align:center;font:42px Georgia,serif;color:#173846">Certificate of Pushpanjali</h1>
+            <h1 style="margin:0 0 26px;padding-bottom:10px;border-bottom:1px solid #c89c56;text-align:center;font:700 42px Georgia,serif;color:#173846">Certificate of Pushpanjali</h1>
             <p style="margin:0;text-align:center;color:#59686c;font-size:17px">This certifies that</p>
-            <h2 style="display:block;margin:10px 0 18px;padding-bottom:7px;border-bottom:1px solid #9b6428;text-align:center;font:38px Georgia,serif;color:#173846">${escapedName}</h2>
+            <h2 style="display:block;margin:10px 0 18px;padding-bottom:7px;border-bottom:1px solid #9b6428;text-align:center;font:italic 38px Georgia,serif;color:#a66a16">${escapedName}</h2>
             <p style="margin:0 0 24px;text-align:center;color:#455b63;font:19px/1.55 Georgia,serif">has lovingly offered Pushpanjali to Sri Aurobindo<br><strong style="white-space:nowrap;color:#9b6428">on his 154th Birthday</strong></p>
             <table role="presentation" width="100%" style="border-collapse:collapse"><tr>
               <td valign="middle" style="padding-right:18px;text-align:left">

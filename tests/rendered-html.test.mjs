@@ -76,6 +76,7 @@ test("renders the 15 August Pushpanjali campaign entry point", async () => {
   assert.match(html, /15 August 2026/i);
   const source = await readFile(new URL("../app/pushpanjali-campaign.tsx", import.meta.url), "utf8");
   for (const asset of [
+    "pushpanjali-certificate-ornamental-bg.png",
     "pushpanjali-sri-aurobindo.jpg",
     "pushpanjali-divine-love-cutout.png",
     "pushpanjali-integral-love-cutout.png",
@@ -86,6 +87,7 @@ test("renders the 15 August Pushpanjali campaign entry point", async () => {
   }
   assert.match(source, /1872–1950/);
   assert.match(source, /society-logo\.jpg/);
+  assert.match(source, /ornamentalBackground/);
   assert.match(source, /const \[open, setOpen\] = useState\(true\)/);
   assert.doesNotMatch(source, /sas-pushpanjali-2026-seen|550/);
   assert.doesNotMatch(source, /WhatsApp mobile number|setPhone/);

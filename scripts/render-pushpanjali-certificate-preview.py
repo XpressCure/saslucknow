@@ -4,6 +4,7 @@ from PIL import Image, ImageDraw, ImageFont, ImageOps
 
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "output" / "pushpanjali-certificate-sample.png"
+BACKGROUND = ROOT / "public" / "pushpanjali-certificate-ornamental-bg.png"
 PORTRAIT = ROOT / "public" / "pushpanjali-sri-aurobindo.jpg"
 FLOWER = ROOT / "public" / "pushpanjali-divine-love-cutout.png"
 LOGO = ROOT / "public" / "society-logo.jpg"
@@ -40,81 +41,69 @@ def wrap(draw: ImageDraw.ImageDraw, text: str, face: ImageFont.FreeTypeFont, wid
 
 
 def main() -> None:
-    width, height = 1600, 1100
-    canvas = Image.new("RGB", (width, height), "#fffaf0")
-    pixels = canvas.load()
-    start = (255, 250, 240)
-    middle = (247, 230, 187)
-    end = (255, 253, 247)
-    for y in range(height):
-        t = y / (height - 1)
-        if t < 0.48:
-            local = t / 0.48
-            a, b = start, middle
-        else:
-            local = (t - 0.48) / 0.52
-            a, b = middle, end
-        colour = tuple(round(a[i] + (b[i] - a[i]) * local) for i in range(3))
-        for x in range(width):
-            pixels[x, y] = colour
+    width, height = 1600, 1130
+    background = Image.open(BACKGROUND).convert("RGB")
+    canvas = ImageOps.fit(background, (width, height), method=Image.Resampling.LANCZOS)
 
+    wash = Image.new("RGBA", canvas.size, (0, 0, 0, 0))
+    wash_draw = ImageDraw.Draw(wash)
+    wash_draw.rounded_rectangle((82, 78, 194, 176), radius=15, fill=(255, 253, 246, 226))
+    wash_draw.rounded_rectangle((93, 213, 547, 927), radius=26, fill=(255, 253, 246, 158))
+    wash_draw.rounded_rectangle((570, 210, 1500, 1000), radius=28, fill=(255, 253, 246, 122))
+    canvas = Image.alpha_composite(canvas.convert("RGBA"), wash)
     draw = ImageDraw.Draw(canvas)
-    draw.rectangle((35, 35, 1565, 1065), outline="#b98335", width=5)
-    draw.rectangle((55, 55, 1545, 1045), outline="#d5b476", width=2)
 
     logo = Image.open(LOGO).convert("RGB")
     logo.thumbnail((90, 77), Image.Resampling.LANCZOS)
-    canvas.paste(logo, (82, 72))
+    canvas.paste(logo, (93, 88))
 
-    centered(draw, (800, 108), "SRI AUROBINDO SOCIETY · LUCKNOW", font(ARIAL_BOLD, 30), "#173846")
-    centered(draw, (800, 145), "GOMTI NAGAR CENTRE (UC-02)", font(ARIAL, 19), "#a86d27")
-    draw.line((105, 174, 1495, 174), fill="#d5b476", width=2)
+    centered(draw, (800, 112), "SRI AUROBINDO SOCIETY · LUCKNOW", font(ARIAL_BOLD, 32), "#173846")
+    centered(draw, (800, 148), "GOMTI NAGAR CENTRE (UC-02)", font(ARIAL_BOLD, 18), "#9a621b")
 
-    portrait_box = (92, 210, 522, 910)
+    portrait_box = (105, 225, 535, 915)
     portrait = Image.open(PORTRAIT).convert("RGB")
-    fitted = ImageOps.fit(portrait, (430, 700), method=Image.Resampling.LANCZOS, centering=(0.5, 0.48))
+    fitted = ImageOps.fit(portrait, (430, 690), method=Image.Resampling.LANCZOS, centering=(0.5, 0.48))
     mask = Image.new("L", fitted.size, 0)
-    ImageDraw.Draw(mask).rounded_rectangle((0, 0, 429, 699), radius=22, fill=255)
-    canvas.paste(fitted, (92, 210), mask)
+    ImageDraw.Draw(mask).rounded_rectangle((0, 0, 429, 689), radius=22, fill=255)
+    canvas.paste(fitted, (105, 225), mask)
     draw.rounded_rectangle(portrait_box, radius=22, outline="#c99a51", width=3)
 
-    draw.rounded_rectangle((114, 232, 344, 312), radius=10, fill=(16, 43, 56, 205))
-    draw.text((132, 242), "Sri Aurobindo", font=font(GEORGIA, 26), fill="#fffdf7")
-    draw.text((132, 278), "1872–1950", font=font(ARIAL_BOLD, 16), fill="#e8c884")
+    draw.rounded_rectangle((127, 247, 357, 327), radius=10, fill=(16, 43, 56, 218))
+    draw.text((145, 257), "Sri Aurobindo", font=font(GEORGIA, 26), fill="#fffdf7")
+    draw.text((145, 293), "1872–1950", font=font(ARIAL_BOLD, 16), fill="#e8c884")
 
-    content_left, content_right = 585, 1490
+    content_left, content_right = 600, 1475
     content_center = (content_left + content_right) // 2
-    centered(draw, (content_center, 242), "Certificate of Pushpanjali", font(GEORGIA, 58), "#173846")
-    centered(draw, (content_center, 310), "This certifies that", font(ARIAL, 23), "#4b5c62")
-    centered(draw, (content_center, 375), "Sample Devotee", font(GEORGIA, 54), "#173846")
-    draw.line((760, 402, 1315, 402), fill="#a86d27", width=2)
+    centered(draw, (content_center, 265), "Certificate of Pushpanjali", font(GEORGIA_BOLD, 55), "#173846")
+    draw.line((content_center - 240, 300, content_center + 240, 300), fill="#c89c56", width=2)
+    centered(draw, (content_center, 338), "This certifies that", font(ARIAL, 23), "#4b5c62")
+    centered(draw, (content_center, 408), "Sample Devotee", font(GEORGIA_ITALIC, 58), "#a66a16")
+    draw.line((790, 441, 1285, 441), fill="#a86d27", width=2)
 
-    centered(draw, (content_center, 450), "has lovingly offered Pushpanjali to Sri Aurobindo", font(GEORGIA, 26), "#455b63")
-    centered(draw, (content_center, 500), "on his 154th Birthday", font(GEORGIA_BOLD, 29), "#a86d27")
+    centered(draw, (content_center, 487), "has lovingly offered Pushpanjali to Sri Aurobindo", font(GEORGIA, 25), "#455b63")
+    centered(draw, (content_center, 532), "on his 154th Birthday", font(GEORGIA_BOLD, 29), "#a86d27")
 
-    draw.text((content_left, 558), "Divine Love", font=font(GEORGIA_BOLD, 36), fill="#a86d27")
-    draw.text((content_left, 612), "SPIRITUAL SIGNIFICANCE GIVEN BY THE MOTHER", font=font(ARIAL_BOLD, 16), fill="#78643f")
+    draw.text((content_left, 595), "Divine Love", font=font(GEORGIA_BOLD, 36), fill="#a86d27")
+    draw.text((content_left, 649), "SPIRITUAL SIGNIFICANCE GIVEN BY THE MOTHER", font=font(ARIAL_BOLD, 16), fill="#78643f")
     quote_face = font(GEORGIA_ITALIC, 27)
-    quote_lines = wrap(draw, "“A flower that is said to blossom even in the desert.”", quote_face, 610)
-    quote_y = 660
+    quote_lines = wrap(draw, "“A flower that is said to blossom even in the desert.”", quote_face, 575)
+    quote_y = 697
     for line in quote_lines:
-        draw.text((575, quote_y), line, font=quote_face, fill="#4b5c62")
+        draw.text((content_left, quote_y), line, font=quote_face, fill="#4b5c62")
         quote_y += 38
 
     flower = Image.open(FLOWER).convert("RGBA")
-    flower.thumbnail((240, 240), Image.Resampling.LANCZOS)
-    shadow = Image.new("RGBA", (270, 270), (0, 0, 0, 0))
-    shadow_draw = ImageDraw.Draw(shadow)
-    shadow_draw.ellipse((30, 215, 240, 250), fill=(63, 43, 18, 40))
-    canvas.paste(shadow, (1225, 545), shadow)
-    canvas.paste(flower, (1245 + (240 - flower.width) // 2, 555 + (240 - flower.height) // 2), flower)
+    flower.thumbnail((220, 220), Image.Resampling.LANCZOS)
+    flower_x = 1235 + (220 - flower.width) // 2
+    flower_y = 590 + (220 - flower.height) // 2
+    canvas.paste(flower, (flower_x, flower_y), flower)
 
-    draw.line((content_left, 835, content_right, 835), fill="#d5b476", width=2)
-    centered(draw, (content_center, 925), "15 AUGUST 2026  |  DARSHAN DIVAS", font(ARIAL_BOLD, 28), "#173846")
-    centered(draw, (content_center, 982), "CERTIFICATE NUMBER: UC02-000001", font(ARIAL_BOLD, 21), "#8b6a35")
+    draw.line((content_left, 855, content_right, 855), fill="#d5b476", width=2)
+    centered(draw, (content_center, 910), "15 AUGUST 2026  |  DARSHAN DIVAS", font(ARIAL_BOLD, 28), "#173846")
+    centered(draw, (content_center, 965), "CERTIFICATE NUMBER: UC02-000001", font(ARIAL_BOLD, 21), "#8b6a35")
 
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
-    canvas.save(OUTPUT, format="PNG", optimize=True)
+    canvas.convert("RGB").save(OUTPUT, format="PNG", optimize=True)
     print(OUTPUT)
 
 
