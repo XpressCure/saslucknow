@@ -227,7 +227,7 @@ export function PushpanjaliCampaign() {
       context.fillStyle = "#173846";
       context.textAlign = "center";
       context.font = "700 39px Arial";
-      const societyName = "SRI AUROBINDO SOCIETY - LUCKNOW";
+      const societyName = "SRI AUROBINDO SOCIETY, LUCKNOW";
       const logoWidth = 96;
       const logoHeight = 82;
       const headerGap = 22;
@@ -342,7 +342,7 @@ export function PushpanjaliCampaign() {
       context.fillText("SPIRITUAL SIGNIFICANCE GIVEN BY THE MOTHER", contentLeft, 710);
       context.fillStyle = "#4b5c62";
       context.font = "italic 21px Georgia";
-      wrapText(context, `"${selectedFlower.meaning}"`, contentLeft, 738, 575, 31);
+      wrapText(context, `\u201c${selectedFlower.meaning}\u201d`, contentLeft, 738, 575, 31);
       context.fillStyle = "#a86d27";
       context.font = "bold 25px Georgia";
       context.fillText(selectedFlower.name, contentLeft, 795);

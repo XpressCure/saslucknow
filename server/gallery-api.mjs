@@ -13,6 +13,8 @@ import { Upload } from "@aws-sdk/lib-storage";
 
 const PORT = Number(process.env.PORT || 3001);
 const UPLOAD_DIR = process.env.UPLOAD_DIR || path.resolve("work/gallery-submissions");
+const PUSHPANJALI_DIR = process.env.PUSHPANJALI_DIR || path.resolve("work/pushpanjali-offerings");
+const PUSHPANJALI_COUNTER_FILE = path.join(PUSHPANJALI_DIR, ".certificate-counter");
 const TEMP_DIR = path.join(UPLOAD_DIR, ".tmp");
 const MANIFEST_DIR = path.join(UPLOAD_DIR, "manifests");
 const MAX_REQUEST_BYTES = 130 * 1024 * 1024;
@@ -26,6 +28,7 @@ const allowedTypes = new Map([
 const rateLimits = new Map();
 const pushpanjaliRateLimits = new Map();
 let mongoClientPromise;
+let pushpanjaliCounterQueue = Promise.resolve();
 
 const pushpanjaliFlowers = new Map([
   ["divine-love", {
@@ -200,22 +203,42 @@ async function readJsonBody(request, maxBytes = 12_000) {
   }
 }
 
-function nextInMemoryReference() {
-  return `UC02-${Date.now().toString(36).toUpperCase()}-${Math.floor(Math.random() * 1_000_000).toString(36).toUpperCase()}`;
+async function readPushpanjaliCounter() {
+  try {
+    const value = Number((await readFile(PUSHPANJALI_COUNTER_FILE, "utf8")).trim());
+    if (!Number.isSafeInteger(value) || value < 0) throw new Error("The Pushpanjali certificate counter is invalid.");
+    return value;
+  } catch (error) {
+    if (error?.code === "ENOENT") return 0;
+    throw error;
+  }
+}
+
+function withPushpanjaliCounterLock(operation) {
+  const pending = pushpanjaliCounterQueue.then(operation, operation);
+  pushpanjaliCounterQueue = pending.then(() => undefined, () => undefined);
+  return pending;
 }
 
 async function savePushpanjaliOffering(document) {
   void document;
-  return {
-    mongo: false,
-    mongoQueued: false,
-    offeringNumber: 0,
-    reference: nextInMemoryReference(),
-  };
+  return withPushpanjaliCounterLock(async () => {
+    await mkdir(PUSHPANJALI_DIR, { recursive: true });
+    const offeringNumber = (await readPushpanjaliCounter()) + 1;
+    const temporaryFile = `${PUSHPANJALI_COUNTER_FILE}.${process.pid}.${randomUUID()}.tmp`;
+    await writeFile(temporaryFile, String(offeringNumber), { encoding: "utf8", flag: "wx" });
+    await rename(temporaryFile, PUSHPANJALI_COUNTER_FILE);
+    return {
+      mongo: false,
+      mongoQueued: false,
+      offeringNumber,
+      reference: `UC02-${String(offeringNumber).padStart(6, "0")}`,
+    };
+  });
 }
 
 async function countPushpanjaliOfferings() {
-  return 0;
+  return readPushpanjaliCounter();
 }
 
 async function emailPushpanjaliCertificate({ name, email, flower, reference }) {
@@ -267,7 +290,7 @@ async function emailPushpanjaliCertificate({ name, email, flower, reference }) {
                           <img src="https://www.saslucknow.in/society-logo-transparent.png" alt="Sri Aurobindo Society logo" width="72" style="display:block;width:72px;height:auto;max-width:72px;border:0;outline:none;text-decoration:none;">
                         </td>
                         <td valign="middle" style="text-align:left;">
-                          <div class="pp-brand-title" style="font-size:22px;line-height:1.15;font-weight:700;letter-spacing:1px;color:#173846;">SRI AUROBINDO SOCIETY · LUCKNOW</div>
+                          <div class="pp-brand-title" style="font-size:22px;line-height:1.15;font-weight:700;letter-spacing:1px;color:#173846;">SRI AUROBINDO SOCIETY, LUCKNOW</div>
                           <div style="margin-top:6px;color:#9b6428;font-size:11px;letter-spacing:1.3px;line-height:1.25;">GOMTI NAGAR CENTRE (UC-02)</div>
                         </td>
                       </tr>
@@ -305,7 +328,7 @@ async function emailPushpanjaliCertificate({ name, email, flower, reference }) {
                                 <div style="margin-top:12px;color:#78643f;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Botanical name / variety</div>
                                 <div style="margin-top:5px;color:#526269;font-size:14px;line-height:1.4;">${escapedBotanical}</div>
                                 <div style="margin-top:14px;color:#78643f;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Spiritual significance given by the Mother</div>
-                                <div style="margin-top:5px;color:#526269;font:italic 17px/1.45 Georgia,serif;">“${escapedMeaning}”</div>
+                                <div style="margin-top:5px;color:#526269;font:italic 17px/1.45 Georgia,serif;">&ldquo;${escapedMeaning}&rdquo;</div>
                                 <div style="margin-top:12px;color:#9b6428;font:700 19px/1.25 Georgia,serif;">${escapedFlower}</div>
                               </td>
                               <td width="140" style="width:140px;padding-left:16px;text-align:center;vertical-align:middle;">
