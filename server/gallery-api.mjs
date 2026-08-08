@@ -265,33 +265,49 @@ async function emailPushpanjaliCertificate({ name, email, flower, reference }) {
         <meta charSet="UTF-8">
         <style>
           @media only screen and (max-width: 700px) {
-            .pp-wrap { padding: 8px !important; }
-            .pp-card { padding: 18px 12px !important; }
-            .pp-title { font-size: 28px !important; line-height: 1.2 !important; }
-            .pp-name { font-size: 28px !important; }
-            .pp-brand-title { font-size: 20px !important; letter-spacing: 1px !important; }
-            .pp-two-col { display: block !important; width: 100% !important; }
-            .pp-left-col { padding-right: 0 !important; width: 100% !important; }
-            .pp-right-col { padding-top: 18px !important; width: 100% !important; }
-            .pp-divider { margin-top: 16px !important; }
+            .pp-wrap { padding: 6px 4px !important; }
+            .pp-card { padding: 22px 12px 18px !important; }
+            .pp-brand-wrap { padding: 0 2px 16px !important; }
+            .pp-brand { width: auto !important; max-width: 100% !important; }
+            .pp-logo-cell { width: 48px !important; padding-right: 8px !important; }
+            .pp-logo { width: 48px !important; max-width: 48px !important; }
+            .pp-brand-title { font-size: 15px !important; line-height: 1.18 !important; letter-spacing: .35px !important; }
+            .pp-brand-subtitle { margin-top: 4px !important; font-size: 8px !important; letter-spacing: .65px !important; }
+            .pp-title { margin-bottom: 10px !important; padding-bottom: 8px !important; font-size: 24px !important; line-height: 1.15 !important; white-space: nowrap !important; }
+            .pp-certifies { font-size: 13px !important; }
+            .pp-name-wrap { padding-bottom: 12px !important; }
+            .pp-name { font-size: 29px !important; }
+            .pp-offering-copy { padding-bottom: 16px !important; font-size: 14px !important; line-height: 1.45 !important; }
+            .pp-left-col { width: 36% !important; padding-right: 10px !important; }
+            .pp-right-col { width: 64% !important; padding-left: 0 !important; }
+            .pp-portrait { width: 100% !important; height: 320px !important; object-fit: cover !important; object-position: 43% 50% !important; }
+            .pp-flower-title { font-size: 19px !important; }
+            .pp-label { margin-top: 9px !important; font-size: 8px !important; letter-spacing: .55px !important; }
+            .pp-value { margin-top: 3px !important; font-size: 11px !important; line-height: 1.3 !important; }
+            .pp-meaning { margin-top: 3px !important; font-size: 13px !important; line-height: 1.35 !important; }
+            .pp-flower-name { margin-top: 8px !important; font-size: 15px !important; }
+            .pp-flower-cell { width: 76px !important; padding-left: 6px !important; }
+            .pp-flower-image { width: 70px !important; max-width: 70px !important; }
+            .pp-divider { margin-top: 18px !important; padding-top: 13px !important; font-size: 14px !important; letter-spacing: .6px !important; }
+            .pp-reference { margin-top: 7px !important; font-size: 11px !important; }
           }
         </style>
       </head>
       <body style="margin:0;padding:0;background:#efe6d5;font-family:Arial,sans-serif;color:#173846">
         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:0;border-collapse:collapse;background:#efe6d5;">
           <tr>
-            <td align="center" style="padding:14px 8px;">
+            <td align="center" class="pp-wrap" style="padding:14px 8px;">
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" class="pp-card" style="max-width:680px;width:100%;border:2px solid #c58b27;background:#fffdf8 url('https://www.saslucknow.in/pushpanjali-certificate-ornamental-bg.png') center/100% 100% no-repeat;padding:36px 20px 24px;border-radius:8px;box-sizing:border-box;overflow:hidden;">
                 <tr>
-                  <td align="center" style="padding:0 6px 24px;">
-                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;width:100%;max-width:620px;margin:0 auto;">
+                  <td align="center" class="pp-brand-wrap" style="padding:0 6px 24px;">
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" class="pp-brand" style="border-collapse:collapse;width:auto;max-width:620px;margin:0 auto;">
                       <tr>
-                        <td style="width:72px;padding-right:12px;" valign="middle">
-                          <img src="https://www.saslucknow.in/society-logo-transparent.png" alt="Sri Aurobindo Society logo" width="72" style="display:block;width:72px;height:auto;max-width:72px;border:0;outline:none;text-decoration:none;">
+                        <td class="pp-logo-cell" style="width:72px;padding-right:12px;" valign="middle">
+                          <img class="pp-logo" src="https://www.saslucknow.in/society-logo-transparent.png" alt="Sri Aurobindo Society logo" width="72" style="display:block;width:72px;height:auto;max-width:72px;border:0;outline:none;text-decoration:none;">
                         </td>
                         <td valign="middle" style="text-align:left;">
                           <div class="pp-brand-title" style="font-size:22px;line-height:1.15;font-weight:700;letter-spacing:1px;color:#173846;">SRI AUROBINDO SOCIETY, LUCKNOW</div>
-                          <div style="margin-top:6px;color:#9b6428;font-size:11px;letter-spacing:1.3px;line-height:1.25;">GOMTI NAGAR CENTRE (UC-02)</div>
+                          <div class="pp-brand-subtitle" style="margin-top:6px;color:#9b6428;font-size:11px;letter-spacing:1.3px;line-height:1.25;">GOMTI NAGAR CENTRE (UC-02)</div>
                         </td>
                       </tr>
                     </table>
@@ -303,36 +319,36 @@ async function emailPushpanjaliCertificate({ name, email, flower, reference }) {
                   </td>
                 </tr>
                 <tr>
-                  <td style="text-align:center;color:#59686c;font-size:15px;line-height:1.45;">This certifies that</td>
+                  <td class="pp-certifies" style="text-align:center;color:#59686c;font-size:15px;line-height:1.45;">This certifies that</td>
                 </tr>
                 <tr>
-                  <td align="center" style="padding:4px 0 18px 0;">
+                  <td align="center" class="pp-name-wrap" style="padding:4px 0 18px 0;">
                     <div class="pp-name" style="font-style:italic;font-size:40px;line-height:1.15;font-family:Georgia,serif;color:#a66a16;margin:0 0 8px 0;padding:0 6px 10px 6px;border-bottom:1px solid #9b6428;max-width:100%;word-break:break-word;">${escapedName}</div>
                   </td>
                 </tr>
                 <tr>
-                  <td style="text-align:center;color:#455b63;font:17px/1.55 Georgia,serif;padding-bottom:20px;">has lovingly offered Pushpanjali to Sri Aurobindo<br><strong style="white-space:nowrap;color:#9b6428;">on his 154th Birthday.</strong></td>
+                  <td class="pp-offering-copy" style="text-align:center;color:#455b63;font:17px/1.55 Georgia,serif;padding-bottom:20px;">has lovingly offered Pushpanjali to Sri Aurobindo<br><strong style="white-space:nowrap;color:#9b6428;">on his 154th Birthday.</strong></td>
                 </tr>
                 <tr>
                   <td>
                     <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;">
                       <tr>
                         <td class="pp-two-col pp-left-col" width="35%" valign="top" style="padding-right:20px;">
-                          <img src="https://www.saslucknow.in/pushpanjali-sri-aurobindo.jpg" alt="Sri Aurobindo" width="280" style="display:block;max-width:100%;width:100%;height:auto;border:2px solid #c49345;border-radius:12px;object-fit:cover;object-position:40% 50%;font-family:Georgia,serif;">
+                          <img class="pp-portrait" src="https://www.saslucknow.in/pushpanjali-sri-aurobindo.jpg" alt="Sri Aurobindo" width="280" style="display:block;max-width:100%;width:100%;height:420px;border:2px solid #c49345;border-radius:12px;object-fit:cover;object-position:43% 50%;font-family:Georgia,serif;">
                         </td>
                         <td class="pp-two-col pp-right-col" valign="top" style="padding-left:2px;">
                           <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;">
                             <tr>
                               <td style="padding:0;">
-                                <div style="color:#173846;font:700 24px/1.2 Georgia,serif;">Flower Offered</div>
-                                <div style="margin-top:12px;color:#78643f;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Botanical name / variety</div>
-                                <div style="margin-top:5px;color:#526269;font-size:14px;line-height:1.4;">${escapedBotanical}</div>
-                                <div style="margin-top:14px;color:#78643f;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Spiritual significance given by the Mother</div>
-                                <div style="margin-top:5px;color:#526269;font:italic 17px/1.45 Georgia,serif;">&ldquo;${escapedMeaning}&rdquo;</div>
-                                <div style="margin-top:12px;color:#9b6428;font:700 19px/1.25 Georgia,serif;">${escapedFlower}</div>
+                                <div class="pp-flower-title" style="color:#173846;font:700 24px/1.2 Georgia,serif;">Flower Offered</div>
+                                <div class="pp-label" style="margin-top:12px;color:#78643f;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Botanical name / variety</div>
+                                <div class="pp-value" style="margin-top:5px;color:#526269;font-size:14px;line-height:1.4;">${escapedBotanical}</div>
+                                <div class="pp-label" style="margin-top:14px;color:#78643f;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Spiritual significance given by the Mother</div>
+                                <div class="pp-meaning" style="margin-top:5px;color:#526269;font:italic 17px/1.45 Georgia,serif;">&ldquo;${escapedMeaning}&rdquo;</div>
+                                <div class="pp-flower-name" style="margin-top:12px;color:#9b6428;font:700 19px/1.25 Georgia,serif;">${escapedFlower}</div>
                               </td>
-                              <td width="140" style="width:140px;padding-left:16px;text-align:center;vertical-align:middle;">
-                                <img src="${flower.cutout}" alt="${escapedFlower}" width="124" style="display:block;width:124px;height:auto;max-width:124px;margin:0 auto;object-fit:contain;">
+                              <td class="pp-flower-cell" width="140" style="width:140px;padding-left:16px;text-align:center;vertical-align:middle;">
+                                <img class="pp-flower-image" src="${flower.cutout}" alt="${escapedFlower}" width="124" style="display:block;width:124px;height:auto;max-width:124px;margin:0 auto;object-fit:contain;">
                               </td>
                             </tr>
                           </table>
@@ -340,7 +356,7 @@ async function emailPushpanjaliCertificate({ name, email, flower, reference }) {
                       </tr>
                     </table>
                     <div class="pp-divider" style="margin-top:28px;padding-top:18px;border-top:1px solid #d5b879;text-align:center;font-weight:700;letter-spacing:1.2px;color:#173846;font-size:19px;line-height:1.35;">15 AUGUST 2026&nbsp;&nbsp;|&nbsp;&nbsp;DARSHAN DIVAS</div>
-                    <div style="margin-top:10px;text-align:center;color:#8a6b3d;font-size:14px;line-height:1.45;">CERTIFICATE NUMBER: <strong>${escapedReference}</strong></div>
+                    <div class="pp-reference" style="margin-top:10px;text-align:center;color:#8a6b3d;font-size:14px;line-height:1.45;">CERTIFICATE NUMBER: <strong>${escapedReference}</strong></div>
                   </td>
                 </tr>
               </table>
@@ -353,7 +369,7 @@ async function emailPushpanjaliCertificate({ name, email, flower, reference }) {
     from: process.env.EMAIL_FROM || `SAS Lucknow <${process.env.SMTP_USER}>`,
     to: email,
     replyTo: process.env.EMAIL_REPLY_TO || "info.saslucknow@gmail.com",
-    subject: `Your Pushpanjali Certificate ${reference} - 15 August 2026`,
+    subject: `Your Pushpanjali Certificate | ${reference} | 15 August 2026`,
     text: `Dear ${name},\n\nThis certifies that you have lovingly offered Pushpanjali to Sri Aurobindo on his 154th Birthday.\n\nFlower Offered\nBotanical name / variety: ${flower.botanical}\nSpiritual significance given by the Mother: "${flower.meaning}"\n${flower.name}\n\n15 August 2026 | Darshan Divas\nCertificate Number: ${reference}\n\nFollow SAS Lucknow: https://www.facebook.com/saslucknow`,
     html: certificateHtml,
   });
