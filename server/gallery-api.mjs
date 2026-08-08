@@ -31,21 +31,21 @@ const pushpanjaliFlowers = new Map([
   ["divine-love", {
     name: "Divine Love",
     meaning: "A flower that is said to blossom even in the desert.",
-    botanical: "Punica granatum Â· orange-red, double",
+    botanical: "Punica granatum - orange-red, double",
     image: "https://www.saslucknow.in/pushpanjali-divine-love.jpg",
     cutout: "https://www.saslucknow.in/pushpanjali-divine-love-cutout.png",
   }],
   ["integral-love", {
     name: "Integral Love for the Divine",
     meaning: "Pure, complete, irrevocable, a love that gives itself for ever.",
-    botanical: "Rosa Â· white",
+    botanical: "Rosa - white",
     image: "https://www.saslucknow.in/pushpanjali-integral-love.jpg",
     cutout: "https://www.saslucknow.in/pushpanjali-integral-love-cutout.png",
   }],
   ["supramental-power", {
     name: "Power of the Supramental Consciousness",
     meaning: "Organising and active, irresistible in its influence.",
-    botanical: "Hibiscus rosa-sinensis â€˜Rukminiâ€™ Â· deep gold, double",
+    botanical: "Hibiscus rosa-sinensis 'Rukmini' - deep gold, double",
     image: "https://www.saslucknow.in/pushpanjali-supramental-power.jpg",
     cutout: "https://www.saslucknow.in/pushpanjali-supramental-power-cutout.png",
   }],
@@ -330,8 +330,8 @@ async function emailPushpanjaliCertificate({ name, email, flower, reference }) {
     from: process.env.EMAIL_FROM || `SAS Lucknow <${process.env.SMTP_USER}>`,
     to: email,
     replyTo: process.env.EMAIL_REPLY_TO || "info.saslucknow@gmail.com",
-    subject: `Your Pushpanjali Certificate ${reference} Â· 15 August 2026`,
-    text: `Dear ${name},\n\nThis certifies that you have lovingly offered Pushpanjali to Sri Aurobindo on his 154th Birthday.\n\nFlower Offered\nBotanical name / variety: ${flower.botanical}\nSpiritual significance given by the Mother: â€œ${flower.meaning}â€\n${flower.name}\n\n15 August 2026 | Darshan Divas\nCertificate Number: ${reference}\n\nFollow SAS Lucknow: https://www.facebook.com/saslucknow`,
+    subject: `Your Pushpanjali Certificate ${reference} - 15 August 2026`,
+    text: `Dear ${name},\n\nThis certifies that you have lovingly offered Pushpanjali to Sri Aurobindo on his 154th Birthday.\n\nFlower Offered\nBotanical name / variety: ${flower.botanical}\nSpiritual significance given by the Mother: "${flower.meaning}"\n${flower.name}\n\n15 August 2026 | Darshan Divas\nCertificate Number: ${reference}\n\nFollow SAS Lucknow: https://www.facebook.com/saslucknow`,
     html: certificateHtml,
   });
   return true;

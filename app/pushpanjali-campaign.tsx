@@ -23,7 +23,7 @@ const flowers: Flower[] = [
     id: "divine-love",
     name: "Divine Love",
     meaning: "A flower that is said to blossom even in the desert.",
-    botanical: "Punica granatum Â· orange-red, double",
+    botanical: "Punica granatum - orange-red, double",
     image: "/pushpanjali-divine-love.jpg",
     cutout: "/pushpanjali-divine-love-cutout.png",
   },
@@ -31,7 +31,7 @@ const flowers: Flower[] = [
     id: "integral-love",
     name: "Integral Love for the Divine",
     meaning: "Pure, complete, irrevocable, a love that gives itself for ever.",
-    botanical: "Rosa Â· white",
+    botanical: "Rosa - white",
     image: "/pushpanjali-integral-love.jpg",
     cutout: "/pushpanjali-integral-love-cutout.png",
   },
@@ -39,7 +39,7 @@ const flowers: Flower[] = [
     id: "supramental-power",
     name: "Power of the Supramental Consciousness",
     meaning: "Organising and active, irresistible in its influence.",
-    botanical: "Hibiscus rosa-sinensis â€˜Rukminiâ€™ Â· deep gold, double",
+    botanical: "Hibiscus rosa-sinensis 'Rukmini' - deep gold, double",
     image: "/pushpanjali-supramental-power.jpg",
     cutout: "/pushpanjali-supramental-power-cutout.png",
   },
@@ -227,7 +227,7 @@ export function PushpanjaliCampaign() {
       context.fillStyle = "#173846";
       context.textAlign = "center";
       context.font = "700 39px Arial";
-      const societyName = "SRI AUROBINDO SOCIETY Â· LUCKNOW";
+      const societyName = "SRI AUROBINDO SOCIETY - LUCKNOW";
       const logoWidth = 96;
       const logoHeight = 82;
       const headerGap = 22;
@@ -280,7 +280,7 @@ export function PushpanjaliCampaign() {
       context.fillText("Sri Aurobindo", 145, 281);
       context.fillStyle = "#e8c884";
       context.font = "bold 16px Arial";
-      context.fillText("1872â€“1950", 145, 309);
+      context.fillText("1872-1950", 145, 309);
 
       const contentLeft = 600;
       const contentRight = 1475;
@@ -342,7 +342,7 @@ export function PushpanjaliCampaign() {
       context.fillText("SPIRITUAL SIGNIFICANCE GIVEN BY THE MOTHER", contentLeft, 710);
       context.fillStyle = "#4b5c62";
       context.font = "italic 21px Georgia";
-      wrapText(context, `â€œ${selectedFlower.meaning}â€`, contentLeft, 738, 575, 31);
+      wrapText(context, `"${selectedFlower.meaning}"`, contentLeft, 738, 575, 31);
       context.fillStyle = "#a86d27";
       context.font = "bold 25px Georgia";
       context.fillText(selectedFlower.name, contentLeft, 795);
@@ -456,15 +456,15 @@ export function PushpanjaliCampaign() {
 
   return <>
     {!open && <button className="pushpanjali-reopen" type="button" onClick={() => setOpen(true)}>
-      <span aria-hidden="true">âœ¦</span><b>Pushpanjali</b><small>15 August 2026</small>
+      <span aria-hidden="true">&#10022;</span><b>Pushpanjali</b><small>15 August 2026</small>
     </button>}
 
     {open && <div className="pushpanjali-backdrop" role="presentation">
       <section ref={modalRef} className="pushpanjali-modal" role="dialog" aria-modal="true" aria-labelledby="pushpanjali-title">
-        <button className="pushpanjali-close" type="button" onClick={closeCampaign} aria-label="Close Pushpanjali">Ã—</button>
+        <button className="pushpanjali-close" type="button" onClick={closeCampaign} aria-label="Close Pushpanjali">&times;</button>
         <header className="pushpanjali-heading">
           <div className="pushpanjali-counter" aria-live="polite"><strong>{offeringCount.toLocaleString("en-IN")}</strong><span>certificates generated</span></div>
-          <p>15 AUGUST 2026 Â· SRI AUROBINDOâ€™S BIRTHDAY DARSHAN</p>
+          <p>15 AUGUST 2026 - SRI AUROBINDO'S BIRTHDAY DARSHAN</p>
           <h2 id="pushpanjali-title">Pushpanjali to Sri Aurobindo</h2>
           <span>Offer a flower in gratitude, aspiration and remembrance.</span>
         </header>
@@ -486,7 +486,7 @@ export function PushpanjaliCampaign() {
                 "--flower-size": flower.size,
               } as React.CSSProperties}
             />)}
-            <div className="pushpanjali-photo-caption"><b>Sri Aurobindo</b><span>1872â€“1950</span></div>
+            <div className="pushpanjali-photo-caption"><b>Sri Aurobindo</b><span>1872-1950</span></div>
           </div>
 
           {status !== "offered" ? <form className="pushpanjali-form" onSubmit={submitOffering}>
@@ -508,10 +508,10 @@ export function PushpanjaliCampaign() {
             <p className="pushpanjali-privacy">Your email is used only to deliver this certificate. It is not added to a mailing list.</p>
             {error && <p className="pushpanjali-error" role="alert">{error}</p>}
             <button className="pushpanjali-submit" type="submit" disabled={status === "submitting"}>
-              {status === "submitting" ? "Preparing your offeringâ€¦" : "Offer Pushpanjali & receive certificate"}<span aria-hidden="true">â†’</span>
+              {status === "submitting" ? "Preparing your offering..." : "Offer Pushpanjali & receive certificate"}<span aria-hidden="true">&rarr;</span>
             </button>
           </form> : <div className="pushpanjali-success" aria-live="polite">
-            <span className="pushpanjali-success-symbol" aria-hidden="true">âœ¦</span>
+            <span className="pushpanjali-success-symbol" aria-hidden="true">&#10022;</span>
             <p>YOUR PUSHPA HAS BEEN OFFERED</p>
             <h3><span>With gratitude,</span><em>{name.trim()}.</em></h3>
             <p className="pushpanjali-thanks">Thank you for offering your Pushpanjali to Sri Aurobindo. May this gesture of aspiration remain with you.</p>
@@ -519,9 +519,9 @@ export function PushpanjaliCampaign() {
               <div><span className="pushpanjali-flower-label">Flower offered</span><strong>{selectedFlower.name}</strong><span>Spiritual significance given by the Mother</span><q>{selectedFlower.meaning}</q></div>
               <img src={selectedFlower.cutout} alt={selectedFlower.name}/>
             </div>
-            <div className="pushpanjali-reference"><span>Certificate Number</span><b>{result?.reference || "Being preparedâ€¦"}</b></div>
+            <div className="pushpanjali-reference"><span>Certificate Number</span><b>{result?.reference || "Being prepared..."}</b></div>
             <p className="pushpanjali-email-status">{!result
-              ? "Your offering is being recorded and your certificate is being preparedâ€¦"
+              ? "Your offering is being recorded and your certificate is being prepared..."
               : result.emailed
                 ? `Your e-Certificate has been sent to ${email}.`
                 : result.emailQueued
@@ -533,13 +533,13 @@ export function PushpanjaliCampaign() {
               <button className="pushpanjali-whatsapp" type="button" onClick={shareCertificateOnWhatsApp} disabled={!result}>Share certificate on WhatsApp</button>
               <button className="pushpanjali-facebook" type="button" onClick={shareCertificateOnFacebook} disabled={!result}>Share on Facebook</button>
               <button className="pushpanjali-instagram" type="button" onClick={shareCertificateOnInstagram} disabled={!result}>Share on Instagram</button>
-              <a href="https://www.facebook.com/saslucknow" target="_blank" rel="noreferrer">Follow SAS Lucknow on Facebook <span aria-hidden="true">â†—</span></a>
+              <a href="https://www.facebook.com/saslucknow" target="_blank" rel="noreferrer">Follow SAS Lucknow on Facebook <span aria-hidden="true">&nearr;</span></a>
             </div>
             {shareNotice && <p className="pushpanjali-share-notice" role="status">{shareNotice}</p>}
             <button className="pushpanjali-finish" type="button" onClick={closeCampaign}>Return to the website</button>
           </div>}
         </div>
-        <footer className="pushpanjali-footer">Presented by Sri Aurobindo Society, Lucknow Â· Gomti Nagar Centre (UC-02)</footer>
+        <footer className="pushpanjali-footer">Presented by Sri Aurobindo Society, Lucknow - Gomti Nagar Centre (UC-02)</footer>
       </section>
     </div>}
   </>;
