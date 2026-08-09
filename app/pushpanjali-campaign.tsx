@@ -504,7 +504,7 @@ export function PushpanjaliCampaign() {
       <section ref={modalRef} className="pushpanjali-modal" role="dialog" aria-modal="true" aria-labelledby="pushpanjali-title">
         <button className="pushpanjali-close" type="button" onClick={closeCampaign} aria-label="Close Pushpanjali">&times;</button>
         <header className="pushpanjali-heading">
-          <div className="pushpanjali-counter" aria-live="polite"><strong>{offeringCount.toLocaleString("en-IN")}</strong><span>certificates generated</span></div>
+          <div className="pushpanjali-counter" aria-live="polite"><strong>{offeringCount.toLocaleString("en-IN")}</strong><span>Devotees Offered Pushpanjali</span></div>
           <p>15 AUGUST 2026 - SRI AUROBINDO'S BIRTHDAY DARSHAN</p>
           <h2 id="pushpanjali-title">Pushpanjali to Sri Aurobindo</h2>
           <span>Offer a flower in gratitude, aspiration and remembrance.</span>

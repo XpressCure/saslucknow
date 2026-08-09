@@ -3,11 +3,11 @@ set -euo pipefail
 
 releases=/var/www/saslucknow/releases
 current="$releases/current"
-candidate="$releases/mothers-organ-joy-20260809-v9"
-backup="$releases/pre-mothers-organ-joy-20260809-v9"
-failed="$releases/failed-mothers-organ-joy-20260809-v9"
-archive=/tmp/mothers-organ-joy-20260809-v9.tgz
-smoke_unit=saslucknow-mothers-organ-joy-v9
+candidate="$releases/pushpanjali-devotees-counter-20260809-v10"
+backup="$releases/pre-pushpanjali-devotees-counter-20260809-v10"
+failed="$releases/failed-pushpanjali-devotees-counter-20260809-v10"
+archive=/tmp/pushpanjali-devotees-counter-20260809-v10.tgz
+smoke_unit=saslucknow-pushpanjali-devotees-counter-v10
 cutover_started=0
 
 stop_smoke() {
@@ -55,6 +55,8 @@ if grep -q -- 'Powered by:' "$candidate/app/pushpanjali-campaign.tsx"; then exit
 [[ -s "$candidate/public/mothers-organ-joy-1960.mp3" ]]
 grep -q -- 'mothers-organ-joy-1960.mp3' "$candidate/app/mission-home.tsx"
 grep -q -- 'meditationMusicVolume = 0.55' "$candidate/app/mission-home.tsx"
+grep -q -- 'Devotees Offered Pushpanjali' "$candidate/app/pushpanjali-campaign.tsx"
+if grep -q -- 'certificates generated' "$candidate/app/pushpanjali-campaign.tsx"; then exit 1; fi
 
 stop_smoke
 sudo systemd-run --unit="$smoke_unit" --property="User=ec2-user" --property="Group=ec2-user" --property="WorkingDirectory=$candidate" --setenv=NODE_ENV=production --setenv=PORT=3010 /usr/bin/pnpm start -- --hostname 127.0.0.1 --port 3010 >/dev/null
@@ -87,4 +89,4 @@ grep -q 'The Song of Life' /tmp/saslucknow-palette-live.html
 
 cutover_started=0
 trap - ERR
-printf '%s\n' 'saslucknow-mothers-organ-joy-live'
+printf '%s\n' 'saslucknow-pushpanjali-devotees-counter-live'

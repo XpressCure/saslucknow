@@ -265,6 +265,8 @@ test("renders the 15 August Pushpanjali campaign entry point", async () => {
   assert.match(source, /ornamentalBackground/);
   assert.match(source, /const \[open, setOpen\] = useState\(true\)/);
   assert.match(source, /document\.documentElement\.style\.overflow = "hidden"/);
+  assert.match(source, /Devotees Offered Pushpanjali/);
+  assert.doesNotMatch(source, /certificates generated/);
   assert.match(source, /Initiative of: Sri Aurobindo Society, Lucknow, Gomti Nagar Centre \(UC-02\)/);
   assert.doesNotMatch(source, /Powered by:/);
   assert.match(source, /window\.location\.hostname === "127\.0\.0\.1" \|\| window\.location\.hostname === "localhost"/);
