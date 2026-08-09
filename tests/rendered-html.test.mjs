@@ -166,6 +166,18 @@ test("renders location, weekly meeting, gallery and Facebook embed", async () =>
   assert.doesNotMatch(html, /A place of remembrance/);
 });
 
+test("uses one luminous gold and deep teal palette across the site", async () => {
+  const css = await readFile(new URL("../app/globals.css", import.meta.url), "utf8");
+  assert.match(css, /--ink:#173846/);
+  assert.match(css, /--saffron:#c58a32/);
+  assert.match(css, /--paper:#fff9ed/);
+  assert.match(css, /--surface:#fffefa/);
+  assert.match(css, /--lotus:#9b554e/);
+  assert.match(css, /Unified palette · The Song of Life/);
+  assert.match(css, /\.vision,\.support,\.wisdom-quotes,\.mother-journey,\.darshan-days,\.biography-index,\.life-sketch-nav\{background:var\(--blue\)\}/);
+  assert.match(css, /footer,\.detail-footer\{background:var\(--deep\)\}/);
+});
+
 test("renders The Song of Savitri directly after Lives and Vision", async () => {
   const response = await render();
   const html = await response.text();
@@ -249,6 +261,8 @@ test("renders the 15 August Pushpanjali campaign entry point", async () => {
   assert.match(source, /ornamentalBackground/);
   assert.match(source, /const \[open, setOpen\] = useState\(true\)/);
   assert.match(source, /document\.documentElement\.style\.overflow = "hidden"/);
+  const css = await readFile(new URL("../app/globals.css", import.meta.url), "utf8");
+  assert.match(css, /\.pushpanjali-aurobindo\{inset:0 auto 0 -9%;width:145%;max-width:none;object-position:center 27%\}/);
   assert.doesNotMatch(source, /sas-pushpanjali-2026-seen|550/);
   assert.doesNotMatch(source, /WhatsApp mobile number|setPhone/);
   assert.doesNotMatch(source, /pushpanjali-thank-flower/);
