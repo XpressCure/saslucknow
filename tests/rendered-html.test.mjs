@@ -22,10 +22,12 @@ test("renders the mission homepage with accessible landmarks", async () => {
   assert.equal(response.status, 200);
   const html = await response.text();
   assert.match(html, /Sri Aurobindo Society/);
-  assert.match(html, /A quiet space for inner growth/);
+  assert.match(html, /A path towards a more conscious life/);
+  assert.match(html, /Integral Yoga invites every part of life/);
   assert.match(html, /aria-label="Main navigation"/);
   assert.match(html, /id="wisdom"/);
   assert.match(html, /id="events"/);
+  assert.ok(html.indexOf('id="gallery"') < html.indexOf('id="events"'));
   assert.match(html, /href="\/sultanpur-shrine"/);
   assert.doesNotMatch(html, /<a href="#discover">Discover<\/a>/);
   assert.match(html, /Gomti Nagar Centre \(UC-02\)/i);

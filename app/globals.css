@@ -214,6 +214,10 @@ main section[id]{scroll-margin-top:96px}
 .pillars article{min-height:205px;justify-content:flex-start}
 .pillars span{display:block;margin-top:auto;font-size:1.1rem}
 .pillars p{margin:.65rem 0 0;max-width:310px;color:#bfcdd1;font-size:.76rem;line-height:1.6}
+.hero-copy>.kicker{margin-top:1.25rem}
+.vision-pillars-only{grid-template-columns:1fr}
+.vision-pillars-only .pillars{width:100%}
+.vision-pillars-only .pillars p{max-width:42ch}
 @media(max-width:580px){.pillars article{min-height:175px}}
 
 /* More navigation menu */

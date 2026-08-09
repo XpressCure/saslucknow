@@ -39,7 +39,11 @@ next-env.d.ts
 /dist/
 /.wrangler/
 /outputs/
+/output/
 /work/
 /build/preview-*
+/build/*.tgz
 /.sites-git/
+/tmp/
+/tmp-remote-copy/
 *.tsbuildinfo
