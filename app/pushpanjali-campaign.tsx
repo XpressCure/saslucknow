@@ -413,14 +413,14 @@ export function PushpanjaliCampaign() {
       const shareData = { title: "My Pushpanjali Certificate", text: shareMessage, files: [file] };
       if (navigator.share && (!navigator.canShare || navigator.canShare(shareData))) {
         await navigator.share(shareData);
-        setShareNotice("Certificate image shared. Select WhatsApp and the intended contact if prompted.");
+        setShareNotice("Your phone's share menu is open. Choose WhatsApp or WhatsApp Business, then select the intended contact.");
         return;
       }
       const encodedMessage = encodeURIComponent(shareMessage);
       const whatsappUrl = isMobileBrowser() ? `https://wa.me/?text=${encodedMessage}` : `https://web.whatsapp.com/send?text=${encodedMessage}`;
       window.open(whatsappUrl, "_blank", "noopener,noreferrer");
       setShareNotice(isMobileBrowser()
-        ? "WhatsApp has opened. Select the intended contact, attach the downloaded certificate image, and send the prepared message."
+        ? "Choose WhatsApp or WhatsApp Business if your phone asks, then select the intended contact and attach the downloaded certificate image."
         : "WhatsApp Web has opened. Attach the downloaded certificate image in WhatsApp Web and send the prepared message.");
     } catch (shareError) {
       if (shareError instanceof DOMException && shareError.name === "AbortError") return;
@@ -541,7 +541,7 @@ export function PushpanjaliCampaign() {
             </div>
             {error && <p className="pushpanjali-error" role="alert">{error}</p>}
             <div className="pushpanjali-success-actions">
-              <button className="pushpanjali-whatsapp" type="button" onClick={shareCertificateOnWhatsApp} disabled={!result}>Share certificate on WhatsApp</button>
+              <button className="pushpanjali-whatsapp" type="button" onClick={shareCertificateOnWhatsApp} disabled={!result}>Share via WhatsApp / Business</button>
               <button className="pushpanjali-facebook" type="button" onClick={shareCertificateOnFacebook} disabled={!result}>Share on Facebook</button>
               <button className="pushpanjali-instagram" type="button" onClick={shareCertificateOnInstagram} disabled={!result}>Share on Instagram</button>
               <button type="button" onClick={downloadCertificate} disabled={!result}>Download e-Certificate</button>
