@@ -159,13 +159,16 @@ export function PushpanjaliCampaign() {
 
   useEffect(() => {
     if (!open) return;
+    const previousRootOverflow = document.documentElement.style.overflow;
     const previousOverflow = document.body.style.overflow;
+    document.documentElement.style.overflow = "hidden";
     document.body.style.overflow = "hidden";
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape") closeCampaign();
     };
     window.addEventListener("keydown", closeOnEscape);
     return () => {
+      document.documentElement.style.overflow = previousRootOverflow;
       document.body.style.overflow = previousOverflow;
       window.removeEventListener("keydown", closeOnEscape);
     };

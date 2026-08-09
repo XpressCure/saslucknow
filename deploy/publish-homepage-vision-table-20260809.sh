@@ -3,11 +3,11 @@ set -euo pipefail
 
 releases=/var/www/saslucknow/releases
 current="$releases/current"
-candidate="$releases/pushpanjali-full-viewport-20260809-v3"
-backup="$releases/pre-pushpanjali-full-viewport-20260809-v3"
-failed="$releases/failed-pushpanjali-full-viewport-20260809-v3"
-archive=/tmp/pushpanjali-full-viewport-20260809-v3.tgz
-smoke_unit=saslucknow-pushpanjali-full-viewport-v3
+candidate="$releases/pushpanjali-root-scroll-lock-20260809-v4"
+backup="$releases/pre-pushpanjali-root-scroll-lock-20260809-v4"
+failed="$releases/failed-pushpanjali-root-scroll-lock-20260809-v4"
+archive=/tmp/pushpanjali-root-scroll-lock-20260809-v4.tgz
+smoke_unit=saslucknow-pushpanjali-root-scroll-lock-v4
 cutover_started=0
 
 stop_smoke() {
@@ -48,6 +48,7 @@ grep -R -q 'grid-template-rows:minmax(126px,auto)' "$candidate/dist"
 grep -R -q 'scrollbar-width:none' "$candidate/dist"
 grep -R -q 'width:100vw;max-width:none' "$candidate/dist"
 grep -q 'cardNotes\[i\]' "$candidate/app/mission-home.tsx"
+grep -q 'document.documentElement.style.overflow = "hidden"' "$candidate/app/pushpanjali-campaign.tsx"
 if grep -q 'className="savitri-video-description"' "$candidate/app/mission-home.tsx"; then exit 1; fi
 if grep -R -q 'A path towards a more conscious life' "$candidate/dist"; then exit 1; fi
 

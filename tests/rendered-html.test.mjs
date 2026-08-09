@@ -248,6 +248,7 @@ test("renders the 15 August Pushpanjali campaign entry point", async () => {
   assert.match(source, /society-logo-transparent\.png/);
   assert.match(source, /ornamentalBackground/);
   assert.match(source, /const \[open, setOpen\] = useState\(true\)/);
+  assert.match(source, /document\.documentElement\.style\.overflow = "hidden"/);
   assert.doesNotMatch(source, /sas-pushpanjali-2026-seen|550/);
   assert.doesNotMatch(source, /WhatsApp mobile number|setPhone/);
   assert.doesNotMatch(source, /pushpanjali-thank-flower/);
