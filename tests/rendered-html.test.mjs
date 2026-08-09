@@ -175,6 +175,7 @@ test("renders The Song of Savitri directly after Lives and Vision", async () => 
   }
   assert.match(source, /\/api\/savitri-video-submissions/);
   assert.match(source, /\/api\/savitri-videos/);
+  assert.doesNotMatch(source, /className="savitri-video-description"/);
 });
 
 test("stores and lists a Song of Savitri video", async () => {
@@ -209,6 +210,7 @@ test("stores and lists a Song of Savitri video", async () => {
     assert.equal(list.items.length, 1);
     assert.equal(list.items[0].cantoName, "The Symbol Dawn");
     assert.equal(list.items[0].lineNos, "1-5");
+    assert.equal(list.items[0].description, "Five opening lines with English and Hindi meaning.");
     assert.match(list.items[0].mediaUrl, /^\/api\/savitri-video-media\//);
   } finally {
     await new Promise(resolve => server.close(resolve));
@@ -396,20 +398,16 @@ test("homepage biography cards use internal routes", async () => {
   assert.doesNotMatch(html, /href="https:\/\/www\.sriaurobindoashram\.org\/exhibitions\/a-life-sketch\/page01\.html"[^>]*>Read the authorised/);
 });
 
-test("keeps the four vision descriptions in source without displaying them", async () => {
+test("displays all four vision explanations inside their boxes", async () => {
   const response = await render();
   const html = await response.text();
   assert.ok(html.indexOf('id="pathways"') < html.indexOf('aria-labelledby="guides-title"'));
-  const source = await readFile(new URL("../app/mission-home.tsx", import.meta.url), "utf8");
   for (const line of [
     "Discover the deeper self",
     "Let thought, work and relationships",
     "Recognise one spirit in all",
     "Participate consciously in humanity’s movement",
-  ]) {
-    assert.match(source, new RegExp(line));
-    assert.doesNotMatch(html, new RegExp(line));
-  }
+  ]) assert.match(html, new RegExp(line));
 });
 
 test("renders the internal Darshan Divas guide and navigation entry", async () => {
