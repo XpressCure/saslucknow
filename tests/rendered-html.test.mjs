@@ -164,6 +164,9 @@ test("renders The Song of Savitri directly after Lives and Vision", async () => 
   const html = await response.text();
   assert.match(html, /id="song-of-savitri"/);
   assert.match(html, /The Song of Savitri/);
+  assert.match(html, /SAVITRI · IN VISION, VERSE &amp; MEANING/);
+  assert.match(html, /Five luminous lines at a time/);
+  assert.doesNotMatch(html, /SAVITRI · IN IMAGE, WORD &amp; MEANING/);
   assert.ok(html.indexOf('id="guides-title"') < html.indexOf('id="song-of-savitri"'));
   assert.ok(html.indexOf('id="song-of-savitri"') < html.indexOf('aria-labelledby="roots-title"'));
   const source = await readFile(new URL("../app/mission-home.tsx", import.meta.url), "utf8");

@@ -3,11 +3,11 @@ set -euo pipefail
 
 releases=/var/www/saslucknow/releases
 current="$releases/current"
-candidate="$releases/homepage-vision-table-20260809-v4"
-backup="$releases/pre-homepage-vision-table-20260809-v4"
-failed="$releases/failed-homepage-vision-table-20260809-v4"
-archive=/tmp/homepage-vision-table-20260809-v4.tgz
-smoke_unit=saslucknow-homepage-vision-smoke-v4
+candidate="$releases/homepage-vision-table-20260809-v5"
+backup="$releases/pre-homepage-vision-table-20260809-v5"
+failed="$releases/failed-homepage-vision-table-20260809-v5"
+archive=/tmp/homepage-vision-table-20260809-v5.tgz
+smoke_unit=saslucknow-homepage-vision-smoke-v5
 cutover_started=0
 
 stop_smoke() {
@@ -56,8 +56,10 @@ done
 [[ "$ready" == 1 ]]
 grep -q 'hero-vision-pillars' /tmp/saslucknow-homepage-vision-smoke.html
 grep -q 'Inner growth' /tmp/saslucknow-homepage-vision-smoke.html
+grep -q 'Five luminous lines at a time' /tmp/saslucknow-homepage-vision-smoke.html
 if grep -q 'A path towards a more conscious life' /tmp/saslucknow-homepage-vision-smoke.html; then exit 1; fi
 if grep -q 'Discover the deeper self' /tmp/saslucknow-homepage-vision-smoke.html; then exit 1; fi
+if grep -q 'SAVITRI · IN IMAGE, WORD' /tmp/saslucknow-homepage-vision-smoke.html; then exit 1; fi
 stop_smoke
 
 cutover_started=1
@@ -74,8 +76,10 @@ done
 [[ "$ready" == 1 ]]
 grep -q 'hero-vision-pillars' /tmp/saslucknow-homepage-vision-live.html
 grep -q 'Inner growth' /tmp/saslucknow-homepage-vision-live.html
+grep -q 'Five luminous lines at a time' /tmp/saslucknow-homepage-vision-live.html
 if grep -q 'A path towards a more conscious life' /tmp/saslucknow-homepage-vision-live.html; then exit 1; fi
 if grep -q 'Discover the deeper self' /tmp/saslucknow-homepage-vision-live.html; then exit 1; fi
+if grep -q 'SAVITRI · IN IMAGE, WORD' /tmp/saslucknow-homepage-vision-live.html; then exit 1; fi
 [[ "$(systemctl is-active saslucknow.service)" == active ]]
 [[ "$(systemctl is-active saslucknow-gallery.service)" == active ]]
 [[ "$(systemctl is-active httpd)" == active ]]
