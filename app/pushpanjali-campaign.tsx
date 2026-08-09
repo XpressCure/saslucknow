@@ -563,7 +563,7 @@ export function PushpanjaliCampaign() {
             </div>
             {error && <p className="pushpanjali-error" role="alert">{error}</p>}
             <div className="pushpanjali-success-actions">
-              <button className="pushpanjali-whatsapp" type="button" onClick={shareCertificateOnWhatsApp} disabled={!result}>Share via WhatsApp / Business</button>
+              <button className="pushpanjali-whatsapp" type="button" onClick={shareCertificateOnWhatsApp} disabled={!result}>Share Certificate on WhatsApp</button>
               <button className="pushpanjali-facebook" type="button" onClick={shareCertificateOnFacebook} disabled={!result}>Share on Facebook</button>
               <button className="pushpanjali-instagram" type="button" onClick={shareCertificateOnInstagram} disabled={!result}>Share on Instagram</button>
               <button type="button" onClick={downloadCertificate} disabled={!result}>Download e-Certificate</button>
