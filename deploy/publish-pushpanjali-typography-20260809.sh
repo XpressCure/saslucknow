@@ -3,11 +3,11 @@ set -euo pipefail
 
 releases=/var/www/saslucknow/releases
 current="$releases/current"
-candidate="$releases/song-of-life-palette-20260809-v6"
-backup="$releases/pre-song-of-life-palette-20260809-v6"
-failed="$releases/failed-song-of-life-palette-20260809-v6"
-archive=/tmp/song-of-life-palette-20260809-v6.tgz
-smoke_unit=saslucknow-song-of-life-palette-v6
+candidate="$releases/pushpanjali-typography-20260809-v7"
+backup="$releases/pre-pushpanjali-typography-20260809-v7"
+failed="$releases/failed-pushpanjali-typography-20260809-v7"
+archive=/tmp/pushpanjali-typography-20260809-v7.tgz
+smoke_unit=saslucknow-pushpanjali-typography-v7
 cutover_started=0
 
 stop_smoke() {
@@ -44,8 +44,12 @@ tar -xzf "$archive" -C "$candidate"
 grep -R -q -- '--paper:#fff9ed' "$candidate/dist"
 grep -R -q -- '--surface:#fffefa' "$candidate/dist"
 grep -R -q -- 'width:145%;max-width:none' "$candidate/dist"
+grep -R -q -- 'text-size-adjust:100%' "$candidate/dist"
+grep -R -q -- 'font-size:clamp(1.65rem,2.2vw,2.15rem)' "$candidate/dist"
 grep -q -- '--paper:#fff9ed' "$candidate/app/globals.css"
 grep -q -- 'width:145%;max-width:none' "$candidate/app/globals.css"
+grep -q -- 'text-size-adjust:100%' "$candidate/app/globals.css"
+grep -q -- 'pushpanjali-preview' "$candidate/app/pushpanjali-campaign.tsx"
 
 stop_smoke
 sudo systemd-run --unit="$smoke_unit" --property="User=ec2-user" --property="Group=ec2-user" --property="WorkingDirectory=$candidate" --setenv=NODE_ENV=production --setenv=PORT=3010 /usr/bin/pnpm start -- --hostname 127.0.0.1 --port 3010 >/dev/null
@@ -78,4 +82,4 @@ grep -q 'The Song of Life' /tmp/saslucknow-palette-live.html
 
 cutover_started=0
 trap - ERR
-printf '%s\n' 'saslucknow-song-of-life-palette-live'
+printf '%s\n' 'saslucknow-pushpanjali-typography-live'

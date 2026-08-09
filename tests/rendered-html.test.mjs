@@ -261,8 +261,14 @@ test("renders the 15 August Pushpanjali campaign entry point", async () => {
   assert.match(source, /ornamentalBackground/);
   assert.match(source, /const \[open, setOpen\] = useState\(true\)/);
   assert.match(source, /document\.documentElement\.style\.overflow = "hidden"/);
+  assert.match(source, /window\.location\.hostname === "127\.0\.0\.1" \|\| window\.location\.hostname === "localhost"/);
+  assert.match(source, /get\("pushpanjali-preview"\) !== "success"/);
   const css = await readFile(new URL("../app/globals.css", import.meta.url), "utf8");
   assert.match(css, /\.pushpanjali-aurobindo\{inset:0 auto 0 -9%;width:145%;max-width:none;object-position:center 27%\}/);
+  assert.match(css, /\.pushpanjali-modal\{[^}]*font-size:16px;-webkit-text-size-adjust:100%;text-size-adjust:100%/);
+  assert.match(css, /\.pushpanjali-success h3 span\{font-size:1\.15rem/);
+  assert.match(css, /\.pushpanjali-success h3 em\{font-size:clamp\(1\.65rem,2\.2vw,2\.15rem\)/);
+  assert.match(css, /\.pushpanjali-success h3 span\{font-size:1\.05rem\}\.pushpanjali-success h3 em\{font-size:clamp\(1\.5rem,7vw,1\.85rem\)\}/);
   assert.doesNotMatch(source, /sas-pushpanjali-2026-seen|550/);
   assert.doesNotMatch(source, /WhatsApp mobile number|setPhone/);
   assert.doesNotMatch(source, /pushpanjali-thank-flower/);

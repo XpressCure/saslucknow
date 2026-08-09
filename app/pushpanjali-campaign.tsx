@@ -143,6 +143,15 @@ export function PushpanjaliCampaign() {
   }, []);
 
   useEffect(() => {
+    const isLocalPreview = window.location.hostname === "127.0.0.1" || window.location.hostname === "localhost";
+    if (!isLocalPreview || new URLSearchParams(window.location.search).get("pushpanjali-preview") !== "success") return;
+    setName("Meghna Aggarwal");
+    setEmail("preview@example.com");
+    setResult({ reference: "UC02-000014", offeringNumber: 14, emailed: false, emailQueued: true, emailToken: "" });
+    setStatus("offered");
+  }, []);
+
+  useEffect(() => {
     if (status !== "offered") return;
     window.requestAnimationFrame(() => modalRef.current?.scrollTo({ top: 0, behavior: "auto" }));
   }, [status]);

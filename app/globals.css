@@ -407,7 +407,7 @@ main section[id]{scroll-margin-top:96px}
 
 /* Pushpanjali to Sri Aurobindo · 15 August 2026 */
 .pushpanjali-backdrop{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:1.5vh 2vw;background:rgba(10,28,37,.82);backdrop-filter:blur(8px);animation:pushpanjali-backdrop-in .35s ease both}
-.pushpanjali-modal{position:relative;width:min(1160px,96vw);max-height:97dvh;overflow:auto;border:1px solid rgba(225,184,103,.76);border-radius:24px;background:#fffaf0;box-shadow:0 35px 100px rgba(0,0,0,.42),0 0 70px rgba(225,177,81,.18);color:#203b46;animation:pushpanjali-modal-in .5s cubic-bezier(.2,.8,.2,1) both}
+.pushpanjali-modal{position:relative;width:min(1160px,96vw);max-height:97dvh;overflow:auto;border:1px solid rgba(225,184,103,.76);border-radius:24px;background:#fffaf0;box-shadow:0 35px 100px rgba(0,0,0,.42),0 0 70px rgba(225,177,81,.18);color:#203b46;font-size:16px;-webkit-text-size-adjust:100%;text-size-adjust:100%;animation:pushpanjali-modal-in .5s cubic-bezier(.2,.8,.2,1) both}
 .pushpanjali-modal:before{content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;background:radial-gradient(circle at 50% -10%,rgba(255,224,145,.42),transparent 32%)}
 .pushpanjali-close{position:absolute;right:18px;top:16px;z-index:5;width:42px;height:42px;border:1px solid rgba(23,56,70,.18);border-radius:50%;background:rgba(255,253,246,.9);color:#173846;font-size:1.65rem;line-height:1;cursor:pointer}
 .pushpanjali-close:hover{background:#173846;color:#fff}
@@ -448,12 +448,12 @@ main section[id]{scroll-margin-top:96px}
 .pushpanjali-submit{width:100%;min-height:46px;display:flex;align-items:center;justify-content:center;gap:.8rem;border:0;border-radius:8px;background:linear-gradient(110deg,#173846,#24596b);box-shadow:0 10px 26px rgba(20,55,69,.18);color:#fff;font-size:.7rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;cursor:pointer}
 .pushpanjali-submit span{color:#eccd8d;font-size:1.2rem}.pushpanjali-submit:disabled{cursor:wait;opacity:.72}
 .pushpanjali-error{margin:.8rem 0;padding:.75rem .85rem;border-left:3px solid #a84b38;background:#f8e6df;color:#7d3024;font-size:.7rem;line-height:1.45}
-.pushpanjali-success{display:flex;min-height:510px;flex-direction:column;align-items:center;justify-content:center;padding:1.05rem 1.7rem;text-align:center;background:radial-gradient(circle at 50% 25%,rgba(244,207,128,.36),transparent 38%),linear-gradient(145deg,#fffdf7,#f5e6c8)}
-.pushpanjali-success-symbol{width:44px;height:44px;display:grid;place-items:center;border:1px solid #c9974e;border-radius:50%;background:#173846;color:#f0ce8b;font-size:1.05rem;box-shadow:0 0 0 6px rgba(201,151,78,.1)}
-.pushpanjali-success>p:first-of-type{margin:.72rem 0 .3rem;color:#a06a2b;font-size:.55rem;font-weight:800;letter-spacing:.16em}
-.pushpanjali-success h3{display:flex;flex-direction:column;gap:.05rem;margin:0;color:#173846;font-family:Georgia,serif;line-height:1.05}
-.pushpanjali-success h3 span{font-size:clamp(1.35rem,2vw,1.8rem);font-weight:400}.pushpanjali-success h3 em{font-size:clamp(2rem,3vw,2.75rem);font-weight:400;overflow-wrap:anywhere}
-.pushpanjali-thanks{max-width:620px;margin:.45rem 0 0!important;color:#52656b!important;font:.78rem/1.4 Arial,sans-serif!important;letter-spacing:0!important}
+.pushpanjali-success{display:flex;min-height:510px;flex-direction:column;align-items:center;justify-content:flex-start;padding:1rem 1.4rem 1.2rem;text-align:center;background:radial-gradient(circle at 50% 25%,rgba(244,207,128,.36),transparent 38%),linear-gradient(145deg,#fffdf7,#f5e6c8)}
+.pushpanjali-success-symbol{width:40px;height:40px;display:grid;place-items:center;border:1px solid #c9974e;border-radius:50%;background:#173846;color:#f0ce8b;font-size:.95rem;box-shadow:0 0 0 5px rgba(201,151,78,.1)}
+.pushpanjali-success>p:first-of-type{margin:.62rem 0 .25rem;color:#a06a2b;font-size:.6rem;font-weight:800;letter-spacing:.14em}
+.pushpanjali-success h3{display:flex;flex-direction:column;gap:.08rem;margin:0;color:#173846;font-family:Georgia,serif;line-height:1.08}
+.pushpanjali-success h3 span{font-size:1.15rem;font-weight:400}.pushpanjali-success h3 em{font-size:clamp(1.65rem,2.2vw,2.15rem);font-weight:400;overflow-wrap:anywhere}
+.pushpanjali-thanks{max-width:620px;margin:.42rem 0 0!important;color:#52656b!important;font:400 .75rem/1.45 Inter,ui-sans-serif,system-ui,sans-serif!important;letter-spacing:0!important}
 .pushpanjali-reference{display:flex;gap:.8rem;align-items:center;margin:.65rem 0 0;padding:.5rem .85rem;border:1px solid #d8bd88;border-radius:999px;background:rgba(255,255,255,.6);color:#657175;font-size:.6rem;text-transform:uppercase;letter-spacing:.07em}
 .pushpanjali-reference b{color:#173846;font-size:.7rem}
 .pushpanjali-email-status{margin:.4rem 0 .55rem;color:#667377;font-size:.64rem}
@@ -515,7 +515,7 @@ main section[id]{scroll-margin-top:96px}
   .pushpanjali-flowers input{right:.55rem;top:.55rem;width:20px;height:20px}
   .pushpanjali-privacy{font-size:.63rem;line-height:1.5}
   .pushpanjali-submit{min-height:50px;padding:.75rem .8rem;font-size:.68rem;line-height:1.35}
-  .pushpanjali-success{padding:1rem 1.1rem}.pushpanjali-success-actions{grid-template-columns:1fr 1fr}
+  .pushpanjali-success{padding:1rem 1rem 1.2rem}.pushpanjali-success-symbol{width:38px;height:38px;font-size:.9rem}.pushpanjali-success>p:first-of-type{font-size:.58rem}.pushpanjali-success h3 span{font-size:1.05rem}.pushpanjali-success h3 em{font-size:clamp(1.5rem,7vw,1.85rem)}.pushpanjali-thanks{font-size:.74rem!important;line-height:1.45!important}.pushpanjali-success-actions{grid-template-columns:1fr 1fr}
   .pushpanjali-certificate-preview{padding:.3rem;border-radius:10px}.pushpanjali-certificate-preview img{border-radius:7px}.pushpanjali-preview-loading{min-height:140px}
   .pushpanjali-footer{padding:.7rem 1rem max(.7rem,env(safe-area-inset-bottom));font-size:.58rem;line-height:1.5;letter-spacing:.07em}
   .pushpanjali-reopen{left:10px;bottom:12px}
@@ -616,8 +616,7 @@ main section[id]{scroll-margin-top:96px}
   .pushpanjali-flowers>label{grid-template-columns:96px minmax(0,1fr);min-height:132px}
   .pushpanjali-flowers img{width:96px;min-height:132px}
   .pushpanjali-flowers>label>span{min-height:132px;padding-left:.75rem}
-  .pushpanjali-success{padding:.9rem}
-  .pushpanjali-success h3{font-size:1.9rem}
+  .pushpanjali-success{padding:.9rem .85rem 1.1rem}
   .pushpanjali-footer{padding-bottom:max(.8rem,env(safe-area-inset-bottom))}
   .sakhi-window{height:calc(100dvh - 70px);border-radius:14px}
   .sakhi-header h2{font-size:1.35rem}
