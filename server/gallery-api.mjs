@@ -20,6 +20,7 @@ const MANIFEST_DIR = path.join(UPLOAD_DIR, "manifests");
 const MAX_REQUEST_BYTES = 130 * 1024 * 1024;
 const MAX_VIDEO_BYTES = 80 * 1024 * 1024;
 const MAX_IMAGE_BYTES = 12 * 1024 * 1024;
+const MAX_CERTIFICATE_BYTES = 10 * 1024 * 1024;
 const MAX_FILES = 8;
 const allowedTypes = new Map([
   ["image/jpeg", "image"], ["image/png", "image"], ["image/webp", "image"],
@@ -27,6 +28,7 @@ const allowedTypes = new Map([
 ]);
 const rateLimits = new Map();
 const pushpanjaliRateLimits = new Map();
+const pendingPushpanjaliEmails = new Map();
 let mongoClientPromise;
 let pushpanjaliCounterQueue = Promise.resolve();
 
@@ -182,6 +184,12 @@ function isPushpanjaliRateLimited(address) {
   return false;
 }
 
+function prunePendingPushpanjaliEmails(now = Date.now()) {
+  for (const [token, pending] of pendingPushpanjaliEmails) {
+    if (now - pending.createdAt > 15 * 60 * 1000) pendingPushpanjaliEmails.delete(token);
+  }
+}
+
 function safeHtml(value) {
   return String(value || "").replace(/[&<>'"]/g, character => ({
     "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", "\"": "&quot;",
@@ -201,6 +209,17 @@ async function readJsonBody(request, maxBytes = 12_000) {
   } catch {
     throw Object.assign(new Error("Invalid JSON"), { statusCode: 400 });
   }
+}
+
+async function readBinaryBody(request, maxBytes) {
+  const chunks = [];
+  let size = 0;
+  for await (const chunk of request) {
+    size += chunk.length;
+    if (size > maxBytes) throw Object.assign(new Error("Request too large"), { statusCode: 413 });
+    chunks.push(chunk);
+  }
+  return Buffer.concat(chunks);
 }
 
 async function readPushpanjaliCounter() {
@@ -241,7 +260,7 @@ async function countPushpanjaliOfferings() {
   return readPushpanjaliCounter();
 }
 
-async function emailPushpanjaliCertificate({ name, email, flower, reference }) {
+async function emailPushpanjaliCertificate({ email, reference, certificateImage }) {
   if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASSWORD) {
     console.warn(`Pushpanjali ${reference}: SMTP is not configured; certificate email was not sent.`);
     return false;
@@ -252,132 +271,78 @@ async function emailPushpanjaliCertificate({ name, email, flower, reference }) {
     secure: Number(process.env.SMTP_PORT || 587) === 465,
     auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASSWORD },
   });
-  const escapedName = safeHtml(name);
-  const escapedFlower = safeHtml(flower.name);
-  const escapedMeaning = safeHtml(flower.meaning);
-  const escapedBotanical = safeHtml(flower.botanical);
   const escapedReference = safeHtml(reference);
-  const certificateHtml = `
-    <!DOCTYPE html>
+  const emailText = `YOUR PUSHPA HAS BEEN OFFERED\n\nThank you for offering your Pushpanjali to Sri Aurobindo on his 154th Birthday. May this gesture of aspiration remain with you.\n\nRegards,\nSri Aurobindo Society, Lucknow.\nGomti Nagar Centre (UC-02)\nhttps://www.saslucknow.in/`;
+  const emailHtml = `<!DOCTYPE html>
     <html>
-      <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta charSet="UTF-8">
-        <style>
-          @media only screen and (max-width: 700px) {
-            .pp-wrap { padding: 6px 4px !important; }
-            .pp-card { padding: 22px 12px 18px !important; }
-            .pp-brand-wrap { padding: 0 2px 16px !important; }
-            .pp-brand { width: auto !important; max-width: 100% !important; }
-            .pp-logo-cell { width: 48px !important; padding-right: 8px !important; }
-            .pp-logo { width: 48px !important; max-width: 48px !important; }
-            .pp-brand-title { font-size: 15px !important; line-height: 1.18 !important; letter-spacing: .35px !important; }
-            .pp-brand-subtitle { margin-top: 4px !important; font-size: 8px !important; letter-spacing: .65px !important; }
-            .pp-title { margin-bottom: 10px !important; padding-bottom: 8px !important; font-size: 24px !important; line-height: 1.15 !important; white-space: nowrap !important; }
-            .pp-certifies { font-size: 13px !important; }
-            .pp-name-wrap { padding-bottom: 12px !important; }
-            .pp-name { font-size: 29px !important; }
-            .pp-offering-copy { padding-bottom: 16px !important; font-size: 14px !important; line-height: 1.45 !important; }
-            .pp-left-col { width: 36% !important; padding-right: 10px !important; }
-            .pp-right-col { width: 64% !important; padding-left: 0 !important; }
-            .pp-portrait { width: 100% !important; height: 320px !important; object-fit: cover !important; object-position: 43% 50% !important; }
-            .pp-flower-title { font-size: 19px !important; }
-            .pp-label { margin-top: 9px !important; font-size: 8px !important; letter-spacing: .55px !important; }
-            .pp-value { margin-top: 3px !important; font-size: 11px !important; line-height: 1.3 !important; }
-            .pp-meaning { margin-top: 3px !important; font-size: 13px !important; line-height: 1.35 !important; }
-            .pp-flower-name { margin-top: 8px !important; font-size: 15px !important; }
-            .pp-flower-cell { width: 76px !important; padding-left: 6px !important; }
-            .pp-flower-image { width: 70px !important; max-width: 70px !important; }
-            .pp-divider { margin-top: 18px !important; padding-top: 13px !important; font-size: 14px !important; letter-spacing: .6px !important; }
-            .pp-reference { margin-top: 7px !important; font-size: 11px !important; }
-          }
-        </style>
-      </head>
-      <body style="margin:0;padding:0;background:#efe6d5;font-family:Arial,sans-serif;color:#173846">
-        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:0;border-collapse:collapse;background:#efe6d5;">
-          <tr>
-            <td align="center" class="pp-wrap" style="padding:14px 8px;">
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" class="pp-card" style="max-width:680px;width:100%;border:2px solid #c58b27;background:#fffdf8 url('https://www.saslucknow.in/pushpanjali-certificate-ornamental-bg.png') center/100% 100% no-repeat;padding:36px 20px 24px;border-radius:8px;box-sizing:border-box;overflow:hidden;">
-                <tr>
-                  <td align="center" class="pp-brand-wrap" style="padding:0 6px 24px;">
-                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" class="pp-brand" style="border-collapse:collapse;width:auto;max-width:620px;margin:0 auto;">
-                      <tr>
-                        <td class="pp-logo-cell" style="width:72px;padding-right:12px;" valign="middle">
-                          <img class="pp-logo" src="https://www.saslucknow.in/society-logo-transparent.png" alt="Sri Aurobindo Society logo" width="72" style="display:block;width:72px;height:auto;max-width:72px;border:0;outline:none;text-decoration:none;">
-                        </td>
-                        <td valign="middle" style="text-align:left;">
-                          <div class="pp-brand-title" style="font-size:22px;line-height:1.15;font-weight:700;letter-spacing:1px;color:#173846;">SRI AUROBINDO SOCIETY, LUCKNOW</div>
-                          <div class="pp-brand-subtitle" style="margin-top:6px;color:#9b6428;font-size:11px;letter-spacing:1.3px;line-height:1.25;">GOMTI NAGAR CENTRE (UC-02)</div>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <h1 style="margin:0 0 14px;padding-bottom:10px;border-bottom:1px solid #c89c56;text-align:center;font:700 32px Georgia,serif;color:#173846;line-height:1.15;" class="pp-title">Certificate of Pushpanjali</h1>
-                  </td>
-                </tr>
-                <tr>
-                  <td class="pp-certifies" style="text-align:center;color:#59686c;font-size:15px;line-height:1.45;">This certifies that</td>
-                </tr>
-                <tr>
-                  <td align="center" class="pp-name-wrap" style="padding:4px 0 18px 0;">
-                    <div class="pp-name" style="font-style:italic;font-size:40px;line-height:1.15;font-family:Georgia,serif;color:#a66a16;margin:0 0 8px 0;padding:0 6px 10px 6px;border-bottom:1px solid #9b6428;max-width:100%;word-break:break-word;">${escapedName}</div>
-                  </td>
-                </tr>
-                <tr>
-                  <td class="pp-offering-copy" style="text-align:center;color:#455b63;font:17px/1.55 Georgia,serif;padding-bottom:20px;">has lovingly offered Pushpanjali to Sri Aurobindo<br><strong style="white-space:nowrap;color:#9b6428;">on his 154th Birthday.</strong></td>
-                </tr>
-                <tr>
-                  <td>
-                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;">
-                      <tr>
-                        <td class="pp-two-col pp-left-col" width="35%" valign="top" style="padding-right:20px;">
-                          <img class="pp-portrait" src="https://www.saslucknow.in/pushpanjali-sri-aurobindo.jpg" alt="Sri Aurobindo" width="280" style="display:block;max-width:100%;width:100%;height:420px;border:2px solid #c49345;border-radius:12px;object-fit:cover;object-position:43% 50%;font-family:Georgia,serif;">
-                        </td>
-                        <td class="pp-two-col pp-right-col" valign="top" style="padding-left:2px;">
-                          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;">
-                            <tr>
-                              <td style="padding:0;">
-                                <div class="pp-flower-title" style="color:#173846;font:700 24px/1.2 Georgia,serif;">Flower Offered</div>
-                                <div class="pp-label" style="margin-top:12px;color:#78643f;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Botanical name / variety</div>
-                                <div class="pp-value" style="margin-top:5px;color:#526269;font-size:14px;line-height:1.4;">${escapedBotanical}</div>
-                                <div class="pp-label" style="margin-top:14px;color:#78643f;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Spiritual significance given by the Mother</div>
-                                <div class="pp-meaning" style="margin-top:5px;color:#526269;font:italic 17px/1.45 Georgia,serif;">&ldquo;${escapedMeaning}&rdquo;</div>
-                                <div class="pp-flower-name" style="margin-top:12px;color:#9b6428;font:700 19px/1.25 Georgia,serif;">${escapedFlower}</div>
-                              </td>
-                              <td class="pp-flower-cell" width="140" style="width:140px;padding-left:16px;text-align:center;vertical-align:middle;">
-                                <img class="pp-flower-image" src="${flower.cutout}" alt="${escapedFlower}" width="124" style="display:block;width:124px;height:auto;max-width:124px;margin:0 auto;object-fit:contain;">
-                              </td>
-                            </tr>
-                          </table>
-                        </td>
-                      </tr>
-                    </table>
-                    <div class="pp-divider" style="margin-top:28px;padding-top:18px;border-top:1px solid #d5b879;text-align:center;font-weight:700;letter-spacing:1.2px;color:#173846;font-size:19px;line-height:1.35;">15 AUGUST 2026&nbsp;&nbsp;|&nbsp;&nbsp;DARSHAN DIVAS</div>
-                    <div class="pp-reference" style="margin-top:10px;text-align:center;color:#8a6b3d;font-size:14px;line-height:1.45;">CERTIFICATE NUMBER: <strong>${escapedReference}</strong></div>
-                  </td>
-                </tr>
-              </table>
-              <p style="margin:14px auto 0;text-align:center;font-size:13px;line-height:1.45;color:#58666b;max-width:680px;padding:0 8px;">Your virtual Pushpanjali has been recorded by SAS Lucknow. <a href="https://www.facebook.com/saslucknow" style="color:#8e5c22;text-decoration:underline;">Follow SAS Lucknow on Facebook</a>.</p>
-            </td>
-          </tr>
+      <head><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta charSet="UTF-8"></head>
+      <body style="margin:0;padding:0;background:#f4efe4;font-family:Arial,sans-serif;color:#173846;">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;background:#f4efe4;">
+          <tr><td align="center" style="padding:24px 10px;">
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;max-width:760px;border-collapse:collapse;background:#fffdf8;border:1px solid #ddc493;border-radius:12px;">
+              <tr><td style="padding:28px 24px 16px;text-align:left;">
+                <div style="font-size:19px;line-height:1.35;font-weight:800;letter-spacing:1.5px;color:#9a621b;">YOUR PUSHPA HAS BEEN OFFERED</div>
+                <p style="margin:18px 0 0;font-size:16px;line-height:1.65;color:#344d56;">Thank you for offering your Pushpanjali to Sri Aurobindo on his 154th Birthday. May this gesture of aspiration remain with you.</p>
+                <p style="margin:18px 0 0;font-size:15px;line-height:1.6;color:#344d56;">Regards,<br><strong>Sri Aurobindo Society, Lucknow.</strong><br>Gomti Nagar Centre (UC-02)<br><a href="https://www.saslucknow.in/" style="color:#9a621b;">https://www.saslucknow.in/</a></p>
+              </td></tr>
+              <tr><td style="padding:8px 12px 20px;">
+                <img src="cid:pushpanjali-certificate-${escapedReference}" alt="Pushpanjali e-Certificate ${escapedReference}" width="736" style="display:block;width:100%;max-width:736px;height:auto;margin:0 auto;border:0;outline:none;text-decoration:none;">
+              </td></tr>
+            </table>
+          </td></tr>
         </table>
       </body>
-    </html>`;  await transport.sendMail({
+    </html>`;
+  await transport.sendMail({
     from: process.env.EMAIL_FROM || `SAS Lucknow <${process.env.SMTP_USER}>`,
     to: email,
     replyTo: process.env.EMAIL_REPLY_TO || "info.saslucknow@gmail.com",
     subject: `Your Pushpanjali Certificate | ${reference} | 15 August 2026`,
-    text: `Dear ${name},\n\nThis certifies that you have lovingly offered Pushpanjali to Sri Aurobindo on his 154th Birthday.\n\nFlower Offered\nBotanical name / variety: ${flower.botanical}\nSpiritual significance given by the Mother: "${flower.meaning}"\n${flower.name}\n\n15 August 2026 | Darshan Divas\nCertificate Number: ${reference}\n\nFollow SAS Lucknow: https://www.facebook.com/saslucknow`,
-    html: certificateHtml,
+    text: emailText,
+    html: emailHtml,
+    attachments: [{
+      filename: `SAS-Lucknow-Pushpanjali-${reference}.png`,
+      content: certificateImage,
+      contentType: "image/png",
+      contentDisposition: "inline",
+      cid: `pushpanjali-certificate-${reference}`,
+    }],
   });
   return true;
 }
 
+async function handlePushpanjaliCertificateEmail(request, response, headers, requestUrl) {
+  if (request.method === "OPTIONS") return json(response, 204, {}, headers);
+  if (request.method !== "POST") return json(response, 405, { error: "Method not allowed" }, headers);
+  if (!String(request.headers["content-type"] || "").toLowerCase().startsWith("image/png")) {
+    return json(response, 400, { error: "Please submit the certificate image." }, headers);
+  }
+  const token = String(requestUrl.searchParams.get("token") || "");
+  prunePendingPushpanjaliEmails();
+  const pending = pendingPushpanjaliEmails.get(token);
+  if (!pending) return json(response, 404, { error: "The email request has expired." }, headers);
+  try {
+    const certificateImage = await readBinaryBody(request, MAX_CERTIFICATE_BYTES);
+    const pngSignature = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+    if (certificateImage.length < 1000 || !certificateImage.subarray(0, 8).equals(pngSignature)) {
+      return json(response, 400, { error: "The certificate image is invalid." }, headers);
+    }
+    await emailPushpanjaliCertificate({ ...pending, certificateImage });
+    pendingPushpanjaliEmails.delete(token);
+    return json(response, 200, { ok: true, emailed: true }, headers);
+  } catch (error) {
+    const status = Number(error?.statusCode || 500);
+    console.error(`Pushpanjali ${pending.reference}: certificate email failed`, error instanceof Error ? error.message : error);
+    return json(response, status, { error: status === 413 ? "The certificate image was too large." : "The certificate email could not be sent." }, headers);
+  }
+}
+
 async function handlePushpanjali(request, response) {
   const headers = pushpanjaliCors(request);
+  const requestUrl = new URL(request.url || "/", "http://localhost");
+  if (requestUrl.pathname === "/api/pushpanjali-offerings/certificate-email") {
+    return handlePushpanjaliCertificateEmail(request, response, headers, requestUrl);
+  }
   if (request.method === "OPTIONS") return json(response, 204, {}, headers);
   if (request.method === "GET") {
     try {
@@ -418,10 +383,10 @@ async function handlePushpanjali(request, response) {
     const persistence = await savePushpanjaliOffering(document);
     const reference = persistence.reference;
     const emailQueued = Boolean(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASSWORD);
+    const emailToken = emailQueued ? randomUUID() : "";
     if (emailQueued) {
-      void emailPushpanjaliCertificate({ name, email, flower, reference }).catch(error => {
-        console.error(`Pushpanjali ${reference}: certificate email failed`, error instanceof Error ? error.message : error);
-      });
+      prunePendingPushpanjaliEmails();
+      pendingPushpanjaliEmails.set(emailToken, { email, reference, createdAt: Date.now() });
     }
     return json(response, 201, {
       ok: true,
@@ -429,6 +394,7 @@ async function handlePushpanjali(request, response) {
       offeringNumber: persistence.offeringNumber,
       emailed: false,
       emailQueued,
+      emailToken,
     }, headers);
   } catch (error) {
     const status = Number(error?.statusCode || 500);
@@ -526,7 +492,7 @@ async function removeTemporaryFiles(files = []) {
 export async function handleSubmission(request, response) {
   const pathname = new URL(request.url || "/", "http://localhost").pathname;
   if (request.method === "GET" && pathname === "/health") return json(response, 200, { ok: true });
-  if (pathname === "/api/pushpanjali-offerings") return handlePushpanjali(request, response);
+  if (pathname === "/api/pushpanjali-offerings" || pathname === "/api/pushpanjali-offerings/certificate-email") return handlePushpanjali(request, response);
   if (request.method === "GET" && pathname === "/api/gallery-items") return json(response, 200, { items: await approvedGalleryItems() });
   if (request.method === "GET" && pathname.startsWith("/api/gallery-media/")) return serveApprovedMedia(pathname, request, response);
   if (request.method !== "POST" || pathname !== "/api/gallery-submissions") return json(response, 404, { error: "Not found" });

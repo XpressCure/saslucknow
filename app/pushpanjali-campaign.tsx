@@ -16,6 +16,7 @@ type OfferingResult = {
   offeringNumber: number;
   emailed: boolean;
   emailQueued: boolean;
+  emailToken: string;
 };
 
 const flowers: Flower[] = [
@@ -194,6 +195,7 @@ export function PushpanjaliCampaign() {
         offeringNumber?: number;
         emailed?: boolean;
         emailQueued?: boolean;
+        emailToken?: string;
       };
       if (!response.ok) throw new Error(payload.error || "Your Pushpanjali could not be recorded. Please try again.");
       const offeringResult = {
@@ -201,6 +203,7 @@ export function PushpanjaliCampaign() {
         offeringNumber: Number(payload.offeringNumber || 0),
         emailed: Boolean(payload.emailed),
         emailQueued: Boolean(payload.emailQueued),
+        emailToken: String(payload.emailToken || ""),
       };
       setResult(offeringResult);
       setOfferingCount(current => current + 1);
@@ -208,6 +211,9 @@ export function PushpanjaliCampaign() {
         const blob = await buildCertificate(offeringResult);
         setCertificateBlob(blob);
         triggerCertificateDownload(blob);
+        if (offeringResult.emailQueued && offeringResult.emailToken) {
+          void deliverCertificateEmail(blob, offeringResult);
+        }
       } catch {
         setError("Your offering is recorded, but automatic certificate download was blocked. Use the download button below.");
       }
@@ -435,6 +441,22 @@ export function PushpanjaliCampaign() {
     window.open(facebookUrl, "_blank", "noopener,noreferrer");
     void navigator.clipboard?.writeText(shareMessage).catch(() => {});
     setShareNotice("Facebook is open and the message is copied. Add the certificate image shown above, then paste the message if Facebook does not include it automatically.");
+  };
+
+  const deliverCertificateEmail = async (blob: Blob, offeringResult: OfferingResult) => {
+    try {
+      const response = await fetch(`${offeringEndpoint()}/certificate-email?token=${encodeURIComponent(offeringResult.emailToken)}`, {
+        method: "POST",
+        headers: { "Content-Type": "image/png" },
+        body: blob,
+      });
+      const payload = await response.json().catch(() => ({})) as { error?: string; emailed?: boolean };
+      if (!response.ok || !payload.emailed) throw new Error(payload.error || "The certificate email could not be sent.");
+      setResult(current => current ? { ...current, emailed: true, emailQueued: false } : current);
+    } catch {
+      setResult(current => current ? { ...current, emailed: false, emailQueued: false } : current);
+      setError("Your certificate is ready, but the email could not be sent. Please download it below.");
+    }
   };
 
   const shareCertificateOnInstagram = async () => {

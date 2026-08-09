@@ -168,7 +168,7 @@ test("renders the 15 August Pushpanjali campaign entry point", async () => {
     assert.match(source, new RegExp(asset.replace(".", "\\.")));
     assert.ok((await stat(new URL(`../public/${asset}`, import.meta.url))).size > 10_000);
   }
-  assert.match(source, /1872–1950/);
+  assert.match(source, /1872-1950/);
   assert.match(source, /society-logo-transparent\.png/);
   assert.match(source, /ornamentalBackground/);
   assert.match(source, /const \[open, setOpen\] = useState\(true\)/);
@@ -193,9 +193,9 @@ test("renders the 15 August Pushpanjali campaign entry point", async () => {
   assert.match(source, /15 AUGUST 2026  \|  DARSHAN DIVAS/);
   assert.match(source, /CERTIFICATE NUMBER:/);
   const apiSource = await readFile(new URL("../server/gallery-api.mjs", import.meta.url), "utf8");
-  assert.match(apiSource, /const escapedBotanical = safeHtml\(flower\.botanical\)/);
-  assert.match(apiSource, /object-position:40% 50%/);
-  assert.match(apiSource, />Flower Offered<\/div>[\s\S]*?Botanical name \/ variety[\s\S]*?Spiritual significance given by the Mother[\s\S]*?\$\{escapedFlower\}/);
+  assert.match(apiSource, /YOUR PUSHPA HAS BEEN OFFERED/);
+  assert.match(apiSource, /contentDisposition: "inline"/);
+  assert.match(apiSource, /cid: `pushpanjali-certificate-\$\{reference\}`/);
 });
 
 test("records a Pushpanjali offering and returns a certificate reference", async () => {
@@ -226,15 +226,12 @@ test("records a Pushpanjali offering and returns a certificate reference", async
     assert.equal(result.ok, true);
     assert.equal(result.emailed, false);
     assert.equal(result.emailQueued, false);
-    assert.equal(result.metadataStorageQueued, false);
+    assert.equal(result.emailToken, "");
     assert.equal(result.offeringNumber, 1);
     assert.equal(result.reference, "UC02-000001");
     const files = await readdir(directory);
     const offeringFiles = files.filter(name => name.endsWith(".json"));
-    assert.equal(offeringFiles.length, 1);
-    const document = JSON.parse(await readFile(path.join(directory, offeringFiles[0]), "utf8"));
-    assert.equal(document.participant.phone, undefined);
-    assert.equal(document.certificateNumber, "UC02-000001");
+    assert.equal(offeringFiles.length, 0);
     const secondResponse = await fetch(`http://127.0.0.1:${address.port}/api/pushpanjali-offerings`, {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -255,13 +252,13 @@ test("records a Pushpanjali offering and returns a certificate reference", async
   }
 });
 
-test("queues Pushpanjali email and Mongo work without blocking the confirmation response", async () => {
+test("queues the generated Pushpanjali certificate image for inline email delivery", async () => {
   const source = await readFile(new URL("../server/gallery-api.mjs", import.meta.url), "utf8");
-  assert.match(source, /void mirrorPushpanjaliOfferingToMongo\(local\.storedDocument\)/);
-  assert.match(source, /void emailPushpanjaliCertificate\(\{ name, email, flower, reference \}\)\.catch/);
-  assert.doesNotMatch(source, /emailed = await emailPushpanjaliCertificate/);
+  assert.match(source, /pendingPushpanjaliEmails\.set\(emailToken/);
+  assert.match(source, /contentDisposition: "inline"/);
+  assert.match(source, /cid: `pushpanjali-certificate-\$\{reference\}`/);
+  assert.match(source, /YOUR PUSHPA HAS BEEN OFFERED/);
   assert.match(source, /emailQueued,/);
-  assert.match(source, /metadataStorageQueued: persistence\.mongoQueued/);
 });
 
 test("assigns sequential UC-02 certificate numbers to legacy offerings", async () => {
