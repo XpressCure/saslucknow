@@ -107,6 +107,8 @@ test("applies phone-safe layouts to every page family and floating experience", 
   assert.match(css, /\.pushpanjali-flowers b\{font-size:1rem/);
   assert.match(css, /\.pushpanjali-flowers q\{[^}]*font-size:\.76rem/);
   assert.match(css, /\.pushpanjali-flowers small\{[^}]*font-size:\.62rem/);
+  assert.match(css, /\.pushpanjali-backdrop\{width:100vw;max-width:none/);
+  assert.match(css, /\.pushpanjali-modal\{width:100vw;max-width:none/);
   assert.match(css, /\.pushpanjali-success h3\{[^}]*flex-direction:column/);
   for (const selector of [
     ".site-header",
