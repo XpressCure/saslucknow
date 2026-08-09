@@ -386,7 +386,7 @@ export function MissionHome() {
       <section className="theme-banner" aria-label="Website theme: The Song of Life"><img src="/song-of-life-banner.png" alt="The Song of Life, glowing over a radiant golden dawn"/><div className="theme-caption"><span>OUR WEBSITE THEME</span><p>A luminous invitation to discover the deeper music within life.</p></div></section>
       <section className="hero hero-vision" id="pathways" aria-label="The Vision">
         <div className="hero-orb" aria-hidden="true"><span>✦</span></div>
-        <div className="hero-copy"><p className="eyebrow">{t.eyebrow}</p><h1 className="kicker vision-label">THE VISION</h1><div className="pillars hero-vision-pillars">{t.cards.map((x,i)=><article key={x}><b>0{i+1}</b><span>{x}</span><p>{t.cardNotes[i]}</p></article>)}</div></div>
+        <div className="hero-copy"><p className="eyebrow">{t.eyebrow}</p><h1 className="kicker vision-label">THE VISION</h1><div className="pillars hero-vision-pillars">{t.cards.map((x,i)=><article key={x}><b>0{i+1}</b><span>{x}</span></article>)}</div></div>
       </section>
 
       <section className="people section" aria-labelledby="guides-title">
