@@ -136,6 +136,9 @@ test("renders location, weekly meeting, gallery and Facebook embed", async () =>
   const html = await response.text();
   assert.match(html, /The Song of Life/);
   assert.match(html, /4\/668, Vijayant Khand/);
+  assert.match(html, /Weekly collective meeting/);
+  assert.doesNotMatch(html, /SPECIAL OBSERVANCE · OFFLINE/);
+  assert.doesNotMatch(html, /SAVITRI STUDY · ONLINE/);
   assert.match(html, /6:00–7:00 PM/);
   assert.match(html, /73888 99001/);
   assert.match(html, /facebook\.com%2Fsaslucknow/);
