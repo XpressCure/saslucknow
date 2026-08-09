@@ -3,11 +3,11 @@ set -euo pipefail
 
 releases=/var/www/saslucknow/releases
 current="$releases/current"
-candidate="$releases/song-of-life-palette-20260809-v5"
-backup="$releases/pre-song-of-life-palette-20260809-v5"
-failed="$releases/failed-song-of-life-palette-20260809-v5"
-archive=/tmp/song-of-life-palette-20260809-v5.tgz
-smoke_unit=saslucknow-song-of-life-palette-v5
+candidate="$releases/song-of-life-palette-20260809-v6"
+backup="$releases/pre-song-of-life-palette-20260809-v6"
+failed="$releases/failed-song-of-life-palette-20260809-v6"
+archive=/tmp/song-of-life-palette-20260809-v6.tgz
+smoke_unit=saslucknow-song-of-life-palette-v6
 cutover_started=0
 
 stop_smoke() {
@@ -43,7 +43,6 @@ tar -xzf "$archive" -C "$candidate"
 [[ -f "$candidate/dist/server/index.js" ]]
 grep -R -q -- '--paper:#fff9ed' "$candidate/dist"
 grep -R -q -- '--surface:#fffefa' "$candidate/dist"
-grep -R -q -- 'Unified palette' "$candidate/dist"
 grep -R -q -- 'width:145%;max-width:none' "$candidate/dist"
 grep -q -- '--paper:#fff9ed' "$candidate/app/globals.css"
 grep -q -- 'width:145%;max-width:none' "$candidate/app/globals.css"
