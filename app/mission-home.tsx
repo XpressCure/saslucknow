@@ -146,6 +146,8 @@ const libraryCollections: LibraryCollection[] = [
   { category: "Explore", title: "Guidance and quotations", count: "Daily inspiration", items: ["Their guidance", "Aphorisms", "Prayers and mantras"], href: "https://www.motherandsriaurobindo.in/guidance/" },
 ];
 
+const meditationMusicVolume = 0.55;
+
 export function MissionHome() {
   const [lang, setLang] = useState<Language>("en");
   const [menu, setMenu] = useState(false);
@@ -256,7 +258,7 @@ export function MissionHome() {
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
-    audio.volume = 0.22;
+    audio.volume = meditationMusicVolume;
     const startMusic = () => {
       audio.play().then(() => setMusicPlaying(true)).catch(() => setMusicPlaying(false));
     };
@@ -283,7 +285,7 @@ export function MissionHome() {
   const playMeditationMusic = async () => {
     const audio = audioRef.current;
     if (!audio) return false;
-    audio.volume = 0.22;
+    audio.volume = meditationMusicVolume;
     try {
       await audio.play();
       setMusicPlaying(true);
@@ -378,8 +380,8 @@ export function MissionHome() {
       </nav>
       <div className="language"><button className={lang === "en" ? "active" : ""} onClick={() => setLang("en")}>EN</button><span>/</span><button className={lang === "hi" ? "active" : ""} onClick={() => setLang("hi")}>हिं</button></div>
     </header>
-    <audio ref={audioRef} autoPlay loop preload="auto" playsInline onPause={()=>setMusicPlaying(false)} onPlay={()=>setMusicPlaying(true)} onError={()=>setMusicPlaying(false)}><source src="/quiet-aspiration.wav" type="audio/wav"/></audio>
-    <button className={`meditation-control ${musicPlaying ? "playing" : ""}`} type="button" onClick={toggleMeditationMusic} aria-pressed={musicPlaying} aria-label={`${musicPlaying ? "Stop" : "Play"} soft meditation music`} title="Original meditation soundscape · Quiet Aspiration"><span aria-hidden="true">♪</span><small>Meditation</small><b>{musicPlaying ? "Stop" : "Play"}</b></button>
+    <audio ref={audioRef} autoPlay loop preload="auto" playsInline onPause={()=>setMusicPlaying(false)} onPlay={()=>setMusicPlaying(true)} onError={()=>setMusicPlaying(false)}><source src="/mothers-organ-joy-1960.mp3" type="audio/mpeg"/></audio>
+    <button className={`meditation-control ${musicPlaying ? "playing" : ""}`} type="button" onClick={toggleMeditationMusic} aria-pressed={musicPlaying} aria-label={`${musicPlaying ? "Stop" : "Play"} the Mother's organ meditation music`} title="The Mother's organ music · Joy · 12 March 1960"><span aria-hidden="true">♪</span><small>Meditation</small><b>{musicPlaying ? "Stop" : "Play"}</b></button>
     <PushpanjaliCampaign/>
 
     <main id="main">

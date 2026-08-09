@@ -3,11 +3,11 @@ set -euo pipefail
 
 releases=/var/www/saslucknow/releases
 current="$releases/current"
-candidate="$releases/pushpanjali-share-message-20260809-v8"
-backup="$releases/pre-pushpanjali-share-message-20260809-v8"
-failed="$releases/failed-pushpanjali-share-message-20260809-v8"
-archive=/tmp/pushpanjali-share-message-20260809-v8.tgz
-smoke_unit=saslucknow-pushpanjali-share-message-v8
+candidate="$releases/mothers-organ-joy-20260809-v9"
+backup="$releases/pre-mothers-organ-joy-20260809-v9"
+failed="$releases/failed-mothers-organ-joy-20260809-v9"
+archive=/tmp/mothers-organ-joy-20260809-v9.tgz
+smoke_unit=saslucknow-mothers-organ-joy-v9
 cutover_started=0
 
 stop_smoke() {
@@ -52,6 +52,9 @@ grep -q -- 'text-size-adjust:100%' "$candidate/app/globals.css"
 grep -q -- 'pushpanjali-preview' "$candidate/app/pushpanjali-campaign.tsx"
 grep -q -- 'Initiative of: Sri Aurobindo Society' "$candidate/app/pushpanjali-campaign.tsx"
 if grep -q -- 'Powered by:' "$candidate/app/pushpanjali-campaign.tsx"; then exit 1; fi
+[[ -s "$candidate/public/mothers-organ-joy-1960.mp3" ]]
+grep -q -- 'mothers-organ-joy-1960.mp3' "$candidate/app/mission-home.tsx"
+grep -q -- 'meditationMusicVolume = 0.55' "$candidate/app/mission-home.tsx"
 
 stop_smoke
 sudo systemd-run --unit="$smoke_unit" --property="User=ec2-user" --property="Group=ec2-user" --property="WorkingDirectory=$candidate" --setenv=NODE_ENV=production --setenv=PORT=3010 /usr/bin/pnpm start -- --hostname 127.0.0.1 --port 3010 >/dev/null
@@ -84,4 +87,4 @@ grep -q 'The Song of Life' /tmp/saslucknow-palette-live.html
 
 cutover_started=0
 trap - ERR
-printf '%s\n' 'saslucknow-pushpanjali-share-message-live'
+printf '%s\n' 'saslucknow-mothers-organ-joy-live'

@@ -154,10 +154,14 @@ test("renders location, weekly meeting, gallery and Facebook embed", async () =>
   assert.match(html, /facebook\.com%2Fsaslucknow/);
   assert.match(html, /Upload event photos or videos/);
   assert.match(html, /Videos are published automatically/);
-  assert.match(html, /Stop soft meditation music/);
+  assert.match(html, /Stop the Mother&#x27;s organ meditation music/);
   assert.match(html, /autoplay=""/i);
   assert.doesNotMatch(html, /Enter with music|Continue in silence/);
-  assert.match(html, /src="\/quiet-aspiration\.wav"/);
+  assert.match(html, /src="\/mothers-organ-joy-1960\.mp3"/);
+  assert.match(html, /The Mother&#x27;s organ music · Joy · 12 March 1960/);
+  const homeSource = await readFile(new URL("../app/mission-home.tsx", import.meta.url), "utf8");
+  assert.match(homeSource, /const meditationMusicVolume = 0\.55/);
+  assert.doesNotMatch(homeSource, /audio\.volume = 0\.22|quiet-aspiration\.wav/);
   assert.match(html, /Savitri Sakhi/);
   assert.match(html, /Open Savitri Sakhi/);
   assert.doesNotMatch(html, /Swipe left or right to explore approved event memories/);
