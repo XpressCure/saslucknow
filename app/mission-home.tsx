@@ -14,6 +14,18 @@ type GalleryItem = {
   mimeType: string;
   mediaUrl: string;
 };
+type SavitriVideoItem = {
+  id: string;
+  part: string;
+  bookNo: string;
+  cantoNo: string;
+  cantoName: string;
+  lineNos: string;
+  pageNo: string;
+  description: string;
+  mimeType: string;
+  mediaUrl: string;
+};
 type SakhiMessage = {
   role: "user" | "assistant";
   content: string;
@@ -150,7 +162,7 @@ export function MissionHome() {
   const [libraryResults, setLibraryResults] = useState<LibrarySearchResult[]>([]);
   const [librarySearching, setLibrarySearching] = useState(false);
   const [librarySearchError, setLibrarySearchError] = useState("");
-  const [dialog, setDialog] = useState<"register" | "join" | "volunteer" | "contribute" | "gallery" | null>(null);
+  const [dialog, setDialog] = useState<"register" | "join" | "volunteer" | "contribute" | "gallery" | "savitri" | null>(null);
   const [sent, setSent] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [submitError, setSubmitError] = useState("");
@@ -158,12 +170,15 @@ export function MissionHome() {
   const [uploadStatus, setUploadStatus] = useState<"approved" | "pending">("pending");
   const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
   const [galleryLoading, setGalleryLoading] = useState(true);
+  const [savitriVideos, setSavitriVideos] = useState<SavitriVideoItem[]>([]);
+  const [savitriVideosLoading, setSavitriVideosLoading] = useState(true);
   const [sakhiOpen, setSakhiOpen] = useState(false);
   const [sakhiInput, setSakhiInput] = useState("");
   const [sakhiMessages, setSakhiMessages] = useState<SakhiMessage[]>([]);
   const [sakhiThinking, setSakhiThinking] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
   const galleryTrack = useRef<HTMLDivElement>(null);
+  const savitriTrack = useRef<HTMLDivElement>(null);
   const sakhiEndRef = useRef<HTMLDivElement>(null);
   const t = copy[lang];
   const primaryNav = [
@@ -233,6 +248,15 @@ export function MissionHome() {
     return () => controller.abort();
   }, []);
   useEffect(() => {
+    const controller = new AbortController();
+    fetch("/api/savitri-videos", { signal: controller.signal })
+      .then(response => response.ok ? response.json() : Promise.reject(new Error("Savitri videos unavailable")))
+      .then(result => setSavitriVideos(Array.isArray(result.items) ? result.items : []))
+      .catch(error => { if (error?.name !== "AbortError") setSavitriVideos([]); })
+      .finally(() => setSavitriVideosLoading(false));
+    return () => controller.abort();
+  }, []);
+  useEffect(() => {
     if (sakhiOpen) sakhiEndRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }, [sakhiMessages, sakhiOpen, sakhiThinking]);
   useEffect(() => {
@@ -256,6 +280,10 @@ export function MissionHome() {
   }, []);
   const moveGallery = (direction: -1 | 1) => {
     const track = galleryTrack.current;
+    if (track) track.scrollBy({ left: direction * Math.max(280, track.clientWidth * .82), behavior: "smooth" });
+  };
+  const moveSavitriVideos = (direction: -1 | 1) => {
+    const track = savitriTrack.current;
     if (track) track.scrollBy({ left: direction * Math.max(280, track.clientWidth * .82), behavior: "smooth" });
   };
   const playMeditationMusic = async () => {
@@ -288,16 +316,20 @@ export function MissionHome() {
   };
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (dialog !== "gallery") { setSent(true); return; }
+    if (dialog !== "gallery" && dialog !== "savitri") { setSent(true); return; }
     setUploading(true);
     setSubmitError("");
     try {
-      const response = await fetch("/api/gallery-submissions", { method: "POST", body: new FormData(event.currentTarget) });
+      const isSavitriSubmission = dialog === "savitri";
+      const response = await fetch(isSavitriSubmission ? "/api/savitri-video-submissions" : "/api/gallery-submissions", { method: "POST", body: new FormData(event.currentTarget) });
       const result = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(result.error || "The upload could not be saved.");
       setUploadReference(result.reference || "received");
       setUploadStatus(result.status === "approved" ? "approved" : "pending");
-      if (result.status === "approved") {
+      if (isSavitriSubmission) {
+        const savitri = await fetch("/api/savitri-videos").then(value => value.ok ? value.json() : { items: [] });
+        setSavitriVideos(Array.isArray(savitri.items) ? savitri.items : []);
+      } else if (result.status === "approved") {
         const gallery = await fetch("/api/gallery-items").then(value => value.ok ? value.json() : { items: [] });
         setGalleryItems(Array.isArray(gallery.items) ? gallery.items : []);
       }
@@ -373,6 +405,15 @@ export function MissionHome() {
           <article className="person-card"><img src="/the-mother-portrait.jpg" alt="Portrait of the Mother, Mirra Alfassa" loading="lazy"/><div><small>1878–1973</small><h3>The Mother</h3><p>Born Mirra Alfassa, the Mother was Sri Aurobindo’s spiritual collaborator and guided the Ashram’s many-sided life for nearly fifty years.</p><a href="/the-mother">Explore the Mother’s life →</a></div></article>
         </div>
         <p className="image-credit">Portraits displayed from the Sri Aurobindo Ashram website. Permission for permanent production use should be confirmed with the Ashram Photo Section.</p>
+      </section>
+
+      <section className="song-of-savitri gallery section" id="song-of-savitri" aria-labelledby="song-of-savitri-title">
+        <div className="section-title gallery-heading"><div><p className="kicker">SAVITRI · IN IMAGE, WORD & MEANING</p><h2 id="song-of-savitri-title">The Song of Savitri</h2></div><p>Five lines at a time, Savitri unfolds through moving images with English and Hindi meaning.</p></div>
+        {savitriVideos.length > 0 && <div className="gallery-slider-header"><div className="gallery-controls" aria-label="The Song of Savitri navigation"><button type="button" onClick={()=>moveSavitriVideos(-1)} aria-label="Previous Savitri videos">←</button><button type="button" onClick={()=>moveSavitriVideos(1)} aria-label="Next Savitri videos">→</button></div></div>}
+        <div className={`gallery-track savitri-video-track ${savitriVideos.length ? "has-items" : ""}`} ref={savitriTrack} aria-label="The Song of Savitri videos" aria-live="polite">
+          {savitriVideosLoading ? <div className="gallery-empty"><h3>Loading The Song of Savitri…</h3></div> : savitriVideos.length === 0 ? <div className="gallery-empty"><span>THE SERIES IS READY</span><h3>The first five lines will appear here.</h3><p>Upload a video with its exact Book, Canto, line and page reference.</p></div> : savitriVideos.map(item => <article className="gallery-slide savitri-video-slide" key={item.id}><div className="gallery-media"><video controls preload="metadata" playsInline><source src={item.mediaUrl} type={item.mimeType}/>Your browser cannot play this video.</video></div><div className="gallery-caption"><span>Part {item.part}</span><h3><small>Book {item.bookNo} · Canto {item.cantoNo}</small>{item.cantoName}</h3><dl className="savitri-video-meta"><div><dt>Part</dt><dd>{item.part}</dd></div><div><dt>Book No.</dt><dd>{item.bookNo}</dd></div><div><dt>Canto No.</dt><dd>{item.cantoNo}</dd></div><div><dt>Name of Canto</dt><dd>{item.cantoName}</dd></div><div><dt>Line Nos.</dt><dd>{item.lineNos}</dd></div><div><dt>Page No.</dt><dd>{item.pageNo}</dd></div></dl><p className="savitri-video-description"><b>Description</b>{item.description}</p></div></article>)}
+        </div>
+        <div className="gallery-action"><p>Add the next five-line visual passage with its complete Savitri reference and description.</p><button className="button quiet" onClick={()=>open("savitri")}>Upload a Song of Savitri video →</button></div>
       </section>
 
       <section className="vision section vision-pillars-only" id="pathways" aria-label="Four expressions of the vision"><div className="pillars">{t.cards.map((x,i)=><article key={x}><b>0{i+1}</b><span>{x}</span><p>{t.cardNotes[i]}</p></article>)}</div></section>
@@ -456,8 +497,8 @@ export function MissionHome() {
     </aside>
 
     {dialog && <div className="modal-backdrop" role="presentation" onMouseDown={()=>setDialog(null)}><div className="modal" role="dialog" aria-modal="true" aria-labelledby="dialog-title" onMouseDown={e=>e.stopPropagation()}><button className="close" onClick={()=>setDialog(null)} aria-label="Close">×</button>
-      {!sent ? <><p className="kicker">AUROBINDO MISSION LUCKNOW</p><h2 id="dialog-title">{dialog === "register" ? "Register for this gathering" : dialog === "join" ? "Join the community" : dialog === "volunteer" ? "Volunteer with us" : dialog === "gallery" ? "Add event photos or videos" : "Make a voluntary contribution"}</h2><p className="privacy">{dialog === "gallery" ? "Share media from a Society gathering. Submitted videos are published immediately; photo-only submissions are held for review." : "Your details are used only to respond to this request. Optional updates require separate consent."}</p>
-      {dialog === "gallery" ? <form onSubmit={submit}><label>Event or album title<input required name="title" maxLength={160}/></label><div className="form-row"><label>Event date<input required type="date" name="date"/></label><label>Category<input required name="category" maxLength={80} placeholder="Lecture, shrine visit…"/></label></div><div className="form-row"><label>Your name<input name="name" maxLength={120} autoComplete="name"/></label><label>Your email<input name="email" maxLength={180} type="email" autoComplete="email"/></label></div><label>Photographs or videos<input required name="media" type="file" accept="image/jpeg,image/png,image/webp,video/mp4,video/webm,video/quicktime" multiple/><small>Up to 8 files. Photos: 12 MB each. Videos: 80 MB each. JPG, PNG, WebP, MP4, WebM or MOV.</small></label><label>Description, context and people pictured<textarea required name="description" maxLength={2500} rows={4}/></label><label className="upload-honeypot" aria-hidden="true">Website<input name="website" tabIndex={-1} autoComplete="off"/></label><label className="check"><input required type="checkbox" name="permission" value="yes"/> I confirm that I have permission to publish these photos or videos on this website.</label>{submitError && <p className="form-error" role="alert">{submitError}</p>}<button className="button primary" type="submit" disabled={uploading}>{uploading ? "Uploading securely…" : "Submit media →"}</button></form> : <form onSubmit={submit}><label>Full name<input required name="name" autoComplete="name"/></label><div className="form-row"><label>Email<input required type="email" name="email" autoComplete="email"/></label><label>Mobile<input required name="mobile" inputMode="tel" autoComplete="tel"/></label></div>{dialog === "contribute" ? <label>Amount (₹)<input required type="number" min="100" name="amount"/></label> : <label>City<input name="city" defaultValue="Lucknow"/></label>}<label className="check"><input type="checkbox" name="updates"/> I would like occasional mission updates.</label><button className="button primary" type="submit">{dialog === "contribute" ? "Continue securely" : "Submit"} →</button></form>}</> : <div className="success"><span>✓</span><h2>Thank you.</h2><p>{dialog === "gallery" ? uploadStatus === "approved" ? `Your video is now published in Gatherings. Reference: ${uploadReference}.` : `Your photographs have been saved for review. Reference: ${uploadReference}.` : "Your request has been received."}</p><button className="button quiet" onClick={()=>setDialog(null)}>Close</button></div>}
+      {!sent ? <><p className="kicker">SRI AUROBINDO SOCIETY · LUCKNOW</p><h2 id="dialog-title">{dialog === "register" ? "Register for this gathering" : dialog === "join" ? "Join the community" : dialog === "volunteer" ? "Volunteer with us" : dialog === "gallery" ? "Add event photos or videos" : dialog === "savitri" ? "Add to The Song of Savitri" : "Make a voluntary contribution"}</h2><p className="privacy">{dialog === "gallery" ? "Share media from a Society gathering. Submitted videos are published immediately; photo-only submissions are held for review." : dialog === "savitri" ? "Upload one video and provide its complete Savitri reference. The video will be published in The Song of Savitri after submission." : "Your details are used only to respond to this request. Optional updates require separate consent."}</p>
+      {dialog === "gallery" ? <form onSubmit={submit}><label>Event or album title<input required name="title" maxLength={160}/></label><div className="form-row"><label>Event date<input required type="date" name="date"/></label><label>Category<input required name="category" maxLength={80} placeholder="Lecture, shrine visit…"/></label></div><div className="form-row"><label>Your name<input name="name" maxLength={120} autoComplete="name"/></label><label>Your email<input name="email" maxLength={180} type="email" autoComplete="email"/></label></div><label>Photographs or videos<input required name="media" type="file" accept="image/jpeg,image/png,image/webp,video/mp4,video/webm,video/quicktime" multiple/><small>Up to 8 files. Photos: 12 MB each. Videos: 80 MB each. JPG, PNG, WebP, MP4, WebM or MOV.</small></label><label>Description, context and people pictured<textarea required name="description" maxLength={2500} rows={4}/></label><label className="upload-honeypot" aria-hidden="true">Website<input name="website" tabIndex={-1} autoComplete="off"/></label><label className="check"><input required type="checkbox" name="permission" value="yes"/> I confirm that I have permission to publish these photos or videos on this website.</label>{submitError && <p className="form-error" role="alert">{submitError}</p>}<button className="button primary" type="submit" disabled={uploading}>{uploading ? "Uploading securely…" : "Submit media →"}</button></form> : dialog === "savitri" ? <form className="savitri-upload-form" onSubmit={submit}><div className="form-row"><label>Part<input required name="part" maxLength={80} placeholder="Part One"/></label><label>Book No.<input required name="bookNo" maxLength={40} inputMode="numeric" placeholder="1"/></label></div><div className="form-row"><label>Canto No.<input required name="cantoNo" maxLength={40} inputMode="numeric" placeholder="1"/></label><label>Page No.<input required name="pageNo" maxLength={80} placeholder="1–3"/></label></div><label>Name of Canto<input required name="cantoName" maxLength={180} placeholder="The Symbol Dawn"/></label><label>Line Nos.<input required name="lineNos" maxLength={120} placeholder="1–5"/></label><label>Description<textarea required name="description" maxLength={2500} rows={5} placeholder="Add the English and Hindi meaning or a short note about these five lines."/></label><label>Upload Video<input required name="media" type="file" accept="video/mp4,video/webm,video/quicktime"/><small>One MP4, WebM or MOV video, up to 80 MB.</small></label><label className="upload-honeypot" aria-hidden="true">Website<input name="website" tabIndex={-1} autoComplete="off"/></label>{submitError && <p className="form-error" role="alert">{submitError}</p>}<button className="button primary" type="submit" disabled={uploading}>{uploading ? "Uploading video…" : "Publish video →"}</button></form> : <form onSubmit={submit}><label>Full name<input required name="name" autoComplete="name"/></label><div className="form-row"><label>Email<input required type="email" name="email" autoComplete="email"/></label><label>Mobile<input required name="mobile" inputMode="tel" autoComplete="tel"/></label></div>{dialog === "contribute" ? <label>Amount (₹)<input required type="number" min="100" name="amount"/></label> : <label>City<input name="city" defaultValue="Lucknow"/></label>}<label className="check"><input type="checkbox" name="updates"/> I would like occasional mission updates.</label><button className="button primary" type="submit">{dialog === "contribute" ? "Continue securely" : "Submit"} →</button></form>}</> : <div className="success"><span>✓</span><h2>Thank you.</h2><p>{dialog === "savitri" ? `Your video is now published in The Song of Savitri. Reference: ${uploadReference}.` : dialog === "gallery" ? uploadStatus === "approved" ? `Your video is now published in Gatherings. Reference: ${uploadReference}.` : `Your photographs have been saved for review. Reference: ${uploadReference}.` : "Your request has been received."}</p><button className="button quiet" onClick={()=>setDialog(null)}>Close</button></div>}
     </div></div>}
   </div>;
 }

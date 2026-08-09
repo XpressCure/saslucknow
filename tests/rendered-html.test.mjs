@@ -156,6 +156,62 @@ test("renders location, weekly meeting, gallery and Facebook embed", async () =>
   assert.doesNotMatch(html, /A place of remembrance/);
 });
 
+test("renders The Song of Savitri directly after Lives and Vision", async () => {
+  const response = await render();
+  const html = await response.text();
+  assert.match(html, /id="song-of-savitri"/);
+  assert.match(html, /The Song of Savitri/);
+  assert.ok(html.indexOf('id="guides-title"') < html.indexOf('id="song-of-savitri"'));
+  assert.ok(html.indexOf('id="song-of-savitri"') < html.indexOf('id="pathways"'));
+  const source = await readFile(new URL("../app/mission-home.tsx", import.meta.url), "utf8");
+  for (const field of ["Part", "Book No.", "Canto No.", "Name of Canto", "Line Nos.", "Page No.", "Description", "Upload Video"]) {
+    assert.match(source, new RegExp(field.replace(".", "\\.")));
+  }
+  assert.match(source, /\/api\/savitri-video-submissions/);
+  assert.match(source, /\/api\/savitri-videos/);
+});
+
+test("stores and lists a Song of Savitri video", async () => {
+  const directory = await mkdtemp(path.join(tmpdir(), "sas-savitri-videos-"));
+  const previousUploadDirectory = process.env.UPLOAD_DIR;
+  const previousMongo = process.env.MONGODB_URI;
+  process.env.UPLOAD_DIR = directory;
+  delete process.env.MONGODB_URI;
+  const moduleUrl = new URL("../server/gallery-api.mjs", import.meta.url);
+  moduleUrl.searchParams.set("savitri-test", `${process.pid}-${Date.now()}`);
+  const { createGalleryServer } = await import(moduleUrl.href);
+  const server = createGalleryServer();
+  await new Promise(resolve => server.listen(0, "127.0.0.1", resolve));
+  const address = server.address();
+  try {
+    const form = new FormData();
+    form.set("part", "One");
+    form.set("bookNo", "1");
+    form.set("cantoNo", "1");
+    form.set("cantoName", "The Symbol Dawn");
+    form.set("lineNos", "1-5");
+    form.set("pageNo", "1");
+    form.set("description", "Five opening lines with English and Hindi meaning.");
+    form.set("media", new Blob([Buffer.alloc(2048, 1)], { type: "video/mp4" }), "symbol-dawn.mp4");
+    const uploadResponse = await fetch(`http://127.0.0.1:${address.port}/api/savitri-video-submissions`, { method: "POST", body: form });
+    assert.equal(uploadResponse.status, 201);
+    const uploadResult = await uploadResponse.json();
+    assert.equal(uploadResult.status, "approved");
+    const listResponse = await fetch(`http://127.0.0.1:${address.port}/api/savitri-videos`);
+    assert.equal(listResponse.status, 200);
+    const list = await listResponse.json();
+    assert.equal(list.items.length, 1);
+    assert.equal(list.items[0].cantoName, "The Symbol Dawn");
+    assert.equal(list.items[0].lineNos, "1-5");
+    assert.match(list.items[0].mediaUrl, /^\/api\/savitri-video-media\//);
+  } finally {
+    await new Promise(resolve => server.close(resolve));
+    await rm(directory, { recursive: true, force: true });
+    if (previousUploadDirectory === undefined) delete process.env.UPLOAD_DIR; else process.env.UPLOAD_DIR = previousUploadDirectory;
+    if (previousMongo === undefined) delete process.env.MONGODB_URI; else process.env.MONGODB_URI = previousMongo;
+  }
+});
+
 test("renders the 15 August Pushpanjali campaign entry point", async () => {
   const response = await render();
   const html = await response.text();

@@ -17,6 +17,7 @@ const PUSHPANJALI_DIR = process.env.PUSHPANJALI_DIR || path.resolve("work/pushpa
 const PUSHPANJALI_COUNTER_FILE = path.join(PUSHPANJALI_DIR, ".certificate-counter");
 const TEMP_DIR = path.join(UPLOAD_DIR, ".tmp");
 const MANIFEST_DIR = path.join(UPLOAD_DIR, "manifests");
+const SAVITRI_MANIFEST_DIR = path.join(UPLOAD_DIR, "savitri-manifests");
 const MAX_REQUEST_BYTES = 130 * 1024 * 1024;
 const MAX_VIDEO_BYTES = 80 * 1024 * 1024;
 const MAX_IMAGE_BYTES = 12 * 1024 * 1024;
@@ -108,6 +109,41 @@ async function approvedGalleryItems() {
     .sort((a, b) => String(b.eventDate).localeCompare(String(a.eventDate)));
 }
 
+async function savitriVideoItems() {
+  let names;
+  try {
+    names = await readdir(SAVITRI_MANIFEST_DIR);
+  } catch (error) {
+    if (error?.code === "ENOENT") return [];
+    throw error;
+  }
+  const documents = await Promise.all(names.filter(name => name.endsWith(".json")).map(async name => {
+    try {
+      return JSON.parse(await readFile(path.join(SAVITRI_MANIFEST_DIR, name), "utf8"));
+    } catch {
+      return null;
+    }
+  }));
+  return documents
+    .filter(document => document?.status === "approved" && document?.media?.storage === "local" && document.media.kind === "video")
+    .map(document => ({
+      id: document.submissionId,
+      part: cleanText(document.part, 80),
+      bookNo: cleanText(document.bookNo, 40),
+      cantoNo: cleanText(document.cantoNo, 40),
+      cantoName: cleanText(document.cantoName, 180),
+      lineNos: cleanText(document.lineNos, 120),
+      pageNo: cleanText(document.pageNo, 80),
+      description: cleanText(document.description, 2500),
+      mimeType: document.media.mimeType,
+      mediaUrl: `/api/savitri-video-media/${encodeURIComponent(document.submissionId)}/${encodeURIComponent(path.basename(document.media.key))}`,
+      createdAt: document.createdAt,
+    }))
+    .sort((a, b) => String(a.bookNo).localeCompare(String(b.bookNo), undefined, { numeric: true })
+      || String(a.cantoNo).localeCompare(String(b.cantoNo), undefined, { numeric: true })
+      || String(a.lineNos).localeCompare(String(b.lineNos), undefined, { numeric: true }));
+}
+
 async function serveApprovedMedia(pathname, request, response) {
   const match = pathname.match(/^\/api\/gallery-media\/([0-9a-f-]{36})\/([^/]+)$/i);
   if (!match) return json(response, 404, { error: "Not found" });
@@ -118,6 +154,51 @@ async function serveApprovedMedia(pathname, request, response) {
     if (document.status !== "approved") return json(response, 404, { error: "Not found" });
     const media = (document.media || []).find(item => item.storage === "local" && path.basename(item.key) === requestedName && allowedTypes.has(item.mimeType));
     if (!media) return json(response, 404, { error: "Not found" });
+    const root = path.resolve(UPLOAD_DIR);
+    const filePath = path.resolve(UPLOAD_DIR, media.key);
+    if (!filePath.startsWith(`${root}${path.sep}`)) return json(response, 404, { error: "Not found" });
+    const details = await stat(filePath);
+    const range = String(request.headers.range || "");
+    const rangeMatch = range.match(/^bytes=(\d*)-(\d*)$/);
+    let start = 0;
+    let end = details.size - 1;
+    let status = 200;
+    if (rangeMatch) {
+      start = rangeMatch[1] ? Number(rangeMatch[1]) : 0;
+      end = rangeMatch[2] ? Math.min(Number(rangeMatch[2]), details.size - 1) : details.size - 1;
+      if (!Number.isSafeInteger(start) || !Number.isSafeInteger(end) || start < 0 || start > end || start >= details.size) {
+        response.writeHead(416, { "Content-Range": `bytes */${details.size}` });
+        return response.end();
+      }
+      status = 206;
+    }
+    const headers = {
+      "Content-Type": media.mimeType,
+      "Content-Length": end - start + 1,
+      "Cache-Control": "public, max-age=3600",
+      "X-Content-Type-Options": "nosniff",
+      "Accept-Ranges": "bytes",
+    };
+    if (status === 206) headers["Content-Range"] = `bytes ${start}-${end}/${details.size}`;
+    response.writeHead(status, headers);
+    createReadStream(filePath, { start, end }).pipe(response);
+  } catch (error) {
+    if (error?.code === "ENOENT" || error instanceof SyntaxError) return json(response, 404, { error: "Not found" });
+    throw error;
+  }
+}
+
+async function serveSavitriVideoMedia(pathname, request, response) {
+  const match = pathname.match(/^\/api\/savitri-video-media\/([0-9a-f-]{36})\/([^/]+)$/i);
+  if (!match) return json(response, 404, { error: "Not found" });
+  const submissionId = match[1];
+  const requestedName = path.basename(decodeURIComponent(match[2]));
+  try {
+    const document = JSON.parse(await readFile(path.join(SAVITRI_MANIFEST_DIR, `${submissionId}.json`), "utf8"));
+    const media = document?.media;
+    if (document.status !== "approved" || media?.storage !== "local" || media.kind !== "video" || path.basename(media.key) !== requestedName) {
+      return json(response, 404, { error: "Not found" });
+    }
     const root = path.resolve(UPLOAD_DIR);
     const filePath = path.resolve(UPLOAD_DIR, media.key);
     if (!filePath.startsWith(`${root}${path.sep}`)) return json(response, 404, { error: "Not found" });
@@ -443,9 +524,9 @@ async function parseMultipart(request) {
   return { fields, files, problems };
 }
 
-async function storeFiles(submissionId, files, publicationStatus) {
+async function storeFiles(submissionId, files, publicationStatus, collectionPrefix = "gallery-submissions") {
   const now = new Date();
-  const prefix = `gallery-submissions/${now.getUTCFullYear()}/${String(now.getUTCMonth() + 1).padStart(2, "0")}/${submissionId}`;
+  const prefix = `${collectionPrefix}/${now.getUTCFullYear()}/${String(now.getUTCMonth() + 1).padStart(2, "0")}/${submissionId}`;
   if (process.env.STORAGE_PROVIDER === "s3" && process.env.S3_BUCKET) {
     const client = new S3Client({ region: process.env.S3_REGION || "ap-south-1" });
     const stored = [];
@@ -485,14 +566,85 @@ async function saveMetadata(document) {
   }
 }
 
+async function saveSavitriMetadata(document) {
+  await mkdir(SAVITRI_MANIFEST_DIR, { recursive: true });
+  await writeFile(path.join(SAVITRI_MANIFEST_DIR, `${document.submissionId}.json`), JSON.stringify(document, null, 2), { flag: "wx" });
+  if (!process.env.MONGODB_URI) return { mongo: false };
+  try {
+    mongoClientPromise ||= new MongoClient(process.env.MONGODB_URI, { serverSelectionTimeoutMS: 8000 }).connect();
+    const client = await mongoClientPromise;
+    await client.db(process.env.MONGODB_DB || "saslucknow").collection("savitriVideos").insertOne(document);
+    return { mongo: true };
+  } catch (error) {
+    console.error("MongoDB Savitri video metadata save failed; local manifest retained", error instanceof Error ? error.message : error);
+    mongoClientPromise = undefined;
+    return { mongo: false };
+  }
+}
+
 async function removeTemporaryFiles(files = []) {
   await Promise.all(files.map(file => rm(file.tempPath, { force: true }).catch(() => {})));
+}
+
+async function handleSavitriVideoSubmission(request, response) {
+  if (!String(request.headers["content-type"] || "").toLowerCase().startsWith("multipart/form-data")) {
+    return json(response, 400, { error: "Please submit the Savitri video form." });
+  }
+  const length = Number(request.headers["content-length"] || 0);
+  if (length > MAX_REQUEST_BYTES) return json(response, 413, { error: "The complete upload must be 130 MB or smaller." });
+  const address = clientAddress(request);
+  if (isRateLimited(address)) return json(response, 429, { error: "Too many submissions. Please try again later." });
+
+  let parsed;
+  try {
+    parsed = await parseMultipart(request);
+    const { fields, files, problems } = parsed;
+    if (fields.website) {
+      await removeTemporaryFiles(files);
+      return json(response, 201, { ok: true, reference: "received", status: "approved" });
+    }
+    if (!fields.part || !fields.bookNo || !fields.cantoNo || !fields.cantoName || !fields.lineNos || !fields.pageNo || !fields.description) {
+      problems.push("Please complete every Savitri reference and description field.");
+    }
+    if (files.length !== 1 || files[0]?.kind !== "video") problems.push("Please upload one MP4, WebM or MOV video.");
+    if (problems.length) {
+      await removeTemporaryFiles(files);
+      return json(response, 400, { error: [...new Set(problems)].join(" ") });
+    }
+
+    const submissionId = randomUUID();
+    const [media] = await storeFiles(submissionId, files, "approved", "savitri-videos");
+    const document = {
+      submissionId,
+      status: "approved",
+      part: cleanText(fields.part, 80),
+      bookNo: cleanText(fields.bookNo, 40),
+      cantoNo: cleanText(fields.cantoNo, 40),
+      cantoName: cleanText(fields.cantoName, 180),
+      lineNos: cleanText(fields.lineNos, 120),
+      pageNo: cleanText(fields.pageNo, 80),
+      description: cleanText(fields.description, 2500),
+      media,
+      submittedFrom: address,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    const persistence = await saveSavitriMetadata(document);
+    return json(response, 201, { ok: true, reference: submissionId.slice(0, 8).toUpperCase(), status: "approved", metadataStoredInMongo: persistence.mongo });
+  } catch (error) {
+    await removeTemporaryFiles(parsed?.files);
+    console.error("Savitri video submission failed", error);
+    return json(response, 500, { error: "The Savitri video could not be saved. Please try again." });
+  }
 }
 
 export async function handleSubmission(request, response) {
   const pathname = new URL(request.url || "/", "http://localhost").pathname;
   if (request.method === "GET" && pathname === "/health") return json(response, 200, { ok: true });
   if (pathname === "/api/pushpanjali-offerings" || pathname === "/api/pushpanjali-offerings/certificate-email") return handlePushpanjali(request, response);
+  if (request.method === "GET" && pathname === "/api/savitri-videos") return json(response, 200, { items: await savitriVideoItems() });
+  if (request.method === "GET" && pathname.startsWith("/api/savitri-video-media/")) return serveSavitriVideoMedia(pathname, request, response);
+  if (request.method === "POST" && pathname === "/api/savitri-video-submissions") return handleSavitriVideoSubmission(request, response);
   if (request.method === "GET" && pathname === "/api/gallery-items") return json(response, 200, { items: await approvedGalleryItems() });
   if (request.method === "GET" && pathname.startsWith("/api/gallery-media/")) return serveApprovedMedia(pathname, request, response);
   if (request.method !== "POST" || pathname !== "/api/gallery-submissions") return json(response, 404, { error: "Not found" });
