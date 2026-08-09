@@ -3,11 +3,11 @@ set -euo pipefail
 
 releases=/var/www/saslucknow/releases
 current="$releases/current"
-candidate="$releases/pushpanjali-typography-20260809-v7"
-backup="$releases/pre-pushpanjali-typography-20260809-v7"
-failed="$releases/failed-pushpanjali-typography-20260809-v7"
-archive=/tmp/pushpanjali-typography-20260809-v7.tgz
-smoke_unit=saslucknow-pushpanjali-typography-v7
+candidate="$releases/pushpanjali-share-message-20260809-v8"
+backup="$releases/pre-pushpanjali-share-message-20260809-v8"
+failed="$releases/failed-pushpanjali-share-message-20260809-v8"
+archive=/tmp/pushpanjali-share-message-20260809-v8.tgz
+smoke_unit=saslucknow-pushpanjali-share-message-v8
 cutover_started=0
 
 stop_smoke() {
@@ -50,6 +50,8 @@ grep -q -- '--paper:#fff9ed' "$candidate/app/globals.css"
 grep -q -- 'width:145%;max-width:none' "$candidate/app/globals.css"
 grep -q -- 'text-size-adjust:100%' "$candidate/app/globals.css"
 grep -q -- 'pushpanjali-preview' "$candidate/app/pushpanjali-campaign.tsx"
+grep -q -- 'Initiative of: Sri Aurobindo Society' "$candidate/app/pushpanjali-campaign.tsx"
+if grep -q -- 'Powered by:' "$candidate/app/pushpanjali-campaign.tsx"; then exit 1; fi
 
 stop_smoke
 sudo systemd-run --unit="$smoke_unit" --property="User=ec2-user" --property="Group=ec2-user" --property="WorkingDirectory=$candidate" --setenv=NODE_ENV=production --setenv=PORT=3010 /usr/bin/pnpm start -- --hostname 127.0.0.1 --port 3010 >/dev/null
@@ -82,4 +84,4 @@ grep -q 'The Song of Life' /tmp/saslucknow-palette-live.html
 
 cutover_started=0
 trap - ERR
-printf '%s\n' 'saslucknow-pushpanjali-typography-live'
+printf '%s\n' 'saslucknow-pushpanjali-share-message-live'

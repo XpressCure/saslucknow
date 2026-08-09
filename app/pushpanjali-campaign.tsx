@@ -119,7 +119,7 @@ export function PushpanjaliCampaign() {
     rotation: `${-34 + ((index * 19) % 72)}deg`,
     size: `${42 + ((index * 7) % 22)}px`,
   })), []);
-  const shareMessage = `🙏 With gratitude, I have offered Pushpanjali to Sri Aurobindo on his 154th Birthday.\n\nYou too can offer your Pushpanjali and receive a personalised e-Certificate:\n${pushpanjaliLandingUrl}\n\nPowered by: Sri Aurobindo Society, Lucknow, Gomti Nagar Centre (UC-02)`;
+  const shareMessage = `🙏 With gratitude, I have offered Pushpanjali to Sri Aurobindo on his 154th Birthday.\n\nYou too can offer your Pushpanjali and receive a personalised e-Certificate:\n${pushpanjaliLandingUrl}\n\nInitiative of: Sri Aurobindo Society, Lucknow, Gomti Nagar Centre (UC-02)`;
 
   useEffect(() => {
     let active = true;
