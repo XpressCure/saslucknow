@@ -109,6 +109,7 @@ export function PushpanjaliCampaign() {
   const [result, setResult] = useState<OfferingResult | null>(null);
   const [offeringCount, setOfferingCount] = useState(0);
   const [certificateBlob, setCertificateBlob] = useState<Blob | null>(null);
+  const [certificatePreviewUrl, setCertificatePreviewUrl] = useState("");
   const [shareNotice, setShareNotice] = useState("");
   const selectedFlower = flowers.find(flower => flower.id === selectedId) || flowers[0];
   const fallingFlowers = useMemo(() => flowerPositions.map((left, index) => ({
@@ -117,10 +118,7 @@ export function PushpanjaliCampaign() {
     rotation: `${-34 + ((index * 19) % 72)}deg`,
     size: `${42 + ((index * 7) % 22)}px`,
   })), []);
-  const shortShareMessage = (includeName = true) => {
-    const devotee = includeName && name.trim() ? `${name.trim()} has ` : "";
-    return `${devotee}offered ${selectedFlower.name} in Pushpanjali at Sri Aurobindo Society, Lucknow.\n\nMy certificate is ready here: ${pushpanjaliLandingUrl}\n\nJoin this divine remembrance and offer your own flower.`;
-  };
+  const shareMessage = `🙏 With gratitude, I have offered Pushpanjali to Sri Aurobindo on his 154th Birthday.\n\nYou too can offer your Pushpanjali and receive a personalised e-Certificate:\n${pushpanjaliLandingUrl}\n\nPowered by: Sri Aurobindo Society, Lucknow, Gomti Nagar Centre (UC-02)`;
 
   useEffect(() => {
     let active = true;
@@ -147,6 +145,16 @@ export function PushpanjaliCampaign() {
     if (status !== "offered") return;
     window.requestAnimationFrame(() => modalRef.current?.scrollTo({ top: 0, behavior: "auto" }));
   }, [status]);
+
+  useEffect(() => {
+    if (!certificateBlob) {
+      setCertificatePreviewUrl("");
+      return;
+    }
+    const previewUrl = URL.createObjectURL(certificateBlob);
+    setCertificatePreviewUrl(previewUrl);
+    return () => URL.revokeObjectURL(previewUrl);
+  }, [certificateBlob]);
 
   useEffect(() => {
     if (!open) return;
@@ -398,18 +406,17 @@ export function PushpanjaliCampaign() {
     if (!result) return;
     setError("");
     setShareNotice("");
-    const message = `🙏 Thank you for offering ${selectedFlower.name} in Pushpanjali to Sri Aurobindo on his Birthday Darshan, 15 August 2026.\n\n“${selectedFlower.meaning}” — The Mother\n\n${shortShareMessage(false)}\n\nYour certificate is attached.`;
     try {
       const blob = certificateBlob || await buildCertificate(result);
       setCertificateBlob(blob);
       const file = new File([blob], certificateFilename(), { type: "image/png" });
-      const shareData = { title: "My Pushpanjali Certificate", text: message, files: [file] };
+      const shareData = { title: "My Pushpanjali Certificate", text: shareMessage, files: [file] };
       if (navigator.share && (!navigator.canShare || navigator.canShare(shareData))) {
         await navigator.share(shareData);
         setShareNotice("Certificate image shared. Select WhatsApp and the intended contact if prompted.");
         return;
       }
-      const encodedMessage = encodeURIComponent(message);
+      const encodedMessage = encodeURIComponent(shareMessage);
       const whatsappUrl = isMobileBrowser() ? `https://wa.me/?text=${encodedMessage}` : `https://web.whatsapp.com/send?text=${encodedMessage}`;
       window.open(whatsappUrl, "_blank", "noopener,noreferrer");
       setShareNotice(isMobileBrowser()
@@ -423,22 +430,22 @@ export function PushpanjaliCampaign() {
 
   const shareCertificateOnFacebook = () => {
     if (!result) return;
-    const encodedMessage = encodeURIComponent(shortShareMessage());
+    const encodedMessage = encodeURIComponent(shareMessage);
     const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(pushpanjaliLandingUrl)}&quote=${encodedMessage}`;
     window.open(facebookUrl, "_blank", "noopener,noreferrer");
-    setShareNotice("Facebook share is open. The prepared message is included and ready to post.");
+    void navigator.clipboard?.writeText(shareMessage).catch(() => {});
+    setShareNotice("Facebook is open and the message is copied. Add the certificate image shown above, then paste the message if Facebook does not include it automatically.");
   };
 
   const shareCertificateOnInstagram = async () => {
     if (!result) return;
-    const message = shortShareMessage();
     setError("");
     setShareNotice("");
     try {
       if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(message);
+        await navigator.clipboard.writeText(shareMessage);
       }
-      const encodedMessage = encodeURIComponent(message);
+      const encodedMessage = encodeURIComponent(shareMessage);
       const instagramUrl = isMobileBrowser()
         ? `instagram://story-camera?text=${encodedMessage}`
         : `https://www.instagram.com/direct/new?text=${encodedMessage}`;
@@ -527,13 +534,17 @@ export function PushpanjaliCampaign() {
                 : result.emailQueued
                   ? `Your certificate is ready. A copy is being sent to ${email} in the background.`
                   : "Your certificate is ready below."}</p>
+            <div className="pushpanjali-certificate-preview" aria-live="polite">
+              {certificatePreviewUrl
+                ? <img src={certificatePreviewUrl} alt={`Pushpanjali e-Certificate for ${name.trim()}`}/>
+                : <div className="pushpanjali-preview-loading"><span aria-hidden="true">&#10022;</span>Preparing your full certificate preview...</div>}
+            </div>
             {error && <p className="pushpanjali-error" role="alert">{error}</p>}
             <div className="pushpanjali-success-actions">
-              <button type="button" onClick={downloadCertificate} disabled={!result}>Download e-Certificate</button>
               <button className="pushpanjali-whatsapp" type="button" onClick={shareCertificateOnWhatsApp} disabled={!result}>Share certificate on WhatsApp</button>
               <button className="pushpanjali-facebook" type="button" onClick={shareCertificateOnFacebook} disabled={!result}>Share on Facebook</button>
               <button className="pushpanjali-instagram" type="button" onClick={shareCertificateOnInstagram} disabled={!result}>Share on Instagram</button>
-              <a href="https://www.facebook.com/saslucknow" target="_blank" rel="noreferrer">Follow SAS Lucknow on Facebook <span aria-hidden="true">&nearr;</span></a>
+              <button type="button" onClick={downloadCertificate} disabled={!result}>Download e-Certificate</button>
             </div>
             {shareNotice && <p className="pushpanjali-share-notice" role="status">{shareNotice}</p>}
             <button className="pushpanjali-finish" type="button" onClick={closeCampaign}>Return to the website</button>

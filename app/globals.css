@@ -442,6 +442,10 @@ main section[id]{scroll-margin-top:96px}
 .pushpanjali-reference{display:flex;gap:.8rem;align-items:center;margin:.65rem 0 0;padding:.5rem .85rem;border:1px solid #d8bd88;border-radius:999px;background:rgba(255,255,255,.6);color:#657175;font-size:.6rem;text-transform:uppercase;letter-spacing:.07em}
 .pushpanjali-reference b{color:#173846;font-size:.7rem}
 .pushpanjali-email-status{margin:.4rem 0 .55rem;color:#667377;font-size:.64rem}
+.pushpanjali-certificate-preview{width:100%;max-width:720px;margin:.2rem 0 .8rem;padding:.45rem;border:1px solid rgba(179,126,48,.5);border-radius:14px;background:rgba(255,255,255,.76);box-shadow:0 14px 32px rgba(77,52,22,.12)}
+.pushpanjali-certificate-preview img{display:block;width:100%;height:auto;border-radius:9px;background:#fff8dd}
+.pushpanjali-preview-loading{min-height:190px;display:flex;align-items:center;justify-content:center;gap:.55rem;color:#6a7779;font-size:.68rem}
+.pushpanjali-preview-loading span{color:#b47a2e;font-size:1rem;animation:pushpanjali-thank-bloom 1s ease-in-out infinite alternate}
 .pushpanjali-success-actions{width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.75rem}
 .pushpanjali-success-actions button,.pushpanjali-success-actions a{min-height:43px;display:flex;align-items:center;justify-content:center;padding:.55rem .85rem;border-radius:8px;font-size:.63rem;font-weight:800;letter-spacing:.03em;text-decoration:none;cursor:pointer}
 .pushpanjali-success-actions button{border:0;background:#173846;color:#fff}.pushpanjali-success-actions a{border:1px solid #ae7936;background:#fffaf0;color:#8d5a20}
@@ -485,6 +489,7 @@ main section[id]{scroll-margin-top:96px}
   .pushpanjali-flowers>label{flex:0 0 78vw;scroll-snap-align:center}
   .pushpanjali-flowers img{height:155px}.pushpanjali-flowers>label>span{min-height:145px}
   .pushpanjali-success{padding:1rem 1.1rem}.pushpanjali-thank-flower{grid-template-columns:minmax(0,1fr) 82px;padding:.7rem}.pushpanjali-thank-flower img{width:78px;height:78px}.pushpanjali-success-actions{grid-template-columns:1fr 1fr}
+  .pushpanjali-certificate-preview{padding:.3rem;border-radius:10px}.pushpanjali-certificate-preview img{border-radius:7px}.pushpanjali-preview-loading{min-height:140px}
   .pushpanjali-footer{font-size:.5rem;line-height:1.5}
   .pushpanjali-reopen{left:10px;bottom:12px}
 }
