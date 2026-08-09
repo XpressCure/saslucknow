@@ -437,8 +437,6 @@ main section[id]{scroll-margin-top:96px}
 .pushpanjali-success h3{display:flex;flex-direction:column;gap:.05rem;margin:0;color:#173846;font-family:Georgia,serif;line-height:1.05}
 .pushpanjali-success h3 span{font-size:clamp(1.35rem,2vw,1.8rem);font-weight:400}.pushpanjali-success h3 em{font-size:clamp(2rem,3vw,2.75rem);font-weight:400;overflow-wrap:anywhere}
 .pushpanjali-thanks{max-width:620px;margin:.45rem 0 0!important;color:#52656b!important;font:.78rem/1.4 Arial,sans-serif!important;letter-spacing:0!important}
-.pushpanjali-thank-flower{width:100%;max-width:620px;display:grid;grid-template-columns:minmax(0,1fr) 92px;align-items:center;gap:.75rem;margin:.65rem 0 0;padding:.7rem .85rem;border:1px solid #d8bd88;border-radius:14px;background:rgba(255,255,255,.62);text-align:left;box-shadow:0 10px 28px rgba(92,64,27,.08)}
-.pushpanjali-thank-flower div{display:flex;min-width:0;flex-direction:column}.pushpanjali-thank-flower strong{color:#9b6428;font:1.12rem/1.12 Georgia,serif}.pushpanjali-thank-flower span{margin-top:.28rem;color:#806237;font-size:.5rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase}.pushpanjali-thank-flower .pushpanjali-flower-label{margin:0 0 .18rem;color:#69767a;font-size:.46rem}.pushpanjali-thank-flower .pushpanjali-botanical-label{margin-top:.42rem}.pushpanjali-thank-flower .pushpanjali-botanical{margin-top:.12rem;color:#56646a;font:italic .68rem/1.25 Georgia,serif}.pushpanjali-thank-flower q{margin-top:.3rem;color:#506168;font:italic .76rem/1.35 Georgia,serif}.pushpanjali-thank-flower img{width:86px;height:86px;object-fit:contain;filter:drop-shadow(0 8px 8px rgba(77,48,18,.2));animation:pushpanjali-thank-bloom .75s cubic-bezier(.2,.8,.2,1)}
 .pushpanjali-reference{display:flex;gap:.8rem;align-items:center;margin:.65rem 0 0;padding:.5rem .85rem;border:1px solid #d8bd88;border-radius:999px;background:rgba(255,255,255,.6);color:#657175;font-size:.6rem;text-transform:uppercase;letter-spacing:.07em}
 .pushpanjali-reference b{color:#173846;font-size:.7rem}
 .pushpanjali-email-status{margin:.4rem 0 .55rem;color:#667377;font-size:.64rem}
@@ -488,15 +486,15 @@ main section[id]{scroll-margin-top:96px}
   .pushpanjali-flowers{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;padding:.2rem .15rem .8rem}
   .pushpanjali-flowers>label{flex:0 0 78vw;scroll-snap-align:center}
   .pushpanjali-flowers img{height:155px}.pushpanjali-flowers>label>span{min-height:145px}
-  .pushpanjali-success{padding:1rem 1.1rem}.pushpanjali-thank-flower{grid-template-columns:minmax(0,1fr) 82px;padding:.7rem}.pushpanjali-thank-flower img{width:78px;height:78px}.pushpanjali-success-actions{grid-template-columns:1fr 1fr}
+  .pushpanjali-success{padding:1rem 1.1rem}.pushpanjali-success-actions{grid-template-columns:1fr 1fr}
   .pushpanjali-certificate-preview{padding:.3rem;border-radius:10px}.pushpanjali-certificate-preview img{border-radius:7px}.pushpanjali-preview-loading{min-height:140px}
   .pushpanjali-footer{font-size:.5rem;line-height:1.5}
   .pushpanjali-reopen{left:10px;bottom:12px}
 }
-@media(prefers-reduced-motion:reduce){.pushpanjali-backdrop,.pushpanjali-modal,.pushpanjali-falling-flower,.pushpanjali-flowers>label.selected,.pushpanjali-flowers>label.selected img,.pushpanjali-thank-flower img{animation-duration:.01ms!important}.pushpanjali-falling-flower{top:calc(100% - var(--flower-size) - 5px);opacity:1}}
+@media(prefers-reduced-motion:reduce){.pushpanjali-backdrop,.pushpanjali-modal,.pushpanjali-falling-flower,.pushpanjali-flowers>label.selected,.pushpanjali-flowers>label.selected img{animation-duration:.01ms!important}.pushpanjali-falling-flower{top:calc(100% - var(--flower-size) - 5px);opacity:1}}
 
 /* Full-site responsive hardening */
-:where(.hero,.vision,.shrine,.location,.support,.people-grid,.person-card,.roots-grid,.library-grid,.lecture-grid,.weekly-card,.event-card,.community-grid,.detail-content,.visit-placeholder,.biography-hero,.biography-section,.mother-journey>div,.life-sketch-hero,.life-chapter,.darshan-hero,.darshan-intro,.darshan-history,.darshan-grid article,.pushpanjali-body,.pushpanjali-fields,.pushpanjali-flowers,.pushpanjali-thank-flower,.sakhi-header)>*{min-width:0}
+:where(.hero,.vision,.shrine,.location,.support,.people-grid,.person-card,.roots-grid,.library-grid,.lecture-grid,.weekly-card,.event-card,.community-grid,.detail-content,.visit-placeholder,.biography-hero,.biography-section,.mother-journey>div,.life-sketch-hero,.life-chapter,.darshan-hero,.darshan-intro,.darshan-history,.darshan-grid article,.pushpanjali-body,.pushpanjali-fields,.pushpanjali-flowers,.sakhi-header)>*{min-width:0}
 :where(p,h1,h2,h3,blockquote,address,figcaption,.brand span,.event-info,.gallery-caption,.library-card,.detail-list,.life-moments,.darshan-grid article){overflow-wrap:break-word}
 :where(input,textarea,select,button){max-width:100%}
 .society-logo{background:transparent;border-radius:0;object-fit:contain}
@@ -591,8 +589,6 @@ main section[id]{scroll-margin-top:96px}
   .pushpanjali-flowers>label{flex-basis:calc(100vw - 36px)}
   .pushpanjali-success{padding:.9rem}
   .pushpanjali-success h3{font-size:1.9rem}
-  .pushpanjali-thank-flower{grid-template-columns:minmax(0,1fr) 78px;gap:.6rem}
-  .pushpanjali-thank-flower img{width:76px;height:76px}
   .pushpanjali-footer{padding-bottom:max(.8rem,env(safe-area-inset-bottom))}
   .sakhi-window{height:calc(100dvh - 70px);border-radius:14px}
   .sakhi-header h2{font-size:1.35rem}
@@ -607,9 +603,6 @@ main section[id]{scroll-margin-top:96px}
   .menu-button{width:40px;height:40px}
   .pushpanjali-heading{padding-left:2.35rem;padding-right:2.35rem}
   .pushpanjali-counter span{max-width:120px;line-height:1.25}
-  .pushpanjali-thank-flower{grid-template-columns:1fr;text-align:center}
-  .pushpanjali-thank-flower div{align-items:center}
-  .pushpanjali-thank-flower img{margin:auto}
   .sakhi-header small{font-size:.45rem}
   .sakhi-launcher small{display:none}
   .sakhi-launcher{grid-template-rows:1fr}

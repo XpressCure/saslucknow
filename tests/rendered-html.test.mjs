@@ -174,8 +174,8 @@ test("renders the 15 August Pushpanjali campaign entry point", async () => {
   assert.match(source, /const \[open, setOpen\] = useState\(true\)/);
   assert.doesNotMatch(source, /sas-pushpanjali-2026-seen|550/);
   assert.doesNotMatch(source, /WhatsApp mobile number|setPhone/);
-  assert.match(source, /pushpanjali-thank-flower/);
-  assert.match(source, /pushpanjali-flower-label[^>]*>Flower offered/);
+  assert.doesNotMatch(source, /pushpanjali-thank-flower/);
+  assert.doesNotMatch(source, /pushpanjali-flower-label[^>]*>Flower offered/);
   assert.match(source, /<h3><span>With gratitude,<\/span><em>\{name\.trim\(\)\}\.<\/em><\/h3>/);
   assert.match(source, /const portraitHeight = 763/);
   assert.match(source, /const focalX = portrait\.width \* \.432/);

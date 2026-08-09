@@ -544,10 +544,6 @@ export function PushpanjaliCampaign() {
             <p>YOUR PUSHPA HAS BEEN OFFERED</p>
             <h3><span>With gratitude,</span><em>{name.trim()}.</em></h3>
             <p className="pushpanjali-thanks">Thank you for offering your Pushpanjali to Sri Aurobindo. May this gesture of aspiration remain with you.</p>
-            <div className="pushpanjali-thank-flower">
-              <div><span className="pushpanjali-flower-label">Flower offered</span><strong>{selectedFlower.name}</strong><span className="pushpanjali-botanical-label">Botanical name / variety</span><small className="pushpanjali-botanical">{selectedFlower.botanical}</small><span>Spiritual significance given by the Mother</span><q>{selectedFlower.meaning}</q></div>
-              <img src={selectedFlower.cutout} alt={selectedFlower.name}/>
-            </div>
             <div className="pushpanjali-reference"><span>Certificate Number</span><b>{result?.reference || "Being prepared..."}</b></div>
             <p className="pushpanjali-email-status">{!result
               ? "Your offering is being recorded and your certificate is being prepared..."
