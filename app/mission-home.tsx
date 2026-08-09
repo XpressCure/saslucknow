@@ -87,12 +87,6 @@ const copy = {
   en: {
     nav: ["e-Library", "Events", "Community"],
     eyebrow: "Sri Aurobindo Society · Lucknow Centre",
-    title: "A quiet space for inner growth.",
-    intro: "Discover the vision of Sri Aurobindo and the Mother through Integral Yoga, meditation, Indian spirituality and a living culture of inner growth.",
-    explore: "Begin exploring", event: "View next gathering", today: "A thought for today",
-    quote: "Man is a transitional being, he is not final.",
-    vision: "A path towards a more conscious life",
-    visionText: "Integral Yoga invites every part of life—thought, work, relationship and aspiration—to participate in inner growth.",
     cards: ["Inner growth", "Conscious living", "Human unity", "Spiritual evolution"],
     cardNotes: [
       "Discover the deeper self and bring greater awareness into daily life.",
@@ -390,12 +384,9 @@ export function MissionHome() {
 
     <main id="main">
       <section className="theme-banner" aria-label="Website theme: The Song of Life"><img src="/song-of-life-banner.png" alt="The Song of Life, glowing over a radiant golden dawn"/><div className="theme-caption"><span>OUR WEBSITE THEME</span><p>A luminous invitation to discover the deeper music within life.</p></div></section>
-      <section className="hero" id="discover">
+      <section className="hero hero-vision" id="pathways" aria-label="The Vision">
         <div className="hero-orb" aria-hidden="true"><span>✦</span></div>
-        <div className="hero-copy"><p className="eyebrow">{t.eyebrow}</p><p className="kicker">THE VISION</p><h1>{t.vision}</h1><p className="lead">{t.visionText}</p>
-          <div className="actions"><a className="button primary" href="#pathways">{t.explore} <span>→</span></a><a className="button quiet" href="#events">{t.event}</a></div>
-        </div>
-        <aside className="quote-card"><span className="line"/><p>{t.today}</p><blockquote>“{t.quote}”</blockquote><small>— Sri Aurobindo · CWSA Vol. 12, p. 157</small></aside>
+        <div className="hero-copy"><p className="eyebrow">{t.eyebrow}</p><h1 className="kicker vision-label">THE VISION</h1><div className="pillars hero-vision-pillars">{t.cards.map((x,i)=><article key={x}><b>0{i+1}</b><span>{x}</span><p>{t.cardNotes[i]}</p></article>)}</div></div>
       </section>
 
       <section className="people section" aria-labelledby="guides-title">
@@ -415,8 +406,6 @@ export function MissionHome() {
         </div>
         <div className="gallery-action"><p>Add the next five-line visual passage with its complete Savitri reference and description.</p><button className="button quiet" onClick={()=>open("savitri")}>Upload a Song of Savitri video →</button></div>
       </section>
-
-      <section className="vision section vision-pillars-only" id="pathways" aria-label="Four expressions of the vision"><div className="pillars">{t.cards.map((x,i)=><article key={x}><b>0{i+1}</b><span>{x}</span><p>{t.cardNotes[i]}</p></article>)}</div></section>
 
       <section className="roots section" aria-labelledby="roots-title"><div className="section-title"><div><p className="kicker">A LIVING MOVEMENT</p><h2 id="roots-title">From Puducherry to Lucknow</h2></div><p>Founded by the Mother in Pondicherry on 19 September 1960, Sri Aurobindo Society carries Indian spirituality into meditation, education, culture and everyday life, drawing on the deeper spirit of India and its philosophical heritage.</p></div><div className="roots-grid">
         <article><span>01</span><h3>Puducherry</h3><p>The Society’s administrative headquarters and Society House are in Puducherry, close to the wider spiritual, cultural and educational life inspired by Sri Aurobindo and the Mother.</p><a href="https://aurosociety.org/society/index/About-Sri-Aurobindo-Society" target="_blank" rel="noreferrer">About the Society ↗</a></article>

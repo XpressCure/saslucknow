@@ -22,8 +22,11 @@ test("renders the mission homepage with accessible landmarks", async () => {
   assert.equal(response.status, 200);
   const html = await response.text();
   assert.match(html, /Sri Aurobindo Society/);
-  assert.match(html, /A path towards a more conscious life/);
-  assert.match(html, /Integral Yoga invites every part of life/);
+  assert.match(html, /id="pathways"/);
+  assert.doesNotMatch(html, /A path towards a more conscious life/);
+  assert.doesNotMatch(html, /Integral Yoga invites every part of life/);
+  assert.doesNotMatch(html, /Begin exploring/);
+  assert.doesNotMatch(html, /A thought for today/);
   assert.match(html, /aria-label="Main navigation"/);
   assert.match(html, /id="wisdom"/);
   assert.match(html, /id="events"/);
@@ -128,7 +131,7 @@ test("renders sourced portraits and the lecture archive", async () => {
   assert.match(html, /Portrait of Sri Aurobindo/);
   assert.match(html, /Portrait of the Mother/);
   assert.match(html, /LUCKNOW LECTURE ARCHIVE/);
-  assert.match(html, /CWSA Vol\. 12, p\. 157/);
+  assert.doesNotMatch(html, /CWSA Vol\. 12, p\. 157/);
 });
 
 test("renders location, weekly meeting, gallery and Facebook embed", async () => {
@@ -162,7 +165,7 @@ test("renders The Song of Savitri directly after Lives and Vision", async () => 
   assert.match(html, /id="song-of-savitri"/);
   assert.match(html, /The Song of Savitri/);
   assert.ok(html.indexOf('id="guides-title"') < html.indexOf('id="song-of-savitri"'));
-  assert.ok(html.indexOf('id="song-of-savitri"') < html.indexOf('id="pathways"'));
+  assert.ok(html.indexOf('id="song-of-savitri"') < html.indexOf('aria-labelledby="roots-title"'));
   const source = await readFile(new URL("../app/mission-home.tsx", import.meta.url), "utf8");
   for (const field of ["Part", "Book No.", "Canto No.", "Name of Canto", "Line Nos.", "Page No.", "Description", "Upload Video"]) {
     assert.match(source, new RegExp(field.replace(".", "\\.")));
@@ -393,6 +396,7 @@ test("homepage biography cards use internal routes", async () => {
 test("explains all four vision pillars inside their boxes", async () => {
   const response = await render();
   const html = await response.text();
+  assert.ok(html.indexOf('id="pathways"') < html.indexOf('aria-labelledby="guides-title"'));
   for (const line of [
     "Discover the deeper self",
     "Let thought, work and relationships",
