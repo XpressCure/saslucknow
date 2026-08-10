@@ -122,7 +122,7 @@ export function ParticipationClient() {
           <Image src="/society-logo-transparent.png" alt="Sri Aurobindo Society symbol" width={44} height={44} priority unoptimized />
           <span><strong>Sri Aurobindo Society</strong><small>LUCKNOW · GOMTI NAGAR CENTRE</small></span>
         </Link>
-        <div className="participation-header-actions"><Link className="home-link" href="/">Home</Link><Link className="home-link" href="/admin">Administrator</Link></div>
+        <div className="participation-header-actions"><Link className="home-link" href="/">Home</Link><Link className="home-link" href="/member">Member sign in</Link><Link className="home-link" href="/admin">Administrator</Link></div>
       </header>
 
       <section className="participation-intro">
@@ -132,6 +132,7 @@ export function ParticipationClient() {
         <div className="participation-actions">
           <a className="participation-button primary" href="#parichay">Share Parichay</a>
           <a className="participation-button" href="#sankalp">View Sankalp</a>
+          <Link className="participation-button" href="/member">Open member portal</Link>
         </div>
       </section>
 
@@ -172,7 +173,7 @@ export function ParticipationClient() {
                 {item.acceptsSeva && <div className="participation-count"><span>{item.volunteerCount}</span><small>seva participants</small></div>}
                 <p className="sankalp-stage">Stage: {item.stage}</p>
               </div>
-              <button type="button" className="participation-button" disabled>Details soon</button>
+              <Link className="participation-button" href="/member">View and participate</Link>
             </article>)}
           </div>
         )}

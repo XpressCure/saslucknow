@@ -2,6 +2,7 @@ import http from "node:http";
 import { randomUUID } from "node:crypto";
 import { MongoClient } from "mongodb";
 import { handleAdminRequest } from "./participation-admin-api.mjs";
+import { handleMemberRequest } from "./participation-member-api.mjs";
 import {
   publicParticipationSummary,
   publicRecentContribution,
@@ -49,16 +50,20 @@ function allowSubmission(request) {
   return true;
 }
 
-async function readJson(request) {
+async function readBuffer(request, limit = MAX_JSON_BYTES) {
   let size = 0;
   const chunks = [];
   for await (const chunk of request) {
     size += chunk.length;
-    if (size > MAX_JSON_BYTES) throw Object.assign(new Error("Request too large."), { statusCode: 413 });
+    if (size > limit) throw Object.assign(new Error("Request too large."), { statusCode: 413 });
     chunks.push(chunk);
   }
+  return Buffer.concat(chunks);
+}
+
+async function readJson(request) {
   try {
-    return JSON.parse(Buffer.concat(chunks).toString("utf8") || "{}");
+    return JSON.parse((await readBuffer(request)).toString("utf8") || "{}");
   } catch {
     throw Object.assign(new Error("Invalid JSON body."), { statusCode: 400 });
   }
@@ -156,6 +161,17 @@ const server = http.createServer(async (request, response) => {
       db,
       organisationKey: ORGANISATION_KEY,
       readJson,
+      sendJson,
+      clientAddress,
+    })) return;
+    if (await handleMemberRequest({
+      request,
+      response,
+      url,
+      db,
+      organisationKey: ORGANISATION_KEY,
+      readJson,
+      readBuffer,
       sendJson,
       clientAddress,
     })) return;

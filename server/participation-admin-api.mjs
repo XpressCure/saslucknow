@@ -272,6 +272,7 @@ async function applications(request, response, url, context, actor, id = "") {
       status: "active",
       livingStatus: "living",
       role: member?.role || "member",
+      approvedApplicationReference: application.reference,
       updatedAt: now,
     };
     if (application.email) memberFields.email = application.email;
