@@ -2,7 +2,8 @@ import http from "node:http";
 import { randomUUID } from "node:crypto";
 import { MongoClient } from "mongodb";
 import {
-  calculateKoshSummary,
+  publicParticipationSummary,
+  publicRecentContribution,
   publicSankalp,
   validateParichayApplication,
 } from "./participation-core.mjs";
@@ -66,13 +67,25 @@ async function database() {
 }
 
 async function overview(db) {
-  const [organisation, sankalps, kosh, approvedMembers] = await Promise.all([
+  const [organisation, sankalps, approvedMembers, recentContributionDocuments] = await Promise.all([
     db.collection("organisations").findOne({ key: ORGANISATION_KEY }),
     db.collection("sankalps").find({ organisationKey: ORGANISATION_KEY, status: { $in: ["funding", "active", "completed"] } }).sort({ featuredOrder: 1, createdAt: -1 }).toArray(),
-    db.collection("koshAccounts").findOne({ organisationKey: ORGANISATION_KEY, key: "general" }),
     db.collection("members").countDocuments({ organisationKey: ORGANISATION_KEY, status: "active", livingStatus: { $ne: "deceased" } }),
+    db.collection("contributions").find({
+      organisationKey: ORGANISATION_KEY,
+      $or: [
+        { status: { $in: ["captured", "verified", "completed", "received", "successful"] } },
+        { status: { $exists: false } },
+      ],
+    }).sort({ createdAt: -1 }).limit(5).toArray(),
   ]);
   const publicSankalps = sankalps.map(publicSankalp);
+  const titleById = new Map(sankalps.map(item => [String(item._id), item.title]));
+  const titleBySlug = new Map(sankalps.map(item => [item.slug, item.title]));
+  const recentContributions = recentContributionDocuments.map(item => publicRecentContribution(
+    item,
+    titleById.get(String(item.sankalpId || "")) || titleBySlug.get(item.sankalpSlug) || item.sankalpTitle || "General Kosh",
+  ));
   return {
     organisation: organisation ? {
       name: organisation.publicName,
@@ -82,8 +95,9 @@ async function overview(db) {
       supportPhone: organisation.supportPhone,
     } : null,
     memberCount: approvedMembers,
-    kosh: calculateKoshSummary(publicSankalps, kosh),
+    summary: publicParticipationSummary(publicSankalps),
     sankalps: publicSankalps,
+    recentContributions,
   };
 }
 

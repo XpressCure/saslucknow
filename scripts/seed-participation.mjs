@@ -29,6 +29,7 @@ try {
     db.collection("sankalps").createIndex({ organisationKey: 1, slug: 1 }, { unique: true }),
     db.collection("koshAccounts").createIndex({ organisationKey: 1, key: 1 }, { unique: true }),
     db.collection("contributions").createIndex({ provider: 1, providerPaymentId: 1 }, { unique: true, sparse: true }),
+    db.collection("contributions").createIndex({ organisationKey: 1, status: 1, createdAt: -1 }),
     db.collection("paymentWebhookEvents").createIndex({ provider: 1, eventId: 1 }, { unique: true }),
     db.collection("auditLogs").createIndex({ organisationKey: 1, createdAt: -1 }),
   ]);

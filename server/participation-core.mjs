@@ -44,12 +44,29 @@ export function publicSankalp(document) {
     stage: document.stage || "planning",
     acceptsDonations: Boolean(document.acceptsDonations),
     acceptsSeva: Boolean(document.acceptsSeva),
-    targetAmountPaise: Number(document.targetAmountPaise || 0),
-    receivedAmountPaise: Number(document.receivedAmountPaise || 0),
     donorCount: Number(document.donorCount || 0),
     volunteerCount: Number(document.volunteerCount || 0),
     coverImageUrl: document.coverImageUrl || "",
     targetDate: document.targetDate || null,
+  };
+}
+
+export function publicParticipationSummary(sankalps) {
+  const active = sankalps.filter(item => item.status === "active" || item.status === "funding");
+  return {
+    activeSankalpCount: active.length,
+    contributorCount: active.reduce((total, item) => total + Number(item.donorCount || 0), 0),
+    sevaParticipantCount: active.reduce((total, item) => total + Number(item.volunteerCount || 0), 0),
+  };
+}
+
+export function publicRecentContribution(document, sankalpTitle = "General Kosh") {
+  const contributedAt = document.receivedAt || document.capturedAt || document.createdAt || null;
+  const date = contributedAt ? new Date(contributedAt) : null;
+  return {
+    id: String(document._id),
+    sankalpTitle: cleanText(sankalpTitle, 140) || "General Kosh",
+    contributedAt: date && !Number.isNaN(date.getTime()) ? date.toISOString() : "",
   };
 }
 

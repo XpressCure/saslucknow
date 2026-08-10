@@ -1,6 +1,13 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { calculateKoshSummary, normalizePhone, publicSankalp, validateParichayApplication } from "../server/participation-core.mjs";
+import {
+  calculateKoshSummary,
+  normalizePhone,
+  publicParticipationSummary,
+  publicRecentContribution,
+  publicSankalp,
+  validateParichayApplication,
+} from "../server/participation-core.mjs";
 
 test("normalizes Indian mobile numbers", () => {
   assert.equal(normalizePhone("+91 98765-43210"), "9876543210");
@@ -30,5 +37,32 @@ test("calculates non-negative available Kosh balance", () => {
 test("publishes planning stage for a Sankalp without a stage", () => {
   const result = publicSankalp({ _id: "1", slug: "consultations", title: "Consultations", status: "active" });
   assert.equal(result.stage, "planning");
-  assert.equal(result.targetAmountPaise, 0);
+  assert.equal(result.donorCount, 0);
+  assert.equal("targetAmountPaise" in result, false);
+  assert.equal("receivedAmountPaise" in result, false);
+});
+
+test("summarizes public participation without exposing financial totals", () => {
+  const result = publicParticipationSummary([
+    { status: "active", donorCount: 3, volunteerCount: 2 },
+    { status: "funding", donorCount: 4, volunteerCount: 1 },
+    { status: "completed", donorCount: 8, volunteerCount: 5 },
+  ]);
+  assert.deepEqual(result, { activeSankalpCount: 2, contributorCount: 7, sevaParticipantCount: 3 });
+});
+
+test("anonymizes recent contribution activity", () => {
+  const result = publicRecentContribution({
+    _id: "contribution-1",
+    donorName: "Private person",
+    amountPaise: 500000,
+    createdAt: new Date("2026-08-10T08:30:00.000Z"),
+  }, "Winter Blanket Distribution");
+  assert.deepEqual(result, {
+    id: "contribution-1",
+    sankalpTitle: "Winter Blanket Distribution",
+    contributedAt: "2026-08-10T08:30:00.000Z",
+  });
+  assert.equal("donorName" in result, false);
+  assert.equal("amountPaise" in result, false);
 });

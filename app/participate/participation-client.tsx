@@ -14,11 +14,15 @@ type Sankalp = {
   stage: string;
   acceptsDonations: boolean;
   acceptsSeva: boolean;
-  targetAmountPaise: number;
-  receivedAmountPaise: number;
   donorCount: number;
   volunteerCount: number;
   targetDate: string | null;
+};
+
+type RecentContribution = {
+  id: string;
+  sankalpTitle: string;
+  contributedAt: string;
 };
 
 type Overview = {
@@ -30,29 +34,28 @@ type Overview = {
     supportPhone: string;
   };
   memberCount: number;
-  kosh: {
-    receivedAmountPaise: number;
-    allocatedAmountPaise: number;
-    availableAmountPaise: number;
+  summary: {
     activeSankalpCount: number;
+    contributorCount: number;
+    sevaParticipantCount: number;
   };
   sankalps: Sankalp[];
+  recentContributions: RecentContribution[];
 };
 
 const emptyOverview: Overview = {
   organisation: null,
   memberCount: 0,
-  kosh: { receivedAmountPaise: 0, allocatedAmountPaise: 0, availableAmountPaise: 0, activeSankalpCount: 0 },
+  summary: { activeSankalpCount: 0, contributorCount: 0, sevaParticipantCount: 0 },
   sankalps: [],
+  recentContributions: [],
 };
 
-function rupees(paise: number) {
-  return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(paise / 100);
-}
-
-function progress(sankalp: Sankalp) {
-  if (!sankalp.targetAmountPaise) return 0;
-  return Math.min(100, Math.round((sankalp.receivedAmountPaise / sankalp.targetAmountPaise) * 100));
+function displayContributionDate(value: string) {
+  if (!value) return "Recently";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Recently";
+  return new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", year: "numeric" }).format(date);
 }
 
 export function ParticipationClient() {
@@ -146,9 +149,9 @@ export function ParticipationClient() {
         {loadError ? <p className="participation-notice error" role="alert">{loadError}</p> : (
           <dl className="participation-stats" aria-busy={loading}>
             <div><dt>Active members</dt><dd>{loading ? "—" : overview.memberCount}</dd></div>
-            <div><dt>Active Sankalp</dt><dd>{loading ? "—" : overview.kosh.activeSankalpCount}</dd></div>
-            <div><dt>Received in Kosh</dt><dd>{loading ? "—" : rupees(overview.kosh.receivedAmountPaise)}</dd></div>
-            <div><dt>Available for work</dt><dd>{loading ? "—" : rupees(overview.kosh.availableAmountPaise)}</dd></div>
+            <div><dt>Active Sankalp</dt><dd>{loading ? "—" : overview.summary.activeSankalpCount}</dd></div>
+            <div><dt>Contributors</dt><dd>{loading ? "—" : overview.summary.contributorCount}</dd></div>
+            <div><dt>Seva participants</dt><dd>{loading ? "—" : overview.summary.sevaParticipantCount}</dd></div>
           </dl>
         )}
       </section>
@@ -165,9 +168,9 @@ export function ParticipationClient() {
             {activeSankalps.map(item => <article key={item.id} className="sankalp-row">
               <div className="sankalp-copy"><span>{item.status}</span><h3>{item.title}</h3><p>{item.summary || item.purpose}</p></div>
               <div className="sankalp-progress">
-                {item.acceptsDonations && item.targetAmountPaise > 0 && <><div><span>{rupees(item.receivedAmountPaise)}</span><small>of {rupees(item.targetAmountPaise)}</small></div><progress value={progress(item)} max="100">{progress(item)}%</progress><p>{item.donorCount} contributors</p></>}
-                {item.acceptsDonations && item.targetAmountPaise === 0 && <div className="budget-pending"><span>Budget being finalised</span><small>Contributions will open after approval</small></div>}
-                {item.acceptsSeva && <p>{item.volunteerCount} seva participants</p>}
+                {item.acceptsDonations && <div className="participation-count"><span>{item.donorCount}</span><small>contributors</small></div>}
+                {item.acceptsSeva && <div className="participation-count"><span>{item.volunteerCount}</span><small>seva participants</small></div>}
+                <p className="sankalp-stage">Stage: {item.stage}</p>
               </div>
               <button type="button" className="participation-button" disabled>Details soon</button>
             </article>)}
@@ -176,8 +179,17 @@ export function ParticipationClient() {
       </section>
 
       <section className="kosh-section" id="kosh">
-        <div><p className="participation-kicker">TRANSPARENT SUPPORT</p><h2>Kosh · कोष</h2><p>Support will be accepted into the Society’s approved account and recorded against the selected Sankalp or the general Kosh.</p></div>
-        <div className="kosh-amount"><small>Currently recorded</small><strong>{rupees(overview.kosh.receivedAmountPaise)}</strong><span>Payment access will open after legal and Razorpay verification.</span></div>
+        <div><p className="participation-kicker">PRIVACY-RESPECTING TRANSPARENCY</p><h2>Recent support</h2><p>Financial balances and personal details remain private. This public view shows recent participation without identifying contributors or displaying individual amounts.</p></div>
+        <div className="recent-contributions" aria-label="Five recent contributions">
+          {loading ? <p>Loading recent activity…</p> : overview.recentContributions.length === 0 ? (
+            <div className="recent-empty"><strong>Recent verified contributions will appear here.</strong><span>No personal details or amounts will be displayed.</span></div>
+          ) : overview.recentContributions.map((item, index) => (
+            <article key={item.id}>
+              <span>{String(index + 1).padStart(2, "0")}</span>
+              <div><strong>{item.sankalpTitle}</strong><time dateTime={item.contributedAt}>{displayContributionDate(item.contributedAt)}</time></div>
+            </article>
+          ))}
+        </div>
       </section>
 
       <section className="parichay-section" id="parichay">
