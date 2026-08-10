@@ -94,7 +94,7 @@ async function approvedGalleryItems() {
   return documents
     .filter(document => document?.status === "approved")
     .flatMap(document => (document.media || [])
-      .filter(media => media.storage === "local" && allowedTypes.has(media.mimeType))
+      .filter(media => (media.storage === "local" && allowedTypes.has(media.mimeType)) || (media.storage === "youtube" && media.youtubeId))
       .map((media, index) => ({
         id: `${document.submissionId}-${index}`,
         submissionId: document.submissionId,
@@ -104,7 +104,10 @@ async function approvedGalleryItems() {
         description: cleanText(document.description, 2500),
         kind: media.kind,
         mimeType: media.mimeType,
-        mediaUrl: `/api/gallery-media/${encodeURIComponent(document.submissionId)}/${encodeURIComponent(path.basename(media.key))}`,
+        mediaUrl: media.storage === "local" ? `/api/gallery-media/${encodeURIComponent(document.submissionId)}/${encodeURIComponent(path.basename(media.key))}` : "",
+        youtubeId: media.storage === "youtube" ? media.youtubeId : "",
+        youtubeUrl: media.storage === "youtube" ? media.youtubeUrl : "",
+        thumbnailUrl: media.storage === "youtube" ? media.thumbnailUrl : "",
       })))
     .sort((a, b) => String(b.eventDate).localeCompare(String(a.eventDate)));
 }
@@ -125,7 +128,7 @@ async function savitriVideoItems() {
     }
   }));
   return documents
-    .filter(document => document?.status === "approved" && document?.media?.storage === "local" && document.media.kind === "video")
+    .filter(document => document?.status === "approved" && document?.media?.storage === "youtube" && document.media.youtubeId)
     .map(document => ({
       id: document.submissionId,
       part: cleanText(document.part, 80),
@@ -135,8 +138,11 @@ async function savitriVideoItems() {
       lineNos: cleanText(document.lineNos, 120),
       pageNo: cleanText(document.pageNo, 80),
       description: cleanText(document.description, 2500),
-      mimeType: document.media.mimeType,
-      mediaUrl: `/api/savitri-video-media/${encodeURIComponent(document.submissionId)}/${encodeURIComponent(path.basename(document.media.key))}`,
+      mimeType: "text/html",
+      mediaUrl: "",
+      youtubeId: document.media.youtubeId,
+      youtubeUrl: document.media.youtubeUrl,
+      thumbnailUrl: document.media.thumbnailUrl,
       createdAt: document.createdAt,
     }))
     .sort((a, b) => String(a.bookNo).localeCompare(String(b.bookNo), undefined, { numeric: true })
@@ -235,6 +241,36 @@ async function serveSavitriVideoMedia(pathname, request, response) {
 
 function cleanText(value, max = 1000) {
   return String(value || "").replace(/[\u0000-\u001f<>]/g, " ").replace(/\s+/g, " ").trim().slice(0, max);
+}
+
+function parseYouTubeUrl(value) {
+  const input = cleanText(value, 500);
+  if (!input) return null;
+  let parsed;
+  try {
+    parsed = new URL(input);
+  } catch {
+    return null;
+  }
+  const hostname = parsed.hostname.toLowerCase().replace(/^www\./, "");
+  let videoId = "";
+  if (hostname === "youtu.be") videoId = parsed.pathname.split("/").filter(Boolean)[0] || "";
+  if (["youtube.com", "m.youtube.com", "music.youtube.com"].includes(hostname)) {
+    if (parsed.pathname === "/watch") videoId = parsed.searchParams.get("v") || "";
+    else {
+      const parts = parsed.pathname.split("/").filter(Boolean);
+      if (["shorts", "embed", "live"].includes(parts[0])) videoId = parts[1] || "";
+    }
+  }
+  if (!/^[A-Za-z0-9_-]{11}$/.test(videoId)) return null;
+  return {
+    storage: "youtube",
+    kind: "video",
+    mimeType: "text/html",
+    youtubeId: videoId,
+    youtubeUrl: `https://www.youtube.com/watch?v=${videoId}`,
+    thumbnailUrl: `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
+  };
 }
 
 function safeFilename(name) {
@@ -494,6 +530,10 @@ async function parseMultipart(request) {
 
   parser.on("field", (name, value) => { fields[name] = cleanText(value, name === "description" ? 2500 : 300); });
   parser.on("file", (field, stream, info) => {
+    if (field === "media" && !info.filename) {
+      stream.resume();
+      return;
+    }
     if (field !== "media" || !allowedTypes.has(info.mimeType)) {
       problems.push("Only JPG, PNG, WebP, MP4, WebM and MOV files are accepted.");
       stream.resume();
@@ -520,7 +560,6 @@ async function parseMultipart(request) {
       problems.push(file.kind === "image" ? "Each photograph must be 12 MB or smaller." : "Each video must be 80 MB or smaller.");
     }
   }
-  if (!files.length) problems.push("Please select at least one photograph or video.");
   return { fields, files, problems };
 }
 
@@ -606,14 +645,15 @@ async function handleSavitriVideoSubmission(request, response) {
     if (!fields.part || !fields.bookNo || !fields.cantoNo || !fields.cantoName || !fields.lineNos || !fields.pageNo || !fields.description) {
       problems.push("Please complete every Savitri reference and description field.");
     }
-    if (files.length !== 1 || files[0]?.kind !== "video") problems.push("Please upload one MP4, WebM or MOV video.");
+    const media = parseYouTubeUrl(fields.youtubeUrl);
+    if (!media) problems.push("Please enter a valid public YouTube video link.");
+    if (files.length) problems.push("Video files are no longer uploaded here. Please use a YouTube link.");
     if (problems.length) {
       await removeTemporaryFiles(files);
       return json(response, 400, { error: [...new Set(problems)].join(" ") });
     }
 
     const submissionId = randomUUID();
-    const [media] = await storeFiles(submissionId, files, "approved", "savitri-videos");
     const document = {
       submissionId,
       status: "approved",
@@ -649,7 +689,7 @@ export async function handleSubmission(request, response) {
   if (request.method === "GET" && pathname.startsWith("/api/gallery-media/")) return serveApprovedMedia(pathname, request, response);
   if (request.method !== "POST" || pathname !== "/api/gallery-submissions") return json(response, 404, { error: "Not found" });
   if (!String(request.headers["content-type"] || "").toLowerCase().startsWith("multipart/form-data")) {
-    return json(response, 400, { error: "Please submit the event form with photographs or videos." });
+    return json(response, 400, { error: "Please submit the event form with photographs or a YouTube link." });
   }
   const length = Number(request.headers["content-length"] || 0);
   if (length > MAX_REQUEST_BYTES) return json(response, 413, { error: "The complete upload must be 130 MB or smaller." });
@@ -665,14 +705,20 @@ export async function handleSubmission(request, response) {
       return json(response, 201, { ok: true, reference: "received" });
     }
     if (!fields.title || !fields.date || !fields.category || !fields.description || fields.permission !== "yes") problems.push("Please complete all required event details and confirm permission to publish.");
+    const youtubeMedia = fields.youtubeUrl ? parseYouTubeUrl(fields.youtubeUrl) : null;
+    if (fields.youtubeUrl && !youtubeMedia) problems.push("Please enter a valid public YouTube video link.");
+    if (files.some(file => file.kind === "video")) problems.push("Video files are no longer uploaded here. Add the YouTube link instead.");
+    if (!files.length && !youtubeMedia) problems.push("Please select at least one photograph or add a YouTube video link.");
     if (problems.length) {
       await removeTemporaryFiles(files);
       return json(response, 400, { error: [...new Set(problems)].join(" ") });
     }
 
     const submissionId = randomUUID();
-    const publicationStatus = files.some(file => file.kind === "video") ? "approved" : "pending";
-    const media = await storeFiles(submissionId, files, publicationStatus);
+    const publicationStatus = youtubeMedia ? "approved" : "pending";
+    const imageFiles = files.filter(file => file.kind === "image");
+    const media = imageFiles.length ? await storeFiles(submissionId, imageFiles, publicationStatus) : [];
+    if (youtubeMedia) media.push(youtubeMedia);
     const document = {
       submissionId,
       status: publicationStatus,

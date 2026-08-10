@@ -152,8 +152,8 @@ test("renders location, weekly meeting, gallery and Facebook embed", async () =>
   assert.match(html, /6:00–7:00 PM/);
   assert.match(html, /73888 99001/);
   assert.match(html, /facebook\.com%2Fsaslucknow/);
-  assert.match(html, /Upload event photos or videos/);
-  assert.match(html, /Videos are published automatically/);
+  assert.match(html, /Add event photos or YouTube video/);
+  assert.match(html, /YouTube videos are published automatically/);
   assert.match(html, /Stop the Mother&#x27;s organ meditation music/);
   assert.match(html, /autoplay=""/i);
   assert.doesNotMatch(html, /Enter with music|Continue in silence/);
@@ -193,7 +193,7 @@ test("renders The Song of Savitri directly after Lives and Vision", async () => 
   assert.ok(html.indexOf('id="guides-title"') < html.indexOf('id="song-of-savitri"'));
   assert.ok(html.indexOf('id="song-of-savitri"') < html.indexOf('aria-labelledby="roots-title"'));
   const source = await readFile(new URL("../app/mission-home.tsx", import.meta.url), "utf8");
-  for (const field of ["Part", "Book No.", "Canto No.", "Name of Canto", "Line Nos.", "Page No.", "Description", "Upload Video"]) {
+  for (const field of ["Part", "Book No.", "Canto No.", "Name of Canto", "Line Nos.", "Page No.", "Description", "YouTube Video Link"]) {
     assert.match(source, new RegExp(field.replace(".", "\\.")));
   }
   assert.match(source, /\/api\/savitri-video-submissions/);
@@ -222,7 +222,7 @@ test("stores and lists a Song of Savitri video", async () => {
     form.set("lineNos", "1-5");
     form.set("pageNo", "1");
     form.set("description", "Five opening lines with English and Hindi meaning.");
-    form.set("media", new Blob([Buffer.alloc(2048, 1)], { type: "video/mp4" }), "symbol-dawn.mp4");
+    form.set("youtubeUrl", "https://www.youtube.com/watch?v=dQw4w9WgXcQ");
     const uploadResponse = await fetch(`http://127.0.0.1:${address.port}/api/savitri-video-submissions`, { method: "POST", body: form });
     assert.equal(uploadResponse.status, 201);
     const uploadResult = await uploadResponse.json();
@@ -234,7 +234,9 @@ test("stores and lists a Song of Savitri video", async () => {
     assert.equal(list.items[0].cantoName, "The Symbol Dawn");
     assert.equal(list.items[0].lineNos, "1-5");
     assert.equal(list.items[0].description, "Five opening lines with English and Hindi meaning.");
-    assert.match(list.items[0].mediaUrl, /^\/api\/savitri-video-media\//);
+    assert.equal(list.items[0].youtubeId, "dQw4w9WgXcQ");
+    assert.equal(list.items[0].thumbnailUrl, "https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg");
+    assert.equal(list.items[0].mediaUrl, "");
   } finally {
     await new Promise(resolve => server.close(resolve));
     await rm(directory, { recursive: true, force: true });
