@@ -185,7 +185,7 @@ const server = http.createServer(async (request, response) => {
       return sendJson(response, 200, await overview(db));
     }
     if (request.method === "POST" && url.pathname === "/api/participation/parichay/applications") {
-      return submitParichay(request, response, db);
+      return await submitParichay(request, response, db);
     }
     sendJson(response, 404, { error: "Not found." });
   } catch (error) {

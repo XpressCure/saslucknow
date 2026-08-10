@@ -473,6 +473,11 @@ test("links the main website to Parichay, Sankalp and Kosh", async () => {
   assert.match(css, /--p-line:#d9c9a8;padding-top:0/);
 });
 
+test("keeps malformed Parichay submissions inside the API error boundary", async () => {
+  const source = await readFile(new URL("../server/participation-api.mjs", import.meta.url), "utf8");
+  assert.match(source, /return await submitParichay\(request, response, db\)/);
+});
+
 test("renders the internal Darshan Divas guide and navigation entry", async () => {
   const home = await render();
   const homeHtml = await home.text();
