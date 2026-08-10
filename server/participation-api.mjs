@@ -1,6 +1,7 @@
 import http from "node:http";
 import { randomUUID } from "node:crypto";
 import { MongoClient } from "mongodb";
+import { hashPassword, validatePassword } from "./participation-auth.mjs";
 import { handleAdminRequest } from "./participation-admin-api.mjs";
 import { handleMemberRequest } from "./participation-member-api.mjs";
 import {
@@ -112,27 +113,47 @@ async function overview(db) {
 
 async function submitParichay(request, response, db) {
   if (!allowSubmission(request)) return sendJson(response, 429, { error: "Too many submissions. Please try again later." });
-  const validation = validateParichayApplication(await readJson(request));
+  const body = await readJson(request);
+  const validation = validateParichayApplication(body);
   if (!validation.ok) return sendJson(response, 422, { error: validation.errors[0], errors: validation.errors });
+  const passwordError = validatePassword(body.password);
+  if (passwordError) return sendJson(response, 422, { error: passwordError });
 
   const now = new Date();
-  const duplicate = await db.collection("memberApplications").findOne({
+  const identityOptions = [
+    { mobile: validation.value.mobile },
+    ...(validation.value.email ? [{ email: validation.value.email }] : []),
+  ];
+  const existingMember = await db.collection("members").findOne({
     organisationKey: ORGANISATION_KEY,
-    status: "pending",
-    $or: [
-      { mobile: validation.value.mobile },
-      ...(validation.value.email ? [{ email: validation.value.email }] : []),
-      ...(validation.value.pushpanjaliCertificateNumber ? [{ pushpanjaliCertificateNumber: validation.value.pushpanjaliCertificateNumber }] : []),
-    ],
+    $or: identityOptions,
   });
-  if (duplicate) return sendJson(response, 409, { error: "A Parichay request with these details is already awaiting review." });
+  if (existingMember) return sendJson(response, 409, { error: "A member account already exists for this mobile number or email. Please sign in or contact the centre for account recovery." });
 
   const reference = `PAR-${now.getFullYear()}-${randomUUID().slice(0, 8).toUpperCase()}`;
+  const passwordCredential = await hashPassword(String(body.password));
+  const memberDocument = {
+    ...validation.value,
+    organisationKey: ORGANISATION_KEY,
+    passwordCredential: { ...passwordCredential, updatedAt: now },
+    accountActivatedAt: now,
+    status: "active",
+    livingStatus: "living",
+    role: "member",
+    approvedApplicationReference: reference,
+    joinedAt: now,
+    createdAt: now,
+    updatedAt: now,
+  };
+  const memberResult = await db.collection("members").insertOne(memberDocument);
   const document = {
     ...validation.value,
     organisationKey: ORGANISATION_KEY,
     reference,
-    status: "pending",
+    status: "approved",
+    memberId: memberResult.insertedId,
+    reviewNote: "Self-registered member account",
+    reviewedAt: now,
     source: validation.value.pushpanjaliCertificateNumber ? "pushpanjali" : "website",
     submittedIpHash: "not-stored",
     createdAt: now,
@@ -142,14 +163,14 @@ async function submitParichay(request, response, db) {
   await db.collection("auditLogs").insertOne({
     organisationKey: ORGANISATION_KEY,
     actorType: "public",
-    action: "parichay.application.created",
+    action: "member.self_registered",
     entityType: "memberApplication",
     entityId: String(result.insertedId),
     reference,
     pushpanjaliCertificateNumber: validation.value.pushpanjaliCertificateNumber || "",
     createdAt: now,
   });
-  sendJson(response, 201, { status: "pending", reference, message: "Your Parichay has been received for review." });
+  sendJson(response, 201, { status: "active", reference, message: "Your member account is ready. Sign in with your mobile number and password." });
 }
 
 const server = http.createServer(async (request, response) => {

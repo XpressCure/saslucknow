@@ -19,10 +19,10 @@ The participation platform is isolated from the gallery and video service. It us
 
 ## Member journey
 
-1. A visitor submits Parichay at `/participate` and safely keeps the displayed `PAR-...` reference.
-2. An administrator approves the Parichay from `/admin`.
-3. The approved person opens `/member`, chooses **First visit**, and activates the account with the same mobile number, Parichay reference, and a new password.
-4. The member can then update Parichay, review live Sankalp, make a verified Razorpay contribution, and view private acknowledgements and contribution history.
+1. A visitor submits Parichay at `/participate` and creates a member password.
+2. The member account becomes active immediately; the displayed `PAR-...` number is retained only for internal tracking.
+3. The member opens `/member` and signs in with the same mobile number or email and password. No administrator approval is required.
+4. The member can update Parichay, review live Sankalp, make a verified Razorpay contribution, and view private acknowledgements and contribution history.
 5. Existing administrators can also sign into the member portal with their administrator email and password.
 
 Member and administrator sessions are separate, server-side, HTTP-only sessions. Financial records are never created from browser success alone: the server validates the Razorpay signature, retrieves the payment from Razorpay, checks order, amount and captured status, and accepts duplicate callbacks idempotently.

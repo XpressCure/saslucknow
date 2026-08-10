@@ -60,7 +60,6 @@ export function MemberClient() {
   const [member, setMember] = useState<Member | null>(null);
   const [dashboard, setDashboard] = useState<Dashboard | null>(null);
   const [checking, setChecking] = useState(true);
-  const [authMode, setAuthMode] = useState<"login" | "activate">("login");
   const [tab, setTab] = useState<"darshan" | "sankalp" | "parichay" | "yogdaan">("darshan");
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<{ tone: "success" | "error" | "info"; title: string; detail: string } | null>(null);
@@ -87,12 +86,9 @@ export function MemberClient() {
     event.preventDefault(); setBusy(true); setNotice(null);
     const form = event.currentTarget; const data = new FormData(form);
     try {
-      const body = authMode === "login"
-        ? { identity: data.get("identity"), password: data.get("password") }
-        : { mobile: data.get("mobile"), reference: data.get("reference"), password: data.get("password") };
-      const result = await api<{ member: Member; message?: string }>(`/auth/${authMode}`, { method: "POST", body: JSON.stringify(body) });
+      const result = await api<{ member: Member; message?: string }>("/auth/login", { method: "POST", body: JSON.stringify({ identity: data.get("identity"), password: data.get("password") }) });
       setMember(result.member); await loadDashboard(); form.reset();
-      setNotice({ tone: "success", title: authMode === "activate" ? "Welcome to the member portal" : `Welcome back, ${result.member.fullName}`, detail: result.message || "Your secure session is ready." });
+      setNotice({ tone: "success", title: `Welcome back, ${result.member.fullName}`, detail: result.message || "Your secure session is ready." });
     } catch (error) { setNotice({ tone: "error", title: "Could not continue", detail: error instanceof Error ? error.message : "Please try again." }); }
     finally { setBusy(false); }
   }
@@ -164,15 +160,14 @@ export function MemberClient() {
     <section className="member-auth-panel">
       <div className="member-auth-copy"><p>MEMBER SPACE</p><h1>Parichay becomes participation.</h1><span>Follow the Sankalp, offer seva, contribute securely and keep every acknowledgement in one private place.</span></div>
       <div className="member-auth-form">
-        <div className="member-auth-tabs"><button className={authMode === "login" ? "active" : ""} onClick={() => setAuthMode("login")}>Sign in</button><button className={authMode === "activate" ? "active" : ""} onClick={() => setAuthMode("activate")}>First visit</button></div>
-        <h2>{authMode === "login" ? "Welcome back" : "Activate approved Parichay"}</h2>
-        <p>{authMode === "login" ? "Use your mobile number or email and password." : "Use the mobile number and private reference from your approved Parichay."}</p>
+        <h2>Welcome</h2>
+        <p>Use your mobile number or email and the password created with your Parichay.</p>
         <form onSubmit={authenticate}>
-          {authMode === "login" ? <label>Mobile or email<input required name="identity" autoComplete="username" /></label> : <><label>Mobile number<input required name="mobile" inputMode="tel" autoComplete="tel" /></label><label>Parichay reference<input required name="reference" placeholder="PAR-2026-XXXXXXXX" autoCapitalize="characters" /></label></>}
-          <label>{authMode === "login" ? "Password" : "Create password"}<input required type="password" name="password" minLength={10} autoComplete={authMode === "login" ? "current-password" : "new-password"} /><small>At least 10 characters with a letter and number.</small></label>
-          <button className="member-primary" disabled={busy}>{busy ? "Please wait..." : authMode === "login" ? "Open member portal" : "Activate securely"}</button>
+          <label>Mobile or email<input required name="identity" autoComplete="username" /></label>
+          <label>Password<input required type="password" name="password" minLength={10} autoComplete="current-password" /></label>
+          <button className="member-primary" disabled={busy}>{busy ? "Please wait..." : "Open member portal"}</button>
         </form>
-        <p className="member-help">Not approved yet? <Link href="/participate#parichay">Submit your Parichay</Link> first.</p>
+        <p className="member-help">New here? <Link href="/participate#parichay">Create your Parichay and member account</Link>. No approval or reference is required.</p>
       </div>
     </section>
     {notice && <Notice notice={notice} close={() => setNotice(null)} />}

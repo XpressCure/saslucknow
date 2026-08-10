@@ -101,9 +101,12 @@ export function ParticipationClient() {
         sessionStorage.removeItem(parichayJourneyKey);
         return;
       }
-      setFullName(String(stored.fullName || "").slice(0, 120));
-      setEmail(String(stored.email || "").slice(0, 180));
-      setPushpanjaliCertificateNumber(stored.pushpanjaliCertificateNumber!);
+      const timer = window.setTimeout(() => {
+        setFullName(String(stored.fullName || "").slice(0, 120));
+        setEmail(String(stored.email || "").slice(0, 180));
+        setPushpanjaliCertificateNumber(stored.pushpanjaliCertificateNumber!);
+      }, 0);
+      return () => window.clearTimeout(timer);
     } catch {
       sessionStorage.removeItem(parichayJourneyKey);
     }
@@ -129,12 +132,22 @@ export function ParticipationClient() {
           skills: data.get("skills"),
           sevaPreference: data.get("sevaPreference"),
           pushpanjaliCertificateNumber: data.get("pushpanjaliCertificateNumber"),
+          password: data.get("password"),
           consent: data.get("consent") === "yes",
         }),
       });
       const result = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(result.error || "Your Parichay could not be submitted.");
-      setConfirmation(`${result.message} Reference: ${result.reference}`);
+      const loginResponse = await fetch("/api/participation/member/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ identity: data.get("mobile"), password: data.get("password") }),
+      });
+      if (loginResponse.ok) {
+        window.location.assign("/member");
+        return;
+      }
+      setConfirmation(`${result.message} Open Member sign in with the same mobile number and password. Application number: ${result.reference}`);
       form.reset();
       setFullName("");
       setEmail("");
@@ -228,14 +241,15 @@ export function ParticipationClient() {
       <section className="parichay-section" id="parichay">
         <div className="parichay-copy"><p className="participation-kicker">BEGIN WITH PARICHAY</p><h2>How would you like to participate?</h2><p>Share only what helps the centre know you and invite you into meaningful study, service and collective work.</p></div>
         <form className="parichay-form" onSubmit={submitParichay}>
-          {pushpanjaliCertificateNumber && <div className="pushpanjali-parichay-link" role="status"><span>Pushpanjali journey connected</span><strong>{pushpanjaliCertificateNumber}</strong><p>Your certificate remains commemorative; a separate Parichay reference will secure member activation after approval.</p></div>}
+          {pushpanjaliCertificateNumber && <div className="pushpanjali-parichay-link" role="status"><span>Pushpanjali journey connected</span><strong>{pushpanjaliCertificateNumber}</strong><p>Your certificate remains commemorative and this Parichay connects it to your member journey.</p></div>}
           <input type="hidden" name="pushpanjaliCertificateNumber" value={pushpanjaliCertificateNumber} />
           <div className="participation-form-row"><label>Full name<input required name="fullName" autoComplete="name" maxLength={120} value={fullName} onChange={event => setFullName(event.target.value)} /></label><label>Mobile<input required name="mobile" inputMode="tel" autoComplete="tel" maxLength={14} /></label></div>
           <div className="participation-form-row"><label>Email <small>optional</small><input name="email" type="email" autoComplete="email" maxLength={180} value={email} onChange={event => setEmail(event.target.value)} /></label><label>City<input name="city" autoComplete="address-level2" maxLength={100} defaultValue="Lucknow" /></label></div>
           <label>Areas of interest<textarea name="interests" rows={3} maxLength={600} placeholder="Study circles, Savitri, education, youth, culture…" /></label>
           <label>Skills you may offer<textarea name="skills" rows={3} maxLength={600} placeholder="Teaching, writing, design, organising, accounting…" /></label>
           <label>Seva you would like to explore<input name="sevaPreference" maxLength={300} placeholder="A small way in which you would like to contribute" /></label>
-          <label className="participation-consent"><input required type="checkbox" name="consent" value="yes" /><span>I permit the centre to use these details to contact me about membership, gatherings and seva. My Parichay will remain pending until reviewed.</span></label>
+          <label>Create your member password<input required name="password" type="password" minLength={10} autoComplete="new-password" /><small>Use at least 10 characters with a letter and number. You can sign in immediately after submitting.</small></label>
+          <label className="participation-consent"><input required type="checkbox" name="consent" value="yes" /><span>I permit the centre to use these details to contact me about membership, gatherings and seva.</span></label>
           {formError && <p className="participation-notice error" role="alert">{formError}</p>}
           {confirmation && <p className="participation-notice success" role="status">{confirmation}</p>}
           <button className="participation-button primary submit" type="submit" disabled={submitting}>{submitting ? "Submitting…" : "Submit Parichay"}</button>
