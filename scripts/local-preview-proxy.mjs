@@ -55,9 +55,11 @@ createServer((req, res) => {
   const url = new URL(req.url || "/", `http://${host}:${port}`);
   if (serveAsset(req, res, url.pathname)) return;
 
+  const targetPort = url.pathname.startsWith("/api/participation/") ? 3002 : upstreamPort;
+
   const upstream = proxyRequest({
     hostname: host,
-    port: upstreamPort,
+    port: targetPort,
     path: req.url,
     method: req.method,
     headers: req.headers,
