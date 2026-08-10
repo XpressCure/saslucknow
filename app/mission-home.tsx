@@ -503,7 +503,7 @@ export function MissionHome() {
     <PushpanjaliCampaign onOpenChange={setPushpanjaliOpen}/>
 
     <main id="main">
-      <section className="theme-banner" aria-label="Website theme: The Song of Life"><img src="/song-of-life-banner.png" alt="The Song of Life, glowing over a radiant golden dawn"/><div className="theme-caption"><span>OUR WEBSITE THEME</span><p>A luminous invitation to discover the deeper music within life.</p></div></section>
+      <section className="theme-banner" aria-label="Website theme: The Song of Life"><img src="/song-of-life-banner.png" alt="The Song of Life, glowing over a radiant golden dawn"/><div className="theme-caption"><span>THE SONG OF LIFE</span><p>Awaken to the soul within, and let its light shape every thought, work and relationship.</p></div></section>
       <section className="hero hero-vision" id="pathways" aria-label="The Vision">
         <div className="hero-orb" aria-hidden="true"><span>✦</span></div>
         <div className="hero-copy"><p className="eyebrow">{t.eyebrow}</p><h1 className="kicker vision-label">THE VISION</h1><div className="pillars hero-vision-pillars">{t.cards.map((x,i)=><article key={x}><b>0{i+1}</b><span>{x}</span><p>{t.cardNotes[i]}</p></article>)}</div></div>

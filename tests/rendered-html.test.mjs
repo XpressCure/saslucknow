@@ -145,6 +145,8 @@ test("renders location, weekly meeting, gallery and Facebook embed", async () =>
   const response = await render();
   const html = await response.text();
   assert.match(html, /The Song of Life/);
+  assert.match(html, /Awaken to the soul within/);
+  assert.doesNotMatch(html, /OUR WEBSITE THEME|A luminous invitation to discover the deeper music within life/);
   assert.match(html, /4\/668, Vijayant Khand/);
   assert.match(html, /Weekly collective meeting/);
   assert.doesNotMatch(html, /SPECIAL OBSERVANCE · OFFLINE/);
