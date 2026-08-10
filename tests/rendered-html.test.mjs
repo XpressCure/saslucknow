@@ -302,6 +302,8 @@ test("renders the 15 August Pushpanjali campaign entry point", async () => {
   assert.match(source, /154th Birthday\./);
   assert.match(source, /15 AUGUST 2026  \|  DARSHAN DIVAS/);
   assert.match(source, /CERTIFICATE NUMBER:/);
+  assert.match(source, /Let your Pushpanjali flow into participation/);
+  assert.match(source, /href="\/participate"/);
   const apiSource = await readFile(new URL("../server/gallery-api.mjs", import.meta.url), "utf8");
   assert.match(apiSource, /YOUR PUSHPA HAS BEEN OFFERED/);
   assert.match(apiSource, /contentDisposition: "inline"/);
@@ -449,6 +451,19 @@ test("displays all four vision explanations inside their boxes", async () => {
     "Recognise one spirit in all",
     "Participate consciously in humanity’s movement",
   ]) assert.match(html, new RegExp(line));
+});
+
+test("links the main website to Parichay, Sankalp and Kosh", async () => {
+  const response = await render();
+  const html = await response.text();
+  assert.match(html, /href="\/participate"[^>]*>Participate/);
+  assert.match(html, /href="\/participate#parichay"/);
+  assert.match(html, /href="\/participate#sankalp"/);
+  assert.match(html, /href="\/participate#kosh"/);
+  const css = await readFile(new URL("../app/participate/participate.css", import.meta.url), "utf8");
+  assert.match(css, /Unified Song of Life palette and interaction language/);
+  assert.match(css, /--p-ink:#173846/);
+  assert.match(css, /--p-gold:#c58a32/);
 });
 
 test("renders the internal Darshan Divas guide and navigation entry", async () => {

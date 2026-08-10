@@ -490,6 +490,7 @@ export function MissionHome() {
         <div className={`more-menu ${moreOpen ? "open" : ""}`}>
           <button type="button" aria-expanded={moreOpen} aria-haspopup="true" onClick={() => setMoreOpen(!moreOpen)}>{t.more}</button>
           <div className="more-dropdown">
+            <a href="/participate" onClick={() => { setMoreOpen(false); setMenu(false); }}>Participate</a>
             <a href="/sultanpur-shrine" onClick={() => { setMoreOpen(false); setMenu(false); }}>{t.shrine}</a>
             <a href="/darshan-divas" onClick={() => { setMoreOpen(false); setMenu(false); }}>{t.darshan}</a>
           </div>
@@ -562,9 +563,9 @@ export function MissionHome() {
 
       <section className="location section" id="location"><div className="location-copy"><p className="kicker">VISIT THE CENTRE</p><h2>Come, sit with us.</h2><address>4/668, Vijayant Khand<br/>Gomti Nagar, Lucknow – 226010</address><div className="meeting-time"><span>SUNDAY</span><strong>6:00–7:00 PM</strong><small>Regular weekly meeting</small></div><h3>Mr. Rajendra Kumar Singh</h3><p>Secretary, Gomti Nagar Centre (UC-02)<br/>Vice-Chairman, Sri Aurobindo Society, UP & Uttarakhand</p><a className="contact-phone" href="tel:+917388899001">+91 73888 99001</a><a className="contact-email" href="mailto:info.saslucknow@gmail.com">info.saslucknow@gmail.com</a><div className="location-actions"><a className="button primary" href="https://www.google.com/maps/search/?api=1&query=4%2F668%2C%20Vijayant%20Khand%2C%20Gomti%20Nagar%2C%20Lucknow%20226010" target="_blank" rel="noreferrer">Get directions ↗</a><a className="button quiet" href="tel:+917388899001">Call the centre</a></div></div><div className="map"><iframe title="Map to Sri Aurobindo Society Gomti Nagar Centre" src="https://www.google.com/maps?q=4%2F668%2C%20Vijayant%20Khand%2C%20Gomti%20Nagar%2C%20Lucknow%20226010&output=embed" loading="lazy" referrerPolicy="no-referrer-when-downgrade"/></div></section>
 
-      <section className="community section" id="community"><p className="kicker">PARTICIPATE</p><h2>{t.community}</h2><div className="community-grid"><button onClick={()=>open("join")}><span>01</span><b>{t.join}</b><small>Study circles, gatherings and updates →</small></button><button onClick={()=>open("volunteer")}><span>02</span><b>{t.volunteer}</b><small>Offer time, skills or venue support →</small></button></div></section>
+      <section className="community section" id="community"><p className="kicker">PARTICIPATE</p><h2>{t.community}</h2><div className="community-grid"><a href="/participate#parichay"><span>01</span><b>{t.join}</b><small>Share your Parichay and stay connected →</small></a><a href="/participate#sankalp"><span>02</span><b>{t.volunteer}</b><small>Discover current Sankalp and offer seva →</small></a></div></section>
 
-      <section className="support section"><div><p className="kicker">A QUIET INVITATION</p><h2>{t.support}</h2><p>{t.supportText}</p></div><button className="button quiet light" onClick={()=>open("contribute")}>{t.contribute} →</button></section>
+      <section className="support section"><div><p className="kicker">A QUIET INVITATION</p><h2>{t.support}</h2><p>{t.supportText}</p></div><a className="button quiet light" href="/participate#kosh">{t.contribute} →</a></section>
     </main>
 
     <footer><div className="brand inverse"><img className="society-logo" src="/society-logo-transparent.png" alt="Sri Aurobindo Society symbol"/><span>Sri Aurobindo Society<small>LUCKNOW · GOMTI NAGAR CENTRE</small></span></div><p>{t.footer}</p><div><a href="#wisdom">Wisdom</a><a href="#events">Events</a><a href="mailto:info.saslucknow@gmail.com">Email</a></div><small>{t.disclaimer}</small></footer>

@@ -580,6 +580,10 @@ export function PushpanjaliCampaign({ onOpenChange }: { onOpenChange?: (open: bo
               <button type="button" onClick={downloadCertificate} disabled={!result}>Download e-Certificate</button>
             </div>
             {shareNotice && <p className="pushpanjali-share-notice" role="status">{shareNotice}</p>}
+            <div className="pushpanjali-next-step">
+              <div><span>CONTINUE THE OFFERING</span><strong>Let your Pushpanjali flow into participation.</strong><p>Share your Parichay, discover a Sankalp, or offer seva with the Lucknow centre.</p></div>
+              <a href="/participate">Explore Participation <b aria-hidden="true">&rarr;</b></a>
+            </div>
             <button className="pushpanjali-finish" type="button" onClick={closeCampaign}>Return to the website</button>
           </div>}
         </div>
