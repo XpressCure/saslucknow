@@ -1,0 +1,25 @@
+[Unit]
+Description=Sri Aurobindo Society participation service
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ec2-user
+Group=ec2-user
+WorkingDirectory=/var/www/saslucknow/releases/current
+Environment=NODE_ENV=production
+Environment=PARTICIPATION_PORT=3002
+Environment=SAS_DATABASE_NAME=sas_lucknow
+Environment=SAS_ORGANISATION_KEY=sas-lucknow
+EnvironmentFile=/etc/saslucknow-participation.env
+ExecStart=/usr/bin/node server/participation-api.mjs
+Restart=always
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target
