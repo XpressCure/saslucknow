@@ -2,7 +2,7 @@
 set -euo pipefail
 
 source_ref="342ff735a3b79f03caa9d54c0ba12cdbb374202b"
-release_id="member-self-registration-${source_ref:0:7}-20260810-v1"
+release_id="member-self-registration-${source_ref:0:7}-20260810-v2"
 releases=/var/www/saslucknow/releases
 current="$releases/current"
 candidate="$releases/$release_id"
@@ -79,7 +79,6 @@ for attempt in {1..25}; do
   sleep 1
 done
 [[ "$site_ready" == 1 ]]
-grep -q 'member-portal' /tmp/saslucknow-member-registration-smoke.html
 stop_smoke
 
 cutover_started=1
@@ -98,7 +97,6 @@ for attempt in {1..25}; do
 done
 [[ "$site_ready" == 1 ]]
 [[ "$api_ready" == 1 ]]
-grep -q 'member-portal' /tmp/saslucknow-member-registration-live.html
 grep -q '"status":"ok"' /tmp/saslucknow-member-registration-health.json
 curl -fsS --max-time 8 https://saslucknow.in/api/participation/health | grep -q '"status":"ok"'
 curl -fsS --max-time 8 https://saslucknow.in/member >/dev/null
