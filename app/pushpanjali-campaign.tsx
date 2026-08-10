@@ -99,7 +99,7 @@ function isMobileBrowser() {
   return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
 }
 
-export function PushpanjaliCampaign() {
+export function PushpanjaliCampaign({ onOpenChange }: { onOpenChange?: (open: boolean) => void }) {
   const modalRef = useRef<HTMLElement>(null);
   const [open, setOpen] = useState(true);
   const [selectedId, setSelectedId] = useState<Flower["id"]>("divine-love");
@@ -113,6 +113,9 @@ export function PushpanjaliCampaign() {
   const [certificatePreviewUrl, setCertificatePreviewUrl] = useState("");
   const [shareNotice, setShareNotice] = useState("");
   const selectedFlower = flowers.find(flower => flower.id === selectedId) || flowers[0];
+  useEffect(() => {
+    onOpenChange?.(open);
+  }, [onOpenChange, open]);
   const fallingFlowers = useMemo(() => flowerPositions.map((left, index) => ({
     left,
     delay: `${index * 0.11}s`,

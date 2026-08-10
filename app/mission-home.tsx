@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, type ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import { FormEvent, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PushpanjaliCampaign } from "./pushpanjali-campaign";
 
 type Language = "en" | "hi";
@@ -89,10 +89,76 @@ function SakhiFormattedAnswer({ content }: { content: string }) {
   })}</div>;
 }
 
-function YouTubeEmbed({ videoId, title }: { videoId: string; title: string }) {
+type YouTubePlayerStateEvent = { data: number };
+type YouTubePlayerInstance = { destroy?: () => void };
+type YouTubeApi = {
+  Player: new (element: HTMLIFrameElement, options: { events: { onStateChange: (event: YouTubePlayerStateEvent) => void } }) => YouTubePlayerInstance;
+};
+
+declare global {
+  interface Window {
+    YT?: YouTubeApi;
+    onYouTubeIframeAPIReady?: () => void;
+  }
+}
+
+let youtubeApiPromise: Promise<void> | null = null;
+
+function loadYouTubeIframeApi() {
+  if (window.YT?.Player) return Promise.resolve();
+  if (youtubeApiPromise) return youtubeApiPromise;
+  youtubeApiPromise = new Promise<void>((resolve, reject) => {
+    const previousReady = window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady = () => {
+      previousReady?.();
+      resolve();
+    };
+    const existing = document.querySelector<HTMLScriptElement>('script[src="https://www.youtube.com/iframe_api"]');
+    if (existing) {
+      existing.addEventListener("error", () => reject(new Error("YouTube player API unavailable")), { once: true });
+      return;
+    }
+    const script = document.createElement("script");
+    script.src = "https://www.youtube.com/iframe_api";
+    script.async = true;
+    script.addEventListener("error", () => reject(new Error("YouTube player API unavailable")), { once: true });
+    document.head.appendChild(script);
+  });
+  return youtubeApiPromise;
+}
+
+function reportYouTubePlayback(videoId: string, playing: boolean) {
+  window.dispatchEvent(new CustomEvent("sas:youtube-playback", { detail: { videoId, playing } }));
+}
+
+function YouTubeEmbed({ videoId, title, onPlaybackChange = reportYouTubePlayback }: { videoId: string; title: string; onPlaybackChange?: (videoId: string, playing: boolean) => void }) {
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const playbackCallback = useRef(onPlaybackChange);
+  useEffect(() => { playbackCallback.current = onPlaybackChange; }, [onPlaybackChange]);
+  useEffect(() => {
+    let disposed = false;
+    let player: YouTubePlayerInstance | undefined;
+    void loadYouTubeIframeApi().then(() => {
+      if (disposed || !iframeRef.current || !window.YT?.Player) return;
+      player = new window.YT.Player(iframeRef.current, {
+        events: {
+          onStateChange: event => {
+            if (event.data === 1) playbackCallback.current(videoId, true);
+            if ([0, 2, 5].includes(event.data)) playbackCallback.current(videoId, false);
+          },
+        },
+      });
+    }).catch(() => {});
+    return () => {
+      disposed = true;
+      playbackCallback.current(videoId, false);
+      player?.destroy?.();
+    };
+  }, [videoId]);
   return <iframe
+    ref={iframeRef}
     className="youtube-embed"
-    src={`https://www.youtube-nocookie.com/embed/${encodeURIComponent(videoId)}`}
+    src={`https://www.youtube-nocookie.com/embed/${encodeURIComponent(videoId)}?enablejsapi=1&playsinline=1&rel=0`}
     title={title}
     loading="lazy"
     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
@@ -164,13 +230,16 @@ const libraryCollections: LibraryCollection[] = [
   { category: "Explore", title: "Guidance and quotations", count: "Daily inspiration", items: ["Their guidance", "Aphorisms", "Prayers and mantras"], href: "https://www.motherandsriaurobindo.in/guidance/" },
 ];
 
-const meditationMusicVolume = 0.55;
+const meditationMusicVolume = 0.22;
 
 export function MissionHome() {
   const [lang, setLang] = useState<Language>("en");
   const [menu, setMenu] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
-  const [musicPlaying, setMusicPlaying] = useState(true);
+  const [musicPlaying, setMusicPlaying] = useState(false);
+  const [musicRequested, setMusicRequested] = useState(true);
+  const [pushpanjaliOpen, setPushpanjaliOpen] = useState(true);
+  const [videoPlaybackActive, setVideoPlaybackActive] = useState(false);
   const [filter, setFilter] = useState("All");
   const [libraryQuery, setLibraryQuery] = useState("");
   const [libraryResults, setLibraryResults] = useState<LibrarySearchResult[]>([]);
@@ -191,9 +260,23 @@ export function MissionHome() {
   const [sakhiMessages, setSakhiMessages] = useState<SakhiMessage[]>([]);
   const [sakhiThinking, setSakhiThinking] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const activeVideoIds = useRef(new Set<string>());
   const galleryTrack = useRef<HTMLDivElement>(null);
   const savitriTrack = useRef<HTMLDivElement>(null);
   const sakhiEndRef = useRef<HTMLDivElement>(null);
+  const musicSuppressed = pushpanjaliOpen || dialog !== null || sakhiOpen || videoPlaybackActive;
+  const pauseMeditationMusic = useCallback(() => {
+    const audio = audioRef.current;
+    if (audio && !audio.paused) audio.pause();
+    setMusicPlaying(false);
+  }, []);
+  const handleVideoPlaybackChange = useCallback((videoId: string, playing: boolean) => {
+    if (playing) activeVideoIds.current.add(videoId);
+    else activeVideoIds.current.delete(videoId);
+    const anyVideoPlaying = activeVideoIds.current.size > 0;
+    setVideoPlaybackActive(anyVideoPlaying);
+    if (anyVideoPlaying) pauseMeditationMusic();
+  }, [pauseMeditationMusic]);
   const t = copy[lang];
   const primaryNav = [
     { label: t.nav[0], href: "#wisdom" },
@@ -274,9 +357,23 @@ export function MissionHome() {
     if (sakhiOpen) sakhiEndRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }, [sakhiMessages, sakhiOpen, sakhiThinking]);
   useEffect(() => {
+    const receiveVideoPlayback = (event: Event) => {
+      const detail = (event as CustomEvent<{ videoId?: unknown; playing?: unknown }>).detail;
+      if (typeof detail?.videoId === "string" && typeof detail.playing === "boolean") {
+        handleVideoPlaybackChange(detail.videoId, detail.playing);
+      }
+    };
+    window.addEventListener("sas:youtube-playback", receiveVideoPlayback);
+    return () => window.removeEventListener("sas:youtube-playback", receiveVideoPlayback);
+  }, [handleVideoPlaybackChange]);
+  useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
     audio.volume = meditationMusicVolume;
+    if (musicSuppressed || !musicRequested) {
+      pauseMeditationMusic();
+      return;
+    }
     const startMusic = () => {
       audio.play().then(() => setMusicPlaying(true)).catch(() => setMusicPlaying(false));
     };
@@ -291,7 +388,7 @@ export function MissionHome() {
       window.removeEventListener("pointerdown", startAfterInteraction);
       window.removeEventListener("keydown", startAfterInteraction);
     };
-  }, []);
+  }, [musicRequested, musicSuppressed, pauseMeditationMusic]);
   const moveGallery = (direction: -1 | 1) => {
     const track = galleryTrack.current;
     if (track) track.scrollBy({ left: direction * Math.max(280, track.clientWidth * .82), behavior: "smooth" });
@@ -315,13 +412,15 @@ export function MissionHome() {
   };
   const toggleMeditationMusic = async () => {
     const audio = audioRef.current;
-    if (!audio) return;
+    if (!audio || musicSuppressed) return;
     if (!audio.paused) {
+      setMusicRequested(false);
       audio.pause();
       audio.currentTime = 0;
       setMusicPlaying(false);
       return;
     }
+    setMusicRequested(true);
     await playMeditationMusic();
   };
   const displayDate = (date: string) => {
@@ -398,9 +497,9 @@ export function MissionHome() {
       </nav>
       <div className="language"><button className={lang === "en" ? "active" : ""} onClick={() => setLang("en")}>EN</button><span>/</span><button className={lang === "hi" ? "active" : ""} onClick={() => setLang("hi")}>हिं</button></div>
     </header>
-    <audio ref={audioRef} autoPlay loop preload="auto" playsInline onPause={()=>setMusicPlaying(false)} onPlay={()=>setMusicPlaying(true)} onError={()=>setMusicPlaying(false)}><source src="/mothers-organ-joy-1960.mp3" type="audio/mpeg"/></audio>
-    <button className={`meditation-control ${musicPlaying ? "playing" : ""}`} type="button" onClick={toggleMeditationMusic} aria-pressed={musicPlaying} aria-label={`${musicPlaying ? "Stop" : "Play"} the Mother's organ meditation music`} title="The Mother's organ music · Joy · 12 March 1960"><span aria-hidden="true">♪</span><small>Meditation</small><b>{musicPlaying ? "Stop" : "Play"}</b></button>
-    <PushpanjaliCampaign/>
+    <audio ref={audioRef} loop preload="auto" playsInline onPause={()=>setMusicPlaying(false)} onPlay={()=>setMusicPlaying(true)} onError={()=>setMusicPlaying(false)}><source src="/mothers-organ-joy-1960.mp3" type="audio/mpeg"/></audio>
+    <button className={`meditation-control ${musicPlaying ? "playing" : ""}`} type="button" onClick={toggleMeditationMusic} disabled={musicSuppressed} aria-pressed={musicPlaying} aria-label={musicSuppressed ? "Meditation music paused while another video or window is open" : `${musicPlaying ? "Stop" : "Play"} the Mother's organ meditation music`} title={musicSuppressed ? "Meditation music pauses while another video or window is open" : "The Mother's organ music · Joy · 12 March 1960"}><span aria-hidden="true">♪</span><small>Meditation</small><b>{musicSuppressed ? "Paused" : musicPlaying ? "Stop" : "Play"}</b></button>
+    <PushpanjaliCampaign onOpenChange={setPushpanjaliOpen}/>
 
     <main id="main">
       <section className="theme-banner" aria-label="Website theme: The Song of Life"><img src="/song-of-life-banner.png" alt="The Song of Life, glowing over a radiant golden dawn"/><div className="theme-caption"><span>OUR WEBSITE THEME</span><p>A luminous invitation to discover the deeper music within life.</p></div></section>

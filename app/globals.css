@@ -331,6 +331,7 @@ main section[id]{scroll-margin-top:96px}
 .meditation-control:hover{border-color:var(--saffron);background:#fff7e6;transform:translateY(-1px)}
 .meditation-control.playing{border-color:#b98943;background:#f4e4bf;box-shadow:0 0 0 4px rgba(200,132,67,.1)}
 .meditation-control.playing span{background:var(--blue);color:white}
+.meditation-control:disabled{cursor:default;opacity:.78;transform:none}
 @media(max-width:900px){
   .meditation-control{top:82px;right:14px}
   .meditation-control small{display:none}
