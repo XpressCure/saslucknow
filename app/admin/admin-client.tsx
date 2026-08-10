@@ -6,7 +6,7 @@ import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 
 type Administrator = { id: string; fullName: string; email: string; role: string; permissions: string[] };
 type Member = { id: string; fullName: string; email: string; mobile: string; city: string; role: string };
-type Application = { id: string; reference: string; fullName: string; mobile: string; email: string; city: string; interests: string; skills: string; sevaPreference: string; createdAt: string };
+type Application = { id: string; reference: string; fullName: string; mobile: string; email: string; city: string; interests: string; skills: string; sevaPreference: string; pushpanjaliCertificateNumber: string; createdAt: string };
 type Sankalp = {
   id: string; title: string; slug: string; summary: string; purpose: string; rules: string; type: string;
   status: string; stage: string; acceptsDonations: boolean; acceptsSeva: boolean; budgetRequired: boolean;
@@ -285,6 +285,7 @@ export function AdminClient() {
         {!applications.length ? <Empty title="No Parichay is waiting" text="New applications will appear here automatically." /> : <div className="sas-application-list">{applications.map(item => <article key={item.id}>
           <div className="sas-application-head"><span>{item.reference}</span><time>{displayDate(item.createdAt)}</time></div>
           <h2>{item.fullName}</h2><p>{[item.city, item.mobile, item.email].filter(Boolean).join(" · ")}</p>
+          {item.pushpanjaliCertificateNumber && <p className="sas-journey-reference">Pushpanjali · {item.pushpanjaliCertificateNumber}</p>}
           <dl><div><dt>Interests</dt><dd>{item.interests || "Not provided"}</dd></div><div><dt>Skills</dt><dd>{item.skills || "Not provided"}</dd></div><div><dt>Seva preference</dt><dd>{item.sevaPreference || "Not provided"}</dd></div></dl>
           <div className="sas-row-actions"><button className="sas-primary" disabled={busy} onClick={() => reviewApplication(item.id, "approve")}>Approve Parichay</button><button className="sas-secondary danger" disabled={busy} onClick={() => reviewApplication(item.id, "reject")}>Reject</button></div>
         </article>)}</div>}

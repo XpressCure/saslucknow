@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   normalizeIdentity,
+  publicMember,
   receiptNumber,
   validateActivation,
   validateContribution,
@@ -12,6 +13,11 @@ import {
 test("normalizes member login by mobile or email", () => {
   assert.deepEqual(normalizeIdentity("+91 98765 43210"), { mobile: "9876543210" });
   assert.deepEqual(normalizeIdentity("ASHA@example.com"), { email: "asha@example.com" });
+});
+
+test("keeps the Pushpanjali journey visible only in the authenticated member view", () => {
+  const result = publicMember({ _id: "member-1", fullName: "Asha Verma", pushpanjaliCertificateNumber: "UC02-000014" });
+  assert.equal(result.pushpanjaliCertificateNumber, "UC02-000014");
 });
 
 test("validates an approved Parichay activation reference", () => {

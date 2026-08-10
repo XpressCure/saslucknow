@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   calculateKoshSummary,
   normalizePhone,
+  normalizePushpanjaliCertificateNumber,
   publicParticipationSummary,
   publicRecentContribution,
   publicSankalp,
@@ -14,9 +15,17 @@ test("normalizes Indian mobile numbers", () => {
 });
 
 test("accepts a complete Parichay application", () => {
-  const result = validateParichayApplication({ fullName: "Asha Verma", mobile: "9876543210", email: "ASHA@example.com", consent: true });
+  const result = validateParichayApplication({ fullName: "Asha Verma", mobile: "9876543210", email: "ASHA@example.com", pushpanjaliCertificateNumber: "uc02-000014", consent: true });
   assert.equal(result.ok, true);
   assert.equal(result.value.email, "asha@example.com");
+  assert.equal(result.value.pushpanjaliCertificateNumber, "UC02-000014");
+});
+
+test("normalizes and validates an optional Pushpanjali journey reference", () => {
+  assert.equal(normalizePushpanjaliCertificateNumber(" uc02-000009 "), "UC02-000009");
+  const result = validateParichayApplication({ fullName: "Asha Verma", mobile: "9876543210", pushpanjaliCertificateNumber: "public-certificate", consent: true });
+  assert.equal(result.ok, false);
+  assert.match(result.errors.join(" "), /Pushpanjali certificate/);
 });
 
 test("rejects an invalid mobile and missing consent", () => {

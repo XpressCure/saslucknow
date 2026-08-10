@@ -305,7 +305,11 @@ test("renders the 15 August Pushpanjali campaign entry point", async () => {
   assert.match(source, /15 AUGUST 2026  \|  DARSHAN DIVAS/);
   assert.match(source, /CERTIFICATE NUMBER:/);
   assert.match(source, /Let your Pushpanjali flow into participation/);
-  assert.match(source, /href="\/participate"/);
+  assert.match(source, /href="\/participate\?from=pushpanjali#parichay"/);
+  assert.match(source, /sessionStorage\.setItem\(parichayJourneyKey/);
+  const participationSource = await readFile(new URL("../app/participate/participation-client.tsx", import.meta.url), "utf8");
+  assert.match(participationSource, /sessionStorage\.getItem\(parichayJourneyKey\)/);
+  assert.match(participationSource, /name="pushpanjaliCertificateNumber"/);
   const apiSource = await readFile(new URL("../server/gallery-api.mjs", import.meta.url), "utf8");
   assert.match(apiSource, /YOUR PUSHPA HAS BEEN OFFERED/);
   assert.match(apiSource, /contentDisposition: "inline"/);

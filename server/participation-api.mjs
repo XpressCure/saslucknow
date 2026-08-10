@@ -122,6 +122,7 @@ async function submitParichay(request, response, db) {
     $or: [
       { mobile: validation.value.mobile },
       ...(validation.value.email ? [{ email: validation.value.email }] : []),
+      ...(validation.value.pushpanjaliCertificateNumber ? [{ pushpanjaliCertificateNumber: validation.value.pushpanjaliCertificateNumber }] : []),
     ],
   });
   if (duplicate) return sendJson(response, 409, { error: "A Parichay request with these details is already awaiting review." });
@@ -132,7 +133,7 @@ async function submitParichay(request, response, db) {
     organisationKey: ORGANISATION_KEY,
     reference,
     status: "pending",
-    source: "website",
+    source: validation.value.pushpanjaliCertificateNumber ? "pushpanjali" : "website",
     submittedIpHash: "not-stored",
     createdAt: now,
     updatedAt: now,
@@ -145,6 +146,7 @@ async function submitParichay(request, response, db) {
     entityType: "memberApplication",
     entityId: String(result.insertedId),
     reference,
+    pushpanjaliCertificateNumber: validation.value.pushpanjaliCertificateNumber || "",
     createdAt: now,
   });
   sendJson(response, 201, { status: "pending", reference, message: "Your Parichay has been received for review." });

@@ -77,6 +77,7 @@ export function publicMember(member) {
     interests: member.interests || "",
     skills: member.skills || "",
     sevaPreference: member.sevaPreference || "",
+    pushpanjaliCertificateNumber: member.pushpanjaliCertificateNumber || "",
     role: member.role || "member",
     joinedAt: member.joinedAt || member.createdAt,
   };

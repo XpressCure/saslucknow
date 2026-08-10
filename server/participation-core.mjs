@@ -10,6 +10,10 @@ export function normalizePhone(value) {
   return digits.length > 10 ? digits.slice(-10) : digits;
 }
 
+export function normalizePushpanjaliCertificateNumber(value) {
+  return cleanText(value, 20).toUpperCase();
+}
+
 export function validateParichayApplication(input) {
   const fullName = cleanText(input?.fullName, 120);
   const mobile = normalizePhone(input?.mobile);
@@ -18,18 +22,20 @@ export function validateParichayApplication(input) {
   const interests = cleanText(input?.interests, 600);
   const skills = cleanText(input?.skills, 600);
   const sevaPreference = cleanText(input?.sevaPreference, 300);
+  const pushpanjaliCertificateNumber = normalizePushpanjaliCertificateNumber(input?.pushpanjaliCertificateNumber);
   const consent = input?.consent === true;
 
   const errors = [];
   if (fullName.length < 2) errors.push("Please enter your full name.");
   if (!phonePattern.test(mobile)) errors.push("Please enter a valid 10-digit Indian mobile number.");
   if (email && !emailPattern.test(email)) errors.push("Please enter a valid email address.");
+  if (pushpanjaliCertificateNumber && !/^UC02-\d{6}$/.test(pushpanjaliCertificateNumber)) errors.push("Please enter a valid Pushpanjali certificate number.");
   if (!consent) errors.push("Consent is required to submit your Parichay.");
 
   return {
     ok: errors.length === 0,
     errors,
-    value: { fullName, mobile, email, city, interests, skills, sevaPreference, consent },
+    value: { fullName, mobile, email, city, interests, skills, sevaPreference, pushpanjaliCertificateNumber, consent },
   };
 }
 

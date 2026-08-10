@@ -269,6 +269,7 @@ async function applications(request, response, url, context, actor, id = "") {
       interests: application.interests || "",
       skills: application.skills || "",
       sevaPreference: application.sevaPreference || "",
+      pushpanjaliCertificateNumber: application.pushpanjaliCertificateNumber || "",
       status: "active",
       livingStatus: "living",
       role: member?.role || "member",

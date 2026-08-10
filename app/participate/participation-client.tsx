@@ -51,6 +51,8 @@ const emptyOverview: Overview = {
   recentContributions: [],
 };
 
+const parichayJourneyKey = "sas-pushpanjali-parichay";
+
 function displayContributionDate(value: string) {
   if (!value) return "Recently";
   const date = new Date(value);
@@ -65,6 +67,9 @@ export function ParticipationClient() {
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
   const [confirmation, setConfirmation] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [pushpanjaliCertificateNumber, setPushpanjaliCertificateNumber] = useState("");
   const activeSankalps = useMemo(() => overview.sankalps.filter(item => item.status !== "completed"), [overview.sankalps]);
 
   useEffect(() => {
@@ -80,6 +85,28 @@ export function ParticipationClient() {
       })
       .finally(() => setLoading(false));
     return () => controller.abort();
+  }, []);
+
+  useEffect(() => {
+    try {
+      const stored = JSON.parse(sessionStorage.getItem(parichayJourneyKey) || "null") as null | {
+        fullName?: string;
+        email?: string;
+        pushpanjaliCertificateNumber?: string;
+        savedAt?: string;
+      };
+      if (!stored || !/^UC02-\d{6}$/.test(String(stored.pushpanjaliCertificateNumber || ""))) return;
+      const savedAt = new Date(String(stored.savedAt || ""));
+      if (Number.isNaN(savedAt.getTime()) || Date.now() - savedAt.getTime() > 7 * 24 * 60 * 60 * 1000) {
+        sessionStorage.removeItem(parichayJourneyKey);
+        return;
+      }
+      setFullName(String(stored.fullName || "").slice(0, 120));
+      setEmail(String(stored.email || "").slice(0, 180));
+      setPushpanjaliCertificateNumber(stored.pushpanjaliCertificateNumber!);
+    } catch {
+      sessionStorage.removeItem(parichayJourneyKey);
+    }
   }, []);
 
   async function submitParichay(event: FormEvent<HTMLFormElement>) {
@@ -101,6 +128,7 @@ export function ParticipationClient() {
           interests: data.get("interests"),
           skills: data.get("skills"),
           sevaPreference: data.get("sevaPreference"),
+          pushpanjaliCertificateNumber: data.get("pushpanjaliCertificateNumber"),
           consent: data.get("consent") === "yes",
         }),
       });
@@ -108,6 +136,10 @@ export function ParticipationClient() {
       if (!response.ok) throw new Error(result.error || "Your Parichay could not be submitted.");
       setConfirmation(`${result.message} Reference: ${result.reference}`);
       form.reset();
+      setFullName("");
+      setEmail("");
+      setPushpanjaliCertificateNumber("");
+      sessionStorage.removeItem(parichayJourneyKey);
     } catch (error) {
       setFormError(error instanceof Error ? error.message : "Your Parichay could not be submitted.");
     } finally {
@@ -196,8 +228,10 @@ export function ParticipationClient() {
       <section className="parichay-section" id="parichay">
         <div className="parichay-copy"><p className="participation-kicker">BEGIN WITH PARICHAY</p><h2>How would you like to participate?</h2><p>Share only what helps the centre know you and invite you into meaningful study, service and collective work.</p></div>
         <form className="parichay-form" onSubmit={submitParichay}>
-          <div className="participation-form-row"><label>Full name<input required name="fullName" autoComplete="name" maxLength={120} /></label><label>Mobile<input required name="mobile" inputMode="tel" autoComplete="tel" maxLength={14} /></label></div>
-          <div className="participation-form-row"><label>Email <small>optional</small><input name="email" type="email" autoComplete="email" maxLength={180} /></label><label>City<input name="city" autoComplete="address-level2" maxLength={100} defaultValue="Lucknow" /></label></div>
+          {pushpanjaliCertificateNumber && <div className="pushpanjali-parichay-link" role="status"><span>Pushpanjali journey connected</span><strong>{pushpanjaliCertificateNumber}</strong><p>Your certificate remains commemorative; a separate Parichay reference will secure member activation after approval.</p></div>}
+          <input type="hidden" name="pushpanjaliCertificateNumber" value={pushpanjaliCertificateNumber} />
+          <div className="participation-form-row"><label>Full name<input required name="fullName" autoComplete="name" maxLength={120} value={fullName} onChange={event => setFullName(event.target.value)} /></label><label>Mobile<input required name="mobile" inputMode="tel" autoComplete="tel" maxLength={14} /></label></div>
+          <div className="participation-form-row"><label>Email <small>optional</small><input name="email" type="email" autoComplete="email" maxLength={180} value={email} onChange={event => setEmail(event.target.value)} /></label><label>City<input name="city" autoComplete="address-level2" maxLength={100} defaultValue="Lucknow" /></label></div>
           <label>Areas of interest<textarea name="interests" rows={3} maxLength={600} placeholder="Study circles, Savitri, education, youth, culture…" /></label>
           <label>Skills you may offer<textarea name="skills" rows={3} maxLength={600} placeholder="Teaching, writing, design, organising, accounting…" /></label>
           <label>Seva you would like to explore<input name="sevaPreference" maxLength={300} placeholder="A small way in which you would like to contribute" /></label>

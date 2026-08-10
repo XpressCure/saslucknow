@@ -48,6 +48,7 @@ const flowers: Flower[] = [
 
 const flowerPositions = [5, 10, 16, 22, 28, 34, 40, 46, 52, 58, 64, 70, 76, 82, 88, 94, 8, 19, 31, 43, 55, 67, 79, 91, 13, 25, 37, 49, 61, 73, 85];
 const pushpanjaliLandingUrl = "https://www.saslucknow.in/?pushpanjali=1";
+const parichayJourneyKey = "sas-pushpanjali-parichay";
 
 function offeringEndpoint() {
   return window.location.hostname.endsWith("chatgpt.site")
@@ -221,6 +222,12 @@ export function PushpanjaliCampaign({ onOpenChange }: { onOpenChange?: (open: bo
         emailToken: String(payload.emailToken || ""),
       };
       setResult(offeringResult);
+      sessionStorage.setItem(parichayJourneyKey, JSON.stringify({
+        fullName: name.trim(),
+        email: email.trim().toLowerCase(),
+        pushpanjaliCertificateNumber: offeringResult.reference,
+        savedAt: new Date().toISOString(),
+      }));
       setOfferingCount(current => current + 1);
       try {
         const blob = await buildCertificate(offeringResult);
@@ -581,8 +588,8 @@ export function PushpanjaliCampaign({ onOpenChange }: { onOpenChange?: (open: bo
             </div>
             {shareNotice && <p className="pushpanjali-share-notice" role="status">{shareNotice}</p>}
             <div className="pushpanjali-next-step">
-              <div><span>CONTINUE THE OFFERING</span><strong>Let your Pushpanjali flow into participation.</strong><p>Share your Parichay, discover a Sankalp, or offer seva with the Lucknow centre.</p></div>
-              <a href="/participate">Explore Participation <b aria-hidden="true">&rarr;</b></a>
+              <div><span>CONTINUE THE OFFERING</span><strong>Let your Pushpanjali flow into participation.</strong><p>Complete a simple Parichay. Your name, email and certificate connection will be carried securely in this browser.</p></div>
+              <a href="/participate?from=pushpanjali#parichay">Join the community <b aria-hidden="true">&rarr;</b></a>
             </div>
             <button className="pushpanjali-finish" type="button" onClick={closeCampaign}>Return to the website</button>
           </div>}
