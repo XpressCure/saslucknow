@@ -1,6 +1,7 @@
 import http from "node:http";
 import { randomUUID } from "node:crypto";
 import { MongoClient } from "mongodb";
+import { handleAdminRequest } from "./participation-admin-api.mjs";
 import {
   publicParticipationSummary,
   publicRecentContribution,
@@ -21,12 +22,15 @@ const MAX_JSON_BYTES = 64 * 1024;
 const requestWindows = new Map();
 let clientPromise;
 
-function sendJson(response, status, body) {
+function sendJson(response, status, body, extraHeaders = {}) {
   response.writeHead(status, {
     "Content-Type": "application/json; charset=utf-8",
     "Cache-Control": "no-store",
     "X-Content-Type-Options": "nosniff",
     "Referrer-Policy": "same-origin",
+    "X-Frame-Options": "DENY",
+    "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+    ...extraHeaders,
   });
   response.end(JSON.stringify(body));
 }
@@ -144,15 +148,26 @@ async function submitParichay(request, response, db) {
 const server = http.createServer(async (request, response) => {
   const url = new URL(request.url || "/", `http://${request.headers.host || "localhost"}`);
   try {
+    const db = await database();
+    if (await handleAdminRequest({
+      request,
+      response,
+      url,
+      db,
+      organisationKey: ORGANISATION_KEY,
+      readJson,
+      sendJson,
+      clientAddress,
+    })) return;
     if (request.method === "GET" && url.pathname === "/api/participation/health") {
-      await (await database()).command({ ping: 1 });
+      await db.command({ ping: 1 });
       return sendJson(response, 200, { status: "ok", service: "sas-participation" });
     }
     if (request.method === "GET" && url.pathname === "/api/participation/overview") {
-      return sendJson(response, 200, await overview(await database()));
+      return sendJson(response, 200, await overview(db));
     }
     if (request.method === "POST" && url.pathname === "/api/participation/parichay/applications") {
-      return submitParichay(request, response, await database());
+      return submitParichay(request, response, db);
     }
     sendJson(response, 404, { error: "Not found." });
   } catch (error) {

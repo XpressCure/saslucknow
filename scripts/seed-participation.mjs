@@ -32,6 +32,12 @@ try {
     db.collection("contributions").createIndex({ organisationKey: 1, status: 1, createdAt: -1 }),
     db.collection("paymentWebhookEvents").createIndex({ provider: 1, eventId: 1 }, { unique: true }),
     db.collection("auditLogs").createIndex({ organisationKey: 1, createdAt: -1 }),
+    db.collection("adminSessions").createIndex({ tokenHash: 1 }, { unique: true }),
+    db.collection("adminSessions").createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 }),
+    db.collection("adminSessions").createIndex({ organisationKey: 1, memberId: 1, revokedAt: 1 }),
+    db.collection("sankalpMilestones").createIndex({ organisationKey: 1, sankalpId: 1, dueDate: 1 }),
+    db.collection("sankalpProgressReports").createIndex({ organisationKey: 1, sankalpId: 1, createdAt: -1 }),
+    db.collection("sankalpDocuments").createIndex({ organisationKey: 1, sankalpId: 1, createdAt: -1 }),
   ]);
 
   await db.collection("organisations").updateOne(

@@ -12,6 +12,7 @@ Environment=NODE_ENV=production
 Environment=PARTICIPATION_PORT=3002
 Environment=SAS_DATABASE_NAME=sas_lucknow
 Environment=SAS_ORGANISATION_KEY=sas-lucknow
+Environment=SAS_DOCUMENT_STORAGE_DIR=/var/lib/saslucknow-participation/documents
 EnvironmentFile=/etc/saslucknow-participation.env
 ExecStart=/usr/bin/node server/participation-api.mjs
 Restart=always
@@ -20,6 +21,7 @@ NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
 ProtectHome=true
+ReadWritePaths=/var/lib/saslucknow-participation
 
 [Install]
 WantedBy=multi-user.target

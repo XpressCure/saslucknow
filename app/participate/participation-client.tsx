@@ -122,7 +122,7 @@ export function ParticipationClient() {
           <Image src="/society-logo-transparent.png" alt="Sri Aurobindo Society symbol" width={44} height={44} priority unoptimized />
           <span><strong>Sri Aurobindo Society</strong><small>LUCKNOW · GOMTI NAGAR CENTRE</small></span>
         </Link>
-        <Link className="home-link" href="/">Home</Link>
+        <div className="participation-header-actions"><Link className="home-link" href="/">Home</Link><Link className="home-link" href="/admin">Administrator</Link></div>
       </header>
 
       <section className="participation-intro">
@@ -207,7 +207,7 @@ export function ParticipationClient() {
         </form>
       </section>
 
-      <footer className="participation-footer"><span>Sri Aurobindo Society · Lucknow</span><a href="mailto:info.saslucknow@gmail.com">info.saslucknow@gmail.com</a></footer>
+      <footer className="participation-footer"><span>Sri Aurobindo Society · Lucknow</span><span><a href="mailto:info.saslucknow@gmail.com">info.saslucknow@gmail.com</a> · <Link href="/admin">Administration</Link></span></footer>
     </main>
   );
 }
