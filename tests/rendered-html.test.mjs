@@ -464,6 +464,7 @@ test("links the main website to Parichay, Sankalp and Kosh", async () => {
   assert.match(css, /Unified Song of Life palette and interaction language/);
   assert.match(css, /--p-ink:#173846/);
   assert.match(css, /--p-gold:#c58a32/);
+  assert.match(css, /--p-line:#d9c9a8;padding-top:0/);
 });
 
 test("renders the internal Darshan Divas guide and navigation entry", async () => {

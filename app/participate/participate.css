@@ -3,7 +3,7 @@
 @media(max-width:560px){.participation-header{min-height:68px}.participation-brand img{width:38px;height:38px}.participation-brand small{display:none}.participation-intro{padding-top:48px}.participation-intro h1{font-size:3.25rem}.participation-overview,.sankalp-section,.parichay-section{padding-top:54px;padding-bottom:54px}.participation-stats,.participation-form-row{grid-template-columns:1fr}.participation-stats div{min-height:92px}.participation-actions,.participation-actions a{width:100%}.participation-footer{flex-direction:column}}
 
 /* Unified Song of Life palette and interaction language */
-.participation-page{--p-ink:#173846;--p-green:#173846;--p-gold:#c58a32;--p-paper:#fff9ed;--p-soft:#f5e9cf;--p-line:#d9c9a8;background:linear-gradient(180deg,#fff9ed 0,#fffefa 35%,#fff9ed 100%);color:var(--p-ink)}
+.participation-page{--p-ink:#173846;--p-green:#173846;--p-gold:#c58a32;--p-paper:#fff9ed;--p-soft:#f5e9cf;--p-line:#d9c9a8;padding-top:0;background:linear-gradient(180deg,#fff9ed 0,#fffefa 35%,#fff9ed 100%);color:var(--p-ink)}
 .participation-header{border-color:var(--p-line);background:rgba(255,249,237,.94);backdrop-filter:blur(14px);box-shadow:0 8px 26px rgba(16,45,56,.05)}
 .participation-brand img{background:transparent;filter:drop-shadow(0 3px 8px rgba(23,56,70,.12))}.participation-brand strong{font-size:1.08rem}.participation-brand small{color:#8a642c}.home-link{border-color:var(--p-gold);font-weight:700}
 .participation-intro{position:relative;isolation:isolate;overflow:hidden;max-width:none;background:radial-gradient(circle at 84% 26%,rgba(243,213,138,.58),transparent 19rem),linear-gradient(120deg,#fff9ed 0 64%,#f5e9cf 100%)}
