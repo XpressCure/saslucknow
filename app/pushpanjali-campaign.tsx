@@ -588,8 +588,8 @@ export function PushpanjaliCampaign({ onOpenChange }: { onOpenChange?: (open: bo
             </div>
             {shareNotice && <p className="pushpanjali-share-notice" role="status">{shareNotice}</p>}
             <div className="pushpanjali-next-step">
-              <div><span>CONTINUE THE OFFERING</span><strong>Let your Pushpanjali flow into participation.</strong><p>Complete a simple Parichay. Your name, email and certificate connection will be carried securely in this browser.</p></div>
-              <a href="/participate?from=pushpanjali#parichay">Join the community <b aria-hidden="true">&rarr;</b></a>
+              <div><span>CONTINUE YOUR JOURNEY</span><strong>Join SAS Lucknow.</strong><p>Your name, email and certificate connection will be carried securely to the account form in this browser.</p></div>
+              <a href="/participate?from=pushpanjali#parichay">Join SAS Lucknow <b aria-hidden="true">&rarr;</b></a>
             </div>
             <button className="pushpanjali-finish" type="button" onClick={closeCampaign}>Return to the website</button>
           </div>}

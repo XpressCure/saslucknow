@@ -304,12 +304,16 @@ test("renders the 15 August Pushpanjali campaign entry point", async () => {
   assert.match(source, /154th Birthday\./);
   assert.match(source, /15 AUGUST 2026  \|  DARSHAN DIVAS/);
   assert.match(source, /CERTIFICATE NUMBER:/);
-  assert.match(source, /Let your Pushpanjali flow into participation/);
+  assert.match(source, /Join SAS Lucknow/);
   assert.match(source, /href="\/participate\?from=pushpanjali#parichay"/);
   assert.match(source, /sessionStorage\.setItem\(parichayJourneyKey/);
   const participationSource = await readFile(new URL("../app/participate/participation-client.tsx", import.meta.url), "utf8");
   assert.match(participationSource, /sessionStorage\.getItem\(parichayJourneyKey\)/);
   assert.match(participationSource, /name="pushpanjaliCertificateNumber"/);
+  assert.match(participationSource, /CREATE YOUR MEMBER ACCOUNT/);
+  assert.match(participationSource, /Create My Account/);
+  assert.match(participationSource, /Member Login/);
+  assert.doesNotMatch(participationSource, /Member sign in|BEGIN WITH PARICHAY|How would you like to participate\?/);
   const apiSource = await readFile(new URL("../server/gallery-api.mjs", import.meta.url), "utf8");
   assert.match(apiSource, /YOUR PUSHPA HAS BEEN OFFERED/);
   assert.match(apiSource, /contentDisposition: "inline"/);
@@ -459,10 +463,10 @@ test("displays all four vision explanations inside their boxes", async () => {
   ]) assert.match(html, new RegExp(line));
 });
 
-test("links the main website to Parichay, Sankalp and Kosh", async () => {
+test("links the main website to joining, Sankalp and Kosh", async () => {
   const response = await render();
   const html = await response.text();
-  assert.match(html, /href="\/participate"[^>]*>Participate/);
+  assert.match(html, /href="\/participate#parichay"[^>]*>Join/);
   assert.match(html, /href="\/participate#parichay"/);
   assert.match(html, /href="\/participate#sankalp"/);
   assert.match(html, /href="\/participate#kosh"/);

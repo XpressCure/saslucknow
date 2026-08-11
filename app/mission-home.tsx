@@ -184,7 +184,7 @@ const copy = {
     library: "From the wisdom library", all: "All", articles: "Articles", talks: "Talks", reflections: "Reflections",
     upcoming: "Upcoming gatherings", register: "Register", shrine: "The Sultanpur shrine",
     shrineText: "A sacred place holding the relics of Sri Aurobindo, and a living centre for remembrance, study and quiet collective aspiration.",
-    community: "Grow with the community", join: "Join the community", volunteer: "Volunteer with us",
+    community: "Join SAS Lucknow", join: "Join SAS Lucknow", volunteer: "Explore participation",
     support: "Support the work", supportText: "Voluntary contributions help sustain programmes, publications, shrine care and digital outreach.",
     contribute: "Contribute thoughtfully", footer: "Towards a Life Divine",
     more: "More",
@@ -211,7 +211,7 @@ const copy = {
     library: "ज्ञान संग्रह से", all: "सभी", articles: "लेख", talks: "व्याख्यान", reflections: "मनन",
     upcoming: "आगामी आयोजन", register: "पंजीकरण", shrine: "सुल्तानपुर पवित्र स्थल",
     shrineText: "श्री अरविंद के पवित्र अवशेषों का स्थल—स्मरण, अध्ययन और सामूहिक आकांक्षा का जीवंत केंद्र।",
-    community: "समुदाय के साथ बढ़ें", join: "समुदाय से जुड़ें", volunteer: "सेवा में सहयोग दें",
+    community: "एसएएस लखनऊ से जुड़ें", join: "एसएएस लखनऊ से जुड़ें", volunteer: "सहभागिता के अवसर देखें",
     support: "कार्य में सहयोग", supportText: "स्वैच्छिक योगदान कार्यक्रमों, प्रकाशनों, स्थल की देखभाल और डिजिटल प्रसार में सहायक है।",
     contribute: "ससम्मान योगदान", footer: "दिव्य जीवन की ओर",
     more: "और", darshan: "दर्शन दिवस",
@@ -490,7 +490,7 @@ export function MissionHome() {
         <div className={`more-menu ${moreOpen ? "open" : ""}`}>
           <button type="button" aria-expanded={moreOpen} aria-haspopup="true" onClick={() => setMoreOpen(!moreOpen)}>{t.more}</button>
           <div className="more-dropdown">
-            <a href="/participate" onClick={() => { setMoreOpen(false); setMenu(false); }}>Participate</a>
+            <a href="/participate#parichay" onClick={() => { setMoreOpen(false); setMenu(false); }}>Join</a>
             <a href="/sultanpur-shrine" onClick={() => { setMoreOpen(false); setMenu(false); }}>{t.shrine}</a>
             <a href="/darshan-divas" onClick={() => { setMoreOpen(false); setMenu(false); }}>{t.darshan}</a>
           </div>
@@ -563,7 +563,7 @@ export function MissionHome() {
 
       <section className="location section" id="location"><div className="location-copy"><p className="kicker">VISIT THE CENTRE</p><h2>Come, sit with us.</h2><address>4/668, Vijayant Khand<br/>Gomti Nagar, Lucknow – 226010</address><div className="meeting-time"><span>SUNDAY</span><strong>6:00–7:00 PM</strong><small>Regular weekly meeting</small></div><h3>Mr. Rajendra Kumar Singh</h3><p>Secretary, Gomti Nagar Centre (UC-02)<br/>Vice-Chairman, Sri Aurobindo Society, UP & Uttarakhand</p><a className="contact-phone" href="tel:+917388899001">+91 73888 99001</a><a className="contact-email" href="mailto:info.saslucknow@gmail.com">info.saslucknow@gmail.com</a><div className="location-actions"><a className="button primary" href="https://www.google.com/maps/search/?api=1&query=4%2F668%2C%20Vijayant%20Khand%2C%20Gomti%20Nagar%2C%20Lucknow%20226010" target="_blank" rel="noreferrer">Get directions ↗</a><a className="button quiet" href="tel:+917388899001">Call the centre</a></div></div><div className="map"><iframe title="Map to Sri Aurobindo Society Gomti Nagar Centre" src="https://www.google.com/maps?q=4%2F668%2C%20Vijayant%20Khand%2C%20Gomti%20Nagar%2C%20Lucknow%20226010&output=embed" loading="lazy" referrerPolicy="no-referrer-when-downgrade"/></div></section>
 
-      <section className="community section" id="community"><p className="kicker">PARTICIPATE</p><h2>{t.community}</h2><div className="community-grid"><a href="/participate#parichay"><span>01</span><b>{t.join}</b><small>Share your Parichay and stay connected →</small></a><a href="/participate#sankalp"><span>02</span><b>{t.volunteer}</b><small>Discover current Sankalp and offer seva →</small></a></div></section>
+      <section className="community section" id="community"><p className="kicker">JOIN</p><h2>{t.community}</h2><div className="community-grid"><a href="/participate#parichay"><span>01</span><b>{t.join}</b><small>Create your member account →</small></a><a href="/participate#sankalp"><span>02</span><b>{t.volunteer}</b><small>Discover current Sankalp and offer seva →</small></a></div></section>
 
       <section className="support section"><div><p className="kicker">A QUIET INVITATION</p><h2>{t.support}</h2><p>{t.supportText}</p></div><a className="button quiet light" href="/participate#kosh">{t.contribute} →</a></section>
     </main>
@@ -606,7 +606,7 @@ export function MissionHome() {
     </aside>
 
     {dialog && <div className="modal-backdrop" role="presentation" onMouseDown={()=>setDialog(null)}><div className="modal" role="dialog" aria-modal="true" aria-labelledby="dialog-title" onMouseDown={e=>e.stopPropagation()}><button className="close" onClick={()=>setDialog(null)} aria-label="Close">×</button>
-      {!sent ? <><p className="kicker">SRI AUROBINDO SOCIETY · LUCKNOW</p><h2 id="dialog-title">{dialog === "register" ? "Register for this gathering" : dialog === "join" ? "Join the community" : dialog === "volunteer" ? "Volunteer with us" : dialog === "gallery" ? "Add event photos or a YouTube video" : dialog === "savitri" ? "Add to The Song of Savitri" : "Make a voluntary contribution"}</h2><p className="privacy">{dialog === "gallery" ? "Share photographs from a Society gathering or paste a public YouTube video link. YouTube videos are published immediately; photo-only submissions are held for review." : dialog === "savitri" ? "Paste one public YouTube video link and provide its complete Savitri reference. The YouTube thumbnail will be used automatically." : "Your details are used only to respond to this request. Optional updates require separate consent."}</p>
+      {!sent ? <><p className="kicker">SRI AUROBINDO SOCIETY · LUCKNOW</p><h2 id="dialog-title">{dialog === "register" ? "Register for this gathering" : dialog === "join" ? "Join SAS Lucknow" : dialog === "volunteer" ? "Volunteer with us" : dialog === "gallery" ? "Add event photos or a YouTube video" : dialog === "savitri" ? "Add to The Song of Savitri" : "Make a voluntary contribution"}</h2><p className="privacy">{dialog === "gallery" ? "Share photographs from a Society gathering or paste a public YouTube video link. YouTube videos are published immediately; photo-only submissions are held for review." : dialog === "savitri" ? "Paste one public YouTube video link and provide its complete Savitri reference. The YouTube thumbnail will be used automatically." : "Your details are used only to respond to this request. Optional updates require separate consent."}</p>
       {dialog === "gallery" ? <form onSubmit={submit}>
         <label>Event or album title<input required name="title" maxLength={160}/></label>
         <div className="form-row"><label>Event date<input required type="date" name="date"/></label><label>Category<input required name="category" maxLength={80} placeholder="Lecture, shrine visit…"/></label></div>

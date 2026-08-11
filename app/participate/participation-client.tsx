@@ -147,7 +147,7 @@ export function ParticipationClient() {
         window.location.assign("/member");
         return;
       }
-      setConfirmation(`${result.message} Open Member sign in with the same mobile number and password. Application number: ${result.reference}`);
+      setConfirmation(`${result.message} Open Member Login with the same mobile number and password. Account number: ${result.reference}`);
       form.reset();
       setFullName("");
       setEmail("");
@@ -167,24 +167,24 @@ export function ParticipationClient() {
           <Image src="/society-logo-transparent.png" alt="Sri Aurobindo Society symbol" width={44} height={44} priority unoptimized />
           <span><strong>Sri Aurobindo Society</strong><small>LUCKNOW · GOMTI NAGAR CENTRE</small></span>
         </Link>
-        <div className="participation-header-actions"><Link className="home-link" href="/">Home</Link><Link className="home-link" href="/member">Member sign in</Link><Link className="home-link" href="/admin">Administrator</Link></div>
+        <div className="participation-header-actions"><Link className="home-link" href="/">Home</Link><Link className="home-link" href="/member">Member Login</Link><Link className="home-link" href="/admin">Administrator</Link></div>
       </header>
 
       <section className="participation-intro">
-        <p className="participation-kicker">CONSCIOUS PARTICIPATION · सचेत सहभागिता</p>
-        <h1>Know one another.<br />Serve a shared purpose.</h1>
-        <p>Offer your Parichay, join a Sankalp through seva, and support clearly defined work through the Kosh.</p>
+        <p className="participation-kicker">JOIN SAS LUCKNOW</p>
+        <h1>Create your account.<br />Serve a shared purpose.</h1>
+        <p>Tell us about yourself, create your member login and begin exploring Sankalp, seva and Yogdaan.</p>
         <div className="participation-actions">
-          <a className="participation-button primary" href="#parichay">Share Parichay</a>
+          <a className="participation-button primary" href="#parichay">Create My Account</a>
           <a className="participation-button" href="#sankalp">View Sankalp</a>
-          <Link className="participation-button" href="/member">Open member portal</Link>
+          <Link className="participation-button" href="/member">Member Login</Link>
         </div>
       </section>
 
-      <section className="participation-path" aria-label="Ways to participate">
-        <article><span>01</span><h2>Parichay · परिचय</h2><p>Bring your interests, abilities and aspiration into the community.</p></article>
-        <article><span>02</span><h2>Sankalp · संकल्प</h2><p>Take responsibility for a defined work, milestone or act of seva.</p></article>
-        <article><span>03</span><h2>Kosh · कोष</h2><p>Offer transparently to the shared work or to a particular Sankalp.</p></article>
+      <section className="participation-path" aria-label="How to join SAS Lucknow">
+        <article><span>01</span><h2>Join</h2><p>Complete the form and create your secure member password.</p></article>
+        <article><span>02</span><h2>Enter</h2><p>Your member account opens immediately with the details you provide.</p></article>
+        <article><span>03</span><h2>Participate</h2><p>Explore Sankalp, offer seva and keep your profile and Yogdaan together.</p></article>
       </section>
 
       <section className="participation-overview" aria-labelledby="overview-title">
@@ -239,9 +239,9 @@ export function ParticipationClient() {
       </section>
 
       <section className="parichay-section" id="parichay">
-        <div className="parichay-copy"><p className="participation-kicker">BEGIN WITH PARICHAY</p><h2>How would you like to participate?</h2><p>Share only what helps the centre know you and invite you into meaningful study, service and collective work.</p></div>
-        <form className="parichay-form" onSubmit={submitParichay}>
-          {pushpanjaliCertificateNumber && <div className="pushpanjali-parichay-link" role="status"><span>Pushpanjali journey connected</span><strong>{pushpanjaliCertificateNumber}</strong><p>Your certificate remains commemorative and this Parichay connects it to your member journey.</p></div>}
+        <div className="parichay-copy"><p className="participation-kicker">CREATE YOUR MEMBER ACCOUNT</p><h2>Tell us about yourself</h2><p>Your introduction, or Parichay, helps us understand your interests, abilities and the seva you would like to explore.</p></div>
+        <form className="parichay-form" onSubmit={submitParichay} aria-label="Create your SAS Lucknow member account">
+          {pushpanjaliCertificateNumber && <div className="pushpanjali-parichay-link" role="status"><span>Pushpanjali connected</span><strong>{pushpanjaliCertificateNumber}</strong><p>Your certificate is connected to the member account you are creating.</p></div>}
           <input type="hidden" name="pushpanjaliCertificateNumber" value={pushpanjaliCertificateNumber} />
           <div className="participation-form-row"><label>Full name<input required name="fullName" autoComplete="name" maxLength={120} value={fullName} onChange={event => setFullName(event.target.value)} /></label><label>Mobile<input required name="mobile" inputMode="tel" autoComplete="tel" maxLength={14} /></label></div>
           <div className="participation-form-row"><label>Email <small>optional</small><input name="email" type="email" autoComplete="email" maxLength={180} value={email} onChange={event => setEmail(event.target.value)} /></label><label>City<input name="city" autoComplete="address-level2" maxLength={100} defaultValue="Lucknow" /></label></div>
@@ -252,7 +252,7 @@ export function ParticipationClient() {
           <label className="participation-consent"><input required type="checkbox" name="consent" value="yes" /><span>I permit the centre to use these details to contact me about membership, gatherings and seva.</span></label>
           {formError && <p className="participation-notice error" role="alert">{formError}</p>}
           {confirmation && <p className="participation-notice success" role="status">{confirmation}</p>}
-          <button className="participation-button primary submit" type="submit" disabled={submitting}>{submitting ? "Submitting…" : "Submit Parichay"}</button>
+          <button className="participation-button primary submit" type="submit" disabled={submitting}>{submitting ? "Creating account…" : "Create My Account"}</button>
         </form>
       </section>
 

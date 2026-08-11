@@ -158,16 +158,16 @@ export function MemberClient() {
   if (!member) return <main className="member-shell member-auth">
     <Link className="member-auth-brand" href="/"><Image src="/society-logo-transparent.png" alt="Sri Aurobindo Society symbol" width={70} height={70} unoptimized /><span>Sri Aurobindo Society<small>Lucknow Centre</small></span></Link>
     <section className="member-auth-panel">
-      <div className="member-auth-copy"><p>MEMBER SPACE</p><h1>Parichay becomes participation.</h1><span>Follow the Sankalp, offer seva, contribute securely and keep every acknowledgement in one private place.</span></div>
+      <div className="member-auth-copy"><p>MEMBER SPACE</p><h1>Welcome to your member space.</h1><span>Follow the Sankalp, offer seva, contribute securely and keep every acknowledgement in one private place.</span></div>
       <div className="member-auth-form">
-        <h2>Welcome</h2>
-        <p>Use your mobile number or email and the password created with your Parichay.</p>
+        <h2>Member Login</h2>
+        <p>Use your registered mobile number or email and password.</p>
         <form onSubmit={authenticate}>
           <label>Mobile or email<input required name="identity" autoComplete="username" /></label>
           <label>Password<input required type="password" name="password" minLength={10} autoComplete="current-password" /></label>
-          <button className="member-primary" disabled={busy}>{busy ? "Please wait..." : "Open member portal"}</button>
+          <button className="member-primary" disabled={busy}>{busy ? "Please wait..." : "Login"}</button>
         </form>
-        <p className="member-help">New here? <Link href="/participate#parichay">Create your Parichay and member account</Link>. No approval or reference is required.</p>
+        <p className="member-help">New here? <Link href="/participate#parichay">Join SAS Lucknow</Link>.</p>
       </div>
     </section>
     {notice && <Notice notice={notice} close={() => setNotice(null)} />}
