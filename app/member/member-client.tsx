@@ -167,7 +167,7 @@ export function MemberClient() {
           <label>Password<input required type="password" name="password" minLength={10} autoComplete="current-password" /></label>
           <button className="member-primary" disabled={busy}>{busy ? "Please wait..." : "Login"}</button>
         </form>
-        <p className="member-help">New here? <Link href="/participate#parichay">Join SAS Lucknow</Link>.</p>
+        <p className="member-help">New here? <Link href="/participate#parichay">Join the Community</Link>.</p>
       </div>
     </section>
     {notice && <Notice notice={notice} close={() => setNotice(null)} />}

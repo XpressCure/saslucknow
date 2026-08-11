@@ -171,7 +171,7 @@ export function ParticipationClient() {
       </header>
 
       <section className="participation-intro">
-        <p className="participation-kicker">JOIN SAS LUCKNOW</p>
+        <p className="participation-kicker">JOIN THE COMMUNITY</p>
         <h1>Create your account.<br />Serve a shared purpose.</h1>
         <p>Tell us about yourself, create your member login and begin exploring Sankalp, seva and Yogdaan.</p>
         <div className="participation-actions">
@@ -181,10 +181,9 @@ export function ParticipationClient() {
         </div>
       </section>
 
-      <section className="participation-path" aria-label="How to join SAS Lucknow">
-        <article><span>01</span><h2>Join</h2><p>Complete the form and create your secure member password.</p></article>
-        <article><span>02</span><h2>Enter</h2><p>Your member account opens immediately with the details you provide.</p></article>
-        <article><span>03</span><h2>Participate</h2><p>Explore Sankalp, offer seva and keep your profile and Yogdaan together.</p></article>
+      <section className="participation-path" aria-label="How to join the community">
+        <article><span>01</span><h2>Join the Community</h2><p>Complete the form and create your secure member password.</p></article>
+        <article><span>02</span><h2>Participate</h2><p>Explore Sankalp, offer seva and keep your profile and Yogdaan together.</p></article>
       </section>
 
       <section className="participation-overview" aria-labelledby="overview-title">
