@@ -6,3 +6,4 @@
 4. Open the local URL printed by the development server.
 
 Never commit `.env.local`. Use separate MongoDB databases and S3 prefixes for development, staging and production.
+

@@ -203,3 +203,4 @@ export function MemberClient() {
 function PageHeading({ eyebrow, title, text }: { eyebrow: string; title: string; text: string }) { return <header className="member-page-heading"><p>{eyebrow}</p><h1>{title}</h1><span>{text}</span></header>; }
 function Empty({ title, text }: { title: string; text: string }) { return <div className="member-empty"><strong>{title}</strong><span>{text}</span></div>; }
 function Notice({ notice, close }: { notice: { tone: string; title: string; detail: string }; close: () => void }) { return <div className={`member-notice ${notice.tone}`} role="status"><div><strong>{notice.title}</strong><span>{notice.detail}</span></div><button onClick={close} aria-label="Close">×</button></div>; }
+

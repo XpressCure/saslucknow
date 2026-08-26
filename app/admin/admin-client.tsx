@@ -7,6 +7,7 @@ import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 type Administrator = { id: string; fullName: string; email: string; role: string; permissions: string[] };
 type Member = { id: string; fullName: string; email: string; mobile: string; city: string; role: string };
 type Application = { id: string; reference: string; fullName: string; mobile: string; email: string; city: string; interests: string; skills: string; sevaPreference: string; pushpanjaliCertificateNumber: string; createdAt: string };
+type NextHumanInquiry = { id: string; reference: string; status: string; fullName: string; ageRange: string; city: string; mobile: string; email: string; professionOrInstitution: string; filmResponse: string; whyNextHuman: string; nextQuality: string; explorationInterests: string[]; contributionAreas: string[]; primaryContributionArea: string; relevantContribution: string; exampleOfWork: string; contributionStyle: string; contributionLocation: string[]; weeklyAvailability: string; usualAvailability: string[]; organisationConnection: string; organisationConnectionDetails: string; orientationPreference: string; additionalContext: string; source: string; internalNote?: string; createdAt: string; latestSubmittedAt: string };
 type Sankalp = {
   id: string; title: string; slug: string; summary: string; purpose: string; rules: string; type: string;
   status: string; stage: string; acceptsDonations: boolean; acceptsSeva: boolean; budgetRequired: boolean;
@@ -21,7 +22,7 @@ type Sankalp = {
 type AuditEntry = { id: string; action: string; actorName: string; entityType: string; createdAt: string };
 type Overview = {
   administrator: Administrator;
-  metrics: { pendingApplications: number; activeMembers: number; draftSankalps: number; liveSankalps: number; completedSankalps: number };
+  metrics: { pendingApplications: number; newNextHumanInquiries: number; activeMembers: number; draftSankalps: number; liveSankalps: number; completedSankalps: number };
   stageCounts: Record<string, number>;
   recentActivity: AuditEntry[];
 };
@@ -76,9 +77,10 @@ export function AdminClient() {
   const [administrator, setAdministrator] = useState<Administrator | null>(null);
   const [checkingSession, setCheckingSession] = useState(true);
   const [authMode, setAuthMode] = useState<"login" | "activate">("login");
-  const [tab, setTab] = useState<"darshan" | "parichay" | "sankalp" | "audit">("darshan");
+  const [tab, setTab] = useState<"darshan" | "next_human" | "parichay" | "sankalp" | "audit">("darshan");
   const [overview, setOverview] = useState<Overview | null>(null);
   const [applications, setApplications] = useState<Application[]>([]);
+  const [nextHumanInquiries, setNextHumanInquiries] = useState<NextHumanInquiry[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
   const [sankalps, setSankalps] = useState<Sankalp[]>([]);
   const [auditEntries, setAuditEntries] = useState<AuditEntry[]>([]);
@@ -92,15 +94,17 @@ export function AdminClient() {
   const notify = (tone: "success" | "error", title: string, detail: string) => setNotice({ tone, title, detail });
 
   const loadWorkspace = useCallback(async () => {
-    const [overviewResult, applicationResult, memberResult, sankalpResult, auditResult] = await Promise.all([
+    const [overviewResult, applicationResult, nextHumanResult, memberResult, sankalpResult, auditResult] = await Promise.all([
       api<Overview>("/admin/overview"),
       api<{ applications: Application[] }>("/admin/applications?status=pending"),
+      api<{ inquiries: NextHumanInquiry[] }>("/admin/next-human-inquiries"),
       api<{ members: Member[] }>("/admin/members"),
       api<{ sankalps: Sankalp[] }>("/admin/sankalps"),
       api<{ entries: AuditEntry[] }>("/admin/audit"),
     ]);
     setOverview(overviewResult);
     setApplications(applicationResult.applications);
+    setNextHumanInquiries(nextHumanResult.inquiries);
     setMembers(memberResult.members);
     setSankalps(sankalpResult.sankalps);
     setAuditEntries(auditResult.entries);
@@ -143,6 +147,18 @@ export function AdminClient() {
       const result = await api<{ message: string }>(`/admin/applications/${id}/decision`, { method: "POST", body: JSON.stringify({ decision }) });
       await loadWorkspace();
       notify("success", decision === "approve" ? "Parichay approved" : "Application closed", result.message);
+    } catch (error) { notify("error", "Review not saved", error instanceof Error ? error.message : "Please try again."); }
+    finally { setBusy(false); }
+  }
+
+  async function reviewNextHumanInquiry(item: NextHumanInquiry, status: string) {
+    setBusy(true);
+    try {
+      const note = window.prompt("Internal note (optional)", item.internalNote || "");
+      if (note === null) return;
+      const result = await api<{ message: string }>(`/admin/next-human-inquiries/${item.id}`, { method: "PATCH", body: JSON.stringify({ status, internalNote: note }) });
+      await loadWorkspace();
+      notify("success", "NEXT HUMAN inquiry updated", result.message);
     } catch (error) { notify("error", "Review not saved", error instanceof Error ? error.message : "Please try again."); }
     finally { setBusy(false); }
   }
@@ -261,13 +277,14 @@ export function AdminClient() {
         <div className="sas-admin-user"><span><strong>{administrator.fullName}</strong><small>{label(administrator.role)}</small></span><button onClick={signOut}>Sign out</button></div>
       </header>
       <nav className="sas-admin-nav" aria-label="Administration sections">
-        {[["darshan", "Darshan"], ["parichay", `Parichay${applications.length ? ` (${applications.length})` : ""}`], ["sankalp", "Sankalp"], ["audit", "Activity"]].map(([id, text]) => <button key={id} className={tab === id ? "active" : ""} onClick={() => setTab(id as typeof tab)}>{text}</button>)}
+        {[["darshan", "Darshan"], ["next_human", `NEXT HUMAN${overview?.metrics.newNextHumanInquiries ? ` (${overview.metrics.newNextHumanInquiries})` : ""}`], ["parichay", `Parichay${applications.length ? ` (${applications.length})` : ""}`], ["sankalp", "Sankalp"], ["audit", "Activity"]].map(([id, text]) => <button key={id} className={tab === id ? "active" : ""} onClick={() => setTab(id as typeof tab)}>{text}</button>)}
       </nav>
       {notice && <div className="sas-notice-wrap"><Notice notice={notice} close={() => setNotice(null)} /></div>}
 
       {tab === "darshan" && <section className="sas-admin-content">
         <PageHeading eyebrow="OPERATIONAL DARSHAN" title="The work at a glance" text="Begin with what needs attention, then move each responsibility forward with a visible record." />
         <div className="sas-metric-grid">
+          <Metric label="New NEXT HUMAN inquiries" value={overview?.metrics.newNextHumanInquiries ?? 0} action="Review Founding Circle" onClick={() => setTab("next_human")} />
           <Metric label="Pending Parichay" value={overview?.metrics.pendingApplications ?? 0} action="Review now" onClick={() => setTab("parichay")} />
           <Metric label="Active members" value={overview?.metrics.activeMembers ?? 0} />
           <Metric label="Private drafts" value={overview?.metrics.draftSankalps ?? 0} action="Open Sankalp" onClick={() => setTab("sankalp")} />
@@ -278,6 +295,16 @@ export function AdminClient() {
           <section className="sas-band"><h2>Sankalp movement</h2><div className="sas-stage-list">{stages.map(([id, text]) => <div key={id}><span>{text}</span><strong>{overview?.stageCounts[id] || 0}</strong></div>)}</div></section>
           <section className="sas-band"><h2>Recent responsibility</h2><ActivityList entries={overview?.recentActivity || []} /></section>
         </div>
+      </section>}
+
+      {tab === "next_human" && <section className="sas-admin-content">
+        <PageHeading eyebrow="FOUNDING CIRCLE" title="People ready to build NEXT HUMAN" text="Read for resonance, capability and realistic commitment. This is the foundation-team queue—not attendee registration or selection for the 200-person Challenge." />
+        {!nextHumanInquiries.length ? <Empty title="No Founding Circle inquiry yet" text="New submissions from the NEXT HUMAN page will appear here automatically." /> : <div className="sas-nh-list">{nextHumanInquiries.map(item => <article key={item.id}>
+          <header><div><span className={`sas-status ${item.status}`}>{label(item.status)}</span><small>{item.reference} · {displayDate(item.latestSubmittedAt || item.createdAt)}</small><h2>{item.fullName}</h2><p>{[label(item.ageRange), item.city, item.professionOrInstitution].filter(Boolean).join(" · ")}</p></div><aside><a href={`tel:+91${item.mobile}`}>{item.mobile}</a><a href={`mailto:${item.email}`}>{item.email}</a><strong>{label(item.source || "website")}</strong></aside></header>
+          <div className="sas-nh-inquiry-grid"><section><h3>What called them</h3><p>{item.filmResponse}</p><p>{item.whyNextHuman}</p></section><section><h3>The next quality</h3><blockquote>{item.nextQuality}</blockquote><small>{(item.explorationInterests || []).map(label).join(" · ")}</small></section><section><h3>Contribution</h3><strong>{label(item.primaryContributionArea)}</strong><p>{item.relevantContribution}</p>{item.exampleOfWork && <small>{item.exampleOfWork}</small>}</section><section><h3>Practical fit</h3><dl><div><dt>Areas</dt><dd>{(item.contributionAreas || []).map(label).join(", ")}</dd></div><div><dt>Mode</dt><dd>{(item.contributionLocation || []).map(label).join(", ")}</dd></div><div><dt>Time</dt><dd>{label(item.weeklyAvailability)} · {(item.usualAvailability || []).map(label).join(", ")}</dd></div><div><dt>Orientation</dt><dd>{label(item.orientationPreference)}</dd></div></dl></section></div>
+          {item.organisationConnectionDetails && <p className="sas-nh-context"><strong>Network:</strong> {item.organisationConnectionDetails}</p>}{item.additionalContext && <p className="sas-nh-context"><strong>Additional context:</strong> {item.additionalContext}</p>}{item.internalNote && <p className="sas-nh-note"><strong>Internal note:</strong> {item.internalNote}</p>}
+          <div className="sas-row-actions"><button className="sas-primary" disabled={busy} onClick={() => reviewNextHumanInquiry(item, "orientation_invited")}>Invite to orientation</button><button className="sas-secondary" disabled={busy} onClick={() => reviewNextHumanInquiry(item, "foundation_circle")}>Add to Founding Circle</button><button className="sas-secondary" disabled={busy} onClick={() => reviewNextHumanInquiry(item, "reviewing")}>Mark reviewing</button><button className="sas-secondary" disabled={busy} onClick={() => reviewNextHumanInquiry(item, "hold")}>Hold</button><button className="sas-secondary danger" disabled={busy} onClick={() => reviewNextHumanInquiry(item, "declined")}>Close</button></div>
+        </article>)}</div>}
       </section>}
 
       {tab === "parichay" && <section className="sas-admin-content">

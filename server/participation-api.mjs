@@ -1,9 +1,7 @@
 import http from "node:http";
 import { randomUUID } from "node:crypto";
-import { MongoClient } from "mongodb";
 import { hashPassword, validatePassword } from "./participation-auth.mjs";
-import { handleAdminRequest } from "./participation-admin-api.mjs";
-import { handleMemberRequest } from "./participation-member-api.mjs";
+import { validateNextHumanVolunteerInquiry } from "./next-human-core.mjs";
 import {
   publicParticipationSummary,
   publicRecentContribution,
@@ -23,6 +21,11 @@ const ORGANISATION_KEY = process.env.SAS_ORGANISATION_KEY || "sas-lucknow";
 const MAX_JSON_BYTES = 64 * 1024;
 const requestWindows = new Map();
 let clientPromise;
+let localDemoModulePromise;
+
+function localDemoModule() {
+  return localDemoModulePromise ||= import("./next-human-demo-database.mjs");
+}
 
 function sendJson(response, status, body, extraHeaders = {}) {
   response.writeHead(status, {
@@ -72,6 +75,7 @@ async function readJson(request) {
 
 async function database() {
   if (!process.env.MONGODB_URI) throw new Error("MONGODB_URI is required.");
+  const { MongoClient } = await import("mongodb");
   clientPromise ||= new MongoClient(process.env.MONGODB_URI, { serverSelectionTimeoutMS: 8000 }).connect();
   return (await clientPromise).db(DATABASE_NAME);
 }
@@ -173,9 +177,44 @@ async function submitParichay(request, response, db) {
   sendJson(response, 201, { status: "active", reference, message: "Your member account is ready. Sign in with your mobile number and password." });
 }
 
+async function submitNextHumanInquiry(request, response, db) {
+  if (!allowSubmission(request)) return sendJson(response, 429, { error: "Too many submissions. Please wait before trying again." });
+  const body = await readJson(request);
+  const validation = validateNextHumanVolunteerInquiry(body);
+  if (!validation.ok) return sendJson(response, 422, { error: validation.errors[0], errors: validation.errors });
+  const collection = db.collection("nextHumanVolunteerInquiries");
+  const now = new Date();
+  const existing = await collection.findOne({
+    organisationKey: ORGANISATION_KEY,
+    $or: [{ normalisedMobile: validation.value.normalisedMobile }, { normalisedEmail: validation.value.normalisedEmail }],
+    status: { $nin: ["declined", "withdrawn"] },
+  });
+  if (existing) {
+    await collection.updateOne({ _id: existing._id }, {
+      $set: { ...validation.value, updatedAt: now, latestSubmittedAt: now },
+      $push: { submissionEvents: { source: validation.value.source, submittedAt: now } },
+    });
+    await db.collection("auditLogs").insertOne({ organisationKey: ORGANISATION_KEY, actorType: "public", action: "next_human.inquiry_refreshed", entityType: "nextHumanVolunteerInquiry", entityId: String(existing._id), reference: existing.reference, createdAt: now });
+    return sendJson(response, 200, { status: "refreshed", reference: existing.reference, nextStep: "await_review", message: "Your existing Founding Circle inquiry has been refreshed." });
+  }
+  const reference = `NHV-${now.getFullYear()}-${randomUUID().slice(0, 8).toUpperCase()}`;
+  const document = { ...validation.value, organisationKey: ORGANISATION_KEY, reference, status: "new", submittedIpHash: "not-stored", submissionEvents: [{ source: validation.value.source, submittedAt: now }], createdAt: now, updatedAt: now, latestSubmittedAt: now };
+  const result = await collection.insertOne(document);
+  await db.collection("auditLogs").insertOne({ organisationKey: ORGANISATION_KEY, actorType: "public", action: "next_human.inquiry_received", entityType: "nextHumanVolunteerInquiry", entityId: String(result.insertedId), reference, createdAt: now });
+  return sendJson(response, 201, { status: "received", reference, nextStep: "await_review", message: "Your Founding Circle inquiry has been received." });
+}
+
 const server = http.createServer(async (request, response) => {
   const url = new URL(request.url || "/", `http://${request.headers.host || "localhost"}`);
   try {
+    if (process.env.SAS_LOCAL_DEMO_DB === "true") {
+      const { handleNextHumanDemoRequest } = await localDemoModule();
+      if (await handleNextHumanDemoRequest({ request, response, url, readJson, sendJson })) return;
+    }
+    const [{ handleAdminRequest }, { handleMemberRequest }] = await Promise.all([
+      import("./participation-admin-api.mjs"),
+      import("./participation-member-api.mjs"),
+    ]);
     const db = await database();
     if (await handleAdminRequest({
       request,
@@ -207,6 +246,9 @@ const server = http.createServer(async (request, response) => {
     }
     if (request.method === "POST" && url.pathname === "/api/participation/parichay/applications") {
       return await submitParichay(request, response, db);
+    }
+    if (request.method === "POST" && url.pathname === "/api/participation/next-human/volunteer-inquiries") {
+      return await submitNextHumanInquiry(request, response, db);
     }
     sendJson(response, 404, { error: "Not found." });
   } catch (error) {

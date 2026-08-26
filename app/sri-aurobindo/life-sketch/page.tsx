@@ -60,3 +60,4 @@ export default function LifeSketchPage() {
     <footer className="detail-footer"><a href="/sri-aurobindo">← Return to Sri Aurobindo</a><small>Towards a Life Divine</small></footer>
   </div>;
 }
+

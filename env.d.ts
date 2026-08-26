@@ -3,3 +3,4 @@ declare namespace Cloudflare {
     DB: D1Database;
   }
 }
+

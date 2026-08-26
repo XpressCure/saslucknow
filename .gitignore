@@ -44,7 +44,9 @@ next-env.d.ts
 /work/
 /build/preview-*
 /build/*.tgz
+/build/*.log
 /.sites-git/
 /tmp/
 /tmp-remote-copy/
+/var/
 *.tsbuildinfo

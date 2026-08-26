@@ -86,3 +86,4 @@ export function calculateKoshSummary(sankalps, kosh) {
     activeSankalpCount: sankalps.filter(item => item.status === "active").length,
   };
 }
+

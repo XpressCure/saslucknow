@@ -149,3 +149,4 @@ export function serializeSankalp(document, details = {}) {
     ...details,
   };
 }
+

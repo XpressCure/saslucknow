@@ -25,3 +25,4 @@
 
 .pushpanjali-parichay-link{display:grid;grid-template-columns:1fr auto;gap:6px 18px;padding:16px 18px;border:1px solid #d6b772;border-radius:10px;background:linear-gradient(120deg,#fffdf7,#f5e8c9)}.pushpanjali-parichay-link span{font-size:.69rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#946126}.pushpanjali-parichay-link strong{font:1rem Georgia,serif;color:var(--p-ink)}.pushpanjali-parichay-link p{grid-column:1/-1;margin:0;color:#607078;font-size:.75rem;line-height:1.5}
 @media(max-width:560px){.pushpanjali-parichay-link{grid-template-columns:1fr}.pushpanjali-parichay-link p{grid-column:1}}
+

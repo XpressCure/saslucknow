@@ -29,3 +29,4 @@ export default function MotherPage() {
     <footer className="detail-footer"><a href="/">← Return to the Lucknow Centre</a><small>The Song of Life</small></footer>
   </div>;
 }
+

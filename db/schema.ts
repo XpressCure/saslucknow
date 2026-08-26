@@ -1,4 +1,18 @@
-// Intentionally empty by default.
-// Add Drizzle tables here when the site actually needs a database.
-// See examples/d1/db/schema.ts for an opt-in example.
-export {};
+import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+
+export const nextHumanVolunteerInquiries = sqliteTable("next_human_volunteer_inquiries", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  reference: text("reference").notNull().unique(),
+  status: text("status").notNull().default("new"),
+  fullName: text("full_name").notNull(),
+  ageRange: text("age_range").notNull(),
+  city: text("city").notNull(),
+  mobile: text("mobile").notNull(),
+  email: text("email").notNull(),
+  professionOrInstitution: text("profession_or_institution").notNull(),
+  primaryContributionArea: text("primary_contribution_area").notNull(),
+  source: text("source").notNull().default("website"),
+  payload: text("payload").notNull(),
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").notNull(),
+});

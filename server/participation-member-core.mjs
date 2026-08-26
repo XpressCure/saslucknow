@@ -82,3 +82,4 @@ export function publicMember(member) {
     joinedAt: member.joinedAt || member.createdAt,
   };
 }
+

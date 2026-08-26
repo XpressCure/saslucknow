@@ -490,6 +490,7 @@ export function MissionHome() {
         <div className={`more-menu ${moreOpen ? "open" : ""}`}>
           <button type="button" aria-expanded={moreOpen} aria-haspopup="true" onClick={() => setMoreOpen(!moreOpen)}>{t.more}</button>
           <div className="more-dropdown">
+            <a href="/next-human" onClick={() => { setMoreOpen(false); setMenu(false); }}>NEXT HUMAN 2026 · Founding Circle</a>
             <a href="/participate#parichay" onClick={() => { setMoreOpen(false); setMenu(false); }}>Join the Community</a>
             <a href="/sultanpur-shrine" onClick={() => { setMoreOpen(false); setMenu(false); }}>{t.shrine}</a>
             <a href="/darshan-divas" onClick={() => { setMoreOpen(false); setMenu(false); }}>{t.darshan}</a>

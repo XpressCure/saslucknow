@@ -18,7 +18,7 @@ const types = {
 };
 
 function serveAsset(req, res, pathname) {
-  const relative = normalize(decodeURIComponent(pathname)).replace(/^[/\\]+/, "");
+  const relative = normalize(decodeURIComponent(pathname)).replace(/^[/\\\\]+/, "");
   const file = join(publicRoot, relative);
   if (!file.startsWith(publicRoot)) return false;
 

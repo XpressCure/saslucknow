@@ -224,8 +224,9 @@ async function logout(request, response, context) {
 
 async function overview(response, context, actor) {
   const { db, organisationKey, sendJson } = context;
-  const [pendingApplications, activeMembers, sankalps, recentAudits] = await Promise.all([
+  const [pendingApplications, newNextHumanInquiries, activeMembers, sankalps, recentAudits] = await Promise.all([
     db.collection("memberApplications").countDocuments({ organisationKey, status: "pending" }),
+    db.collection("nextHumanVolunteerInquiries").countDocuments({ organisationKey, status: "new" }),
     db.collection("members").countDocuments({ organisationKey, status: "active" }),
     db.collection("sankalps").find({ organisationKey }).sort({ updatedAt: -1 }).toArray(),
     db.collection("auditLogs").find({ organisationKey }).sort({ createdAt: -1 }).limit(8).toArray(),
@@ -234,6 +235,7 @@ async function overview(response, context, actor) {
     administrator: publicAdministrator(actor),
     metrics: {
       pendingApplications,
+      newNextHumanInquiries,
       activeMembers,
       draftSankalps: sankalps.filter(item => item.status === "draft").length,
       liveSankalps: sankalps.filter(item => item.status === "active").length,
@@ -242,6 +244,35 @@ async function overview(response, context, actor) {
     stageCounts: sankalps.reduce((counts, item) => ({ ...counts, [item.stage || "concept"]: (counts[item.stage || "concept"] || 0) + 1 }), {}),
     recentActivity: recentAudits.map(item => ({ id: String(item._id), action: item.action, actorName: item.actorName, entityType: item.entityType, createdAt: item.createdAt })),
   });
+}
+
+const nextHumanInquiryStatuses = new Set(["new", "reviewing", "orientation_invited", "foundation_circle", "hold", "declined", "withdrawn"]);
+
+function nextHumanInquiryView(item) {
+  return { ...item, id: String(item._id), _id: undefined, reviewedByMemberId: item.reviewedByMemberId ? String(item.reviewedByMemberId) : "" };
+}
+
+async function nextHumanInquiries(request, response, url, context, actor, id = "") {
+  const { db, organisationKey, readJson, sendJson } = context;
+  if (!hasPermission(actor, "members.review")) return sendJson(response, 403, { error: "Member review permission is required." });
+  const collection = db.collection("nextHumanVolunteerInquiries");
+  if (request.method === "GET") {
+    const requestedStatus = cleanText(url.searchParams.get("status"), 40);
+    const query = { organisationKey };
+    if (nextHumanInquiryStatuses.has(requestedStatus)) query.status = requestedStatus;
+    const rows = await collection.find(query).sort({ latestSubmittedAt: -1, createdAt: -1 }).limit(300).toArray();
+    return sendJson(response, 200, { inquiries: rows.map(nextHumanInquiryView) });
+  }
+  const inquiryId = objectId(id);
+  if (!inquiryId) return sendJson(response, 400, { error: "Invalid NEXT HUMAN inquiry reference." });
+  const body = await readJson(request);
+  const status = cleanText(body.status, 40);
+  if (!nextHumanInquiryStatuses.has(status)) return sendJson(response, 422, { error: "Choose a valid review status." });
+  const now = new Date();
+  const result = await collection.findOneAndUpdate({ _id: inquiryId, organisationKey }, { $set: { status, internalNote: cleanText(body.internalNote, 1200), reviewedByMemberId: actor._id, reviewedByName: actor.fullName, reviewedAt: now, updatedAt: now } }, { returnDocument: "after" });
+  if (!result) return sendJson(response, 404, { error: "This volunteer inquiry could not be found." });
+  await audit(db, organisationKey, actor, "next_human.inquiry_reviewed", "nextHumanVolunteerInquiry", inquiryId, { reference: result.reference, status });
+  return sendJson(response, 200, { inquiry: nextHumanInquiryView(result), message: `Inquiry moved to ${status.replaceAll("_", " ")}.` });
 }
 
 async function applications(request, response, url, context, actor, id = "") {
@@ -506,6 +537,9 @@ export async function handleAdminRequest({ request, response, url, db, organisat
   if (request.method === "GET" && url.pathname === "/api/participation/admin/applications") return handled(applications(request, response, url, context, actor));
   const applicationMatch = url.pathname.match(/^\/api\/participation\/admin\/applications\/([^/]+)\/decision$/);
   if (request.method === "POST" && applicationMatch) return handled(applications(request, response, url, context, actor, applicationMatch[1]));
+  if (request.method === "GET" && url.pathname === "/api/participation/admin/next-human-inquiries") return handled(nextHumanInquiries(request, response, url, context, actor));
+  const nextHumanInquiryMatch = url.pathname.match(/^\/api\/participation\/admin\/next-human-inquiries\/([^/]+)$/);
+  if (request.method === "PATCH" && nextHumanInquiryMatch) return handled(nextHumanInquiries(request, response, url, context, actor, nextHumanInquiryMatch[1]));
   if (request.method === "GET" && url.pathname === "/api/participation/admin/sankalps") return handled(sankalpList(response, context, actor));
   if (request.method === "POST" && url.pathname === "/api/participation/admin/sankalps") return handled(createSankalp(request, response, context, actor));
   const milestoneMatch = url.pathname.match(/^\/api\/participation\/admin\/sankalps\/([^/]+)\/milestones(?:\/([^/]+))?$/);
