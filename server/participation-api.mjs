@@ -1,6 +1,10 @@
 import http from "node:http";
 import { randomUUID } from "node:crypto";
+import { MongoClient } from "mongodb";
 import { hashPassword, validatePassword } from "./participation-auth.mjs";
+import { handleAdminRequest } from "./participation-admin-api.mjs";
+import { handleMemberRequest } from "./participation-member-api.mjs";
+import { allocateMemberNumber } from "./participation-member-core.mjs";
 import { validateNextHumanVolunteerInquiry } from "./next-human-core.mjs";
 import {
   publicParticipationSummary,
@@ -21,11 +25,7 @@ const ORGANISATION_KEY = process.env.SAS_ORGANISATION_KEY || "sas-lucknow";
 const MAX_JSON_BYTES = 64 * 1024;
 const requestWindows = new Map();
 let clientPromise;
-let localDemoModulePromise;
-
-function localDemoModule() {
-  return localDemoModulePromise ||= import("./next-human-demo-database.mjs");
-}
+let indexPromise;
 
 function sendJson(response, status, body, extraHeaders = {}) {
   response.writeHead(status, {
@@ -75,9 +75,67 @@ async function readJson(request) {
 
 async function database() {
   if (!process.env.MONGODB_URI) throw new Error("MONGODB_URI is required.");
-  const { MongoClient } = await import("mongodb");
   clientPromise ||= new MongoClient(process.env.MONGODB_URI, { serverSelectionTimeoutMS: 8000 }).connect();
-  return (await clientPromise).db(DATABASE_NAME);
+  const db = (await clientPromise).db(DATABASE_NAME);
+  indexPromise ||= Promise.all([
+    db.collection("campaignImpressions").createIndex(
+      { organisationKey: 1, campaignId: 1, memberId: 1, dayKey: 1 },
+      { unique: true, name: "campaign_member_daily_impression" },
+    ),
+    db.collection("campaignImpressions").createIndex(
+      { organisationKey: 1, campaignId: 1, lastSeenAt: -1 },
+      { name: "campaign_impression_reporting" },
+    ),
+    db.collection("campaignActions").createIndex(
+      { organisationKey: 1, campaignId: 1, action: 1, createdAt: -1 },
+      { name: "campaign_action_reporting" },
+    ),
+    db.collection("campaignActions").createIndex(
+      { organisationKey: 1, memberId: 1, createdAt: -1 },
+      { name: "campaign_member_actions" },
+    ),
+    db.collection("adminPasswordResets").createIndex(
+      { expiresAt: 1 },
+      { expireAfterSeconds: 0, name: "admin_password_reset_expiry" },
+    ),
+    db.collection("adminPasswordResets").createIndex(
+      { organisationKey: 1, memberId: 1, createdAt: -1 },
+      { name: "admin_password_reset_member" },
+    ),
+    db.collection("memberPasswordResets").createIndex(
+      { expiresAt: 1 },
+      { expireAfterSeconds: 0, name: "member_password_reset_expiry" },
+    ),
+    db.collection("memberPasswordResets").createIndex(
+      { organisationKey: 1, memberId: 1, createdAt: -1 },
+      { name: "member_password_reset_member" },
+    ),
+    db.collection("nextHumanVolunteerInquiries").createIndex(
+      { organisationKey: 1, reference: 1 },
+      { unique: true, name: "next_human_reference" },
+    ),
+    db.collection("nextHumanVolunteerInquiries").createIndex(
+      { organisationKey: 1, status: 1, createdAt: -1 },
+      { name: "next_human_status_created" },
+    ),
+    db.collection("nextHumanVolunteerInquiries").createIndex(
+      { organisationKey: 1, normalisedMobile: 1 },
+      { name: "next_human_mobile" },
+    ),
+    db.collection("nextHumanVolunteerInquiries").createIndex(
+      { organisationKey: 1, normalisedEmail: 1 },
+      { sparse: true, name: "next_human_email" },
+    ),
+    db.collection("nextHumanVolunteerInquiries").createIndex(
+      { organisationKey: 1, source: 1, createdAt: -1 },
+      { name: "next_human_source_created" },
+    ),
+  ]).catch(error => {
+    indexPromise = undefined;
+    throw error;
+  });
+  await indexPromise;
+  return db;
 }
 
 async function overview(db) {
@@ -135,6 +193,7 @@ async function submitParichay(request, response, db) {
   if (existingMember) return sendJson(response, 409, { error: "A member account already exists for this mobile number or email. Please sign in or contact the centre for account recovery." });
 
   const reference = `PAR-${now.getFullYear()}-${randomUUID().slice(0, 8).toUpperCase()}`;
+  const memberNumber = await allocateMemberNumber(db, ORGANISATION_KEY, now);
   const passwordCredential = await hashPassword(String(body.password));
   const memberDocument = {
     ...validation.value,
@@ -142,8 +201,10 @@ async function submitParichay(request, response, db) {
     passwordCredential: { ...passwordCredential, updatedAt: now },
     accountActivatedAt: now,
     status: "active",
+    membershipStatus: "enabled",
     livingStatus: "living",
     role: "member",
+    memberNumber,
     approvedApplicationReference: reference,
     joinedAt: now,
     createdAt: now,
@@ -174,7 +235,7 @@ async function submitParichay(request, response, db) {
     pushpanjaliCertificateNumber: validation.value.pushpanjaliCertificateNumber || "",
     createdAt: now,
   });
-  sendJson(response, 201, { status: "active", reference, message: "Your member account is ready. Sign in with your mobile number and password." });
+  sendJson(response, 201, { status: "active", reference, memberNumber, message: `Your member account ${memberNumber} is ready. Sign in with your mobile number and password.` });
 }
 
 async function submitNextHumanInquiry(request, response, db) {
@@ -207,14 +268,6 @@ async function submitNextHumanInquiry(request, response, db) {
 const server = http.createServer(async (request, response) => {
   const url = new URL(request.url || "/", `http://${request.headers.host || "localhost"}`);
   try {
-    if (process.env.SAS_LOCAL_DEMO_DB === "true") {
-      const { handleNextHumanDemoRequest } = await localDemoModule();
-      if (await handleNextHumanDemoRequest({ request, response, url, readJson, sendJson })) return;
-    }
-    const [{ handleAdminRequest }, { handleMemberRequest }] = await Promise.all([
-      import("./participation-admin-api.mjs"),
-      import("./participation-member-api.mjs"),
-    ]);
     const db = await database();
     if (await handleAdminRequest({
       request,
