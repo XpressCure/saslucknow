@@ -77,3 +77,19 @@ test("life quote leads directly to the Discovery Card without Abhivyakti", async
   assert.doesNotMatch(client, /stage === "reflection"/);
   assert.doesNotMatch(client, /<textarea/);
 });
+
+test("every level produces a Society-branded certificate with a compact share menu", async () => {
+  const [client, css] = await Promise.all([
+    read("../app/bharat-uday/bharat-uday-client.tsx"),
+    read("../app/bharat-uday/bharat-uday.css"),
+  ]);
+  assert.match(client, /Certificate of Discovery/);
+  assert.match(client, /Sri Aurobindo Society logo/);
+  assert.match(client, /An initiative by Sri Aurobindo Society, Lucknow · Gomti Nagar Centre \(UC-02\)/);
+  assert.match(client, /Name on your certificate/);
+  assert.match(client, /Share Certificate/);
+  assert.match(client, /shareMenuOpen && <div className="bu-share-options"/);
+  assert.match(client, /Download Certificate/);
+  assert.match(css, /\.bu-certificate-brand/);
+  assert.match(css, /\.bu-share-options/);
+});

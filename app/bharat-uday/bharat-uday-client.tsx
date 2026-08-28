@@ -54,6 +54,7 @@ export function BharatUdayClient() {
   const [answers, setAnswers] = useState<string[]>([]);
   const [participantName, setParticipantName] = useState("");
   const [shareNotice, setShareNotice] = useState("");
+  const [shareMenuOpen, setShareMenuOpen] = useState(false);
   const journeyRef = useRef<HTMLElement>(null);
   const introFilmRef = useRef<HTMLVideoElement>(null);
 
@@ -111,6 +112,7 @@ export function BharatUdayClient() {
     setSelectedChoice("");
     setAnswers([]);
     setShareNotice("");
+    setShareMenuOpen(false);
     showStage("welcome");
   }
 
@@ -141,7 +143,7 @@ export function BharatUdayClient() {
     setProgress(current => ({ ...current, name: value.slice(0, 60) }));
   }
 
-  function drawCard(canvas: HTMLCanvasElement) {
+  function drawCard(canvas: HTMLCanvasElement, logo?: HTMLImageElement) {
     const context = canvas.getContext("2d");
     if (!context) return;
     const size = 1080;
@@ -165,46 +167,58 @@ export function BharatUdayClient() {
     context.fillStyle = "rgba(5,13,41,.82)";
     context.beginPath(); context.roundRect(62, 62, 956, 956, 54); context.fill();
     context.strokeStyle = "rgba(255,211,111,.72)"; context.lineWidth = 4; context.stroke();
-    context.fillStyle = "#ffcf5c"; context.font = "700 27px Arial"; context.letterSpacing = "5px";
-    context.fillText("THE NEXT HUMAN CHALLENGE", 112, 142);
-    context.fillStyle = "#ffffff"; context.font = "700 76px Georgia";
-    context.fillText(milestone ? "Milestone Awakened" : "Discovery Awakened", 112, 256);
-    context.fillStyle = activeLevel.accent; context.font = "700 34px Arial";
-    context.fillText(`LEVEL ${String(levelNumber).padStart(2, "0")}  ·  ${activeLevel.realm.toUpperCase()}`, 112, 330);
-    context.fillStyle = "#ffffff"; context.font = "700 57px Georgia";
-    const titleWords = activeLevel.title.split(" ");
-    let titleLine = "", titleY = 430;
-    for (const word of titleWords) {
-      const test = `${titleLine}${word} `;
-      if (context.measureText(test).width > 820 && titleLine) { context.fillText(titleLine.trim(), 112, titleY); titleLine = `${word} `; titleY += 70; }
-      else titleLine = test;
+    if (logo) context.drawImage(logo, 108, 92, 80, 80);
+    context.fillStyle = "#ffffff"; context.font = "700 31px Arial";
+    context.fillText("SRI AUROBINDO SOCIETY, LUCKNOW", 212, 124);
+    context.fillStyle = "#ffcf5c"; context.font = "700 18px Arial";
+    context.fillText("GOMTI NAGAR CENTRE (UC-02)", 212, 158);
+    context.textAlign = "center";
+    context.fillStyle = "#ffcf5c"; context.font = "700 22px Arial";
+    context.fillText("THE NEXT HUMAN CHALLENGE", 540, 230);
+    context.fillStyle = "#ffffff"; context.font = "700 62px Georgia";
+    context.fillText(milestone ? "Milestone Certificate" : "Certificate of Discovery", 540, 304);
+    context.strokeStyle = "rgba(255,211,111,.7)"; context.lineWidth = 2;
+    context.beginPath(); context.moveTo(300, 332); context.lineTo(780, 332); context.stroke();
+    context.fillStyle = "rgba(255,255,255,.7)"; context.font = "25px Arial";
+    context.fillText("This certifies that", 540, 386);
+    context.fillStyle = "#ffffff"; context.font = "italic 700 57px Georgia";
+    context.fillText(participantName.trim() || "A curious explorer", 540, 458);
+    context.fillStyle = "rgba(255,255,255,.76)"; context.font = "27px Arial";
+    context.fillText("has successfully completed", 540, 512);
+    context.fillStyle = activeLevel.accent; context.font = "700 29px Arial";
+    context.fillText(`LEVEL ${String(levelNumber).padStart(2, "0")}  ·  ${activeLevel.realm.toUpperCase()}`, 540, 566);
+    context.fillStyle = "#ffffff"; context.font = "700 49px Georgia";
+    context.fillText(activeLevel.title, 540, 630);
+    context.fillStyle = "rgba(255,255,255,.72)"; context.font = "24px Arial";
+    context.fillText("with curiosity across culture, science and consciousness.", 540, 678);
+    context.fillStyle = "#ffcf5c"; context.font = "700 20px Arial";
+    context.fillText("A WORD FOR LIFE", 540, 740);
+    context.fillStyle = "#ffffff"; context.font = "italic 31px Georgia";
+    const quoteWords = lifeQuote.text.split(/\s+/); let quoteLine = "", quoteY = 790;
+    for (const word of quoteWords) {
+      const test = `${quoteLine}${word} `;
+      if (context.measureText(test).width > 750 && quoteLine) { context.fillText(quoteLine.trim(), 540, quoteY); quoteLine = `${word} `; quoteY += 40; }
+      else quoteLine = test;
     }
-    context.fillText(titleLine.trim(), 112, titleY);
-    context.fillStyle = "rgba(255,255,255,.78)"; context.font = "32px Arial";
-    context.fillText(`${score}/5 discoveries · ${progress.completed.length}/30 levels completed`, 112, titleY + 86);
-    context.fillStyle = "#ffcf5c"; context.font = "700 31px Arial";
-    context.fillText("A WORD FOR LIFE", 112, titleY + 175);
-    context.fillStyle = "#ffffff"; context.font = "italic 35px Georgia";
-    const words = lifeQuote.text.split(/\s+/); let line = "", y = titleY + 235;
-    for (const word of words) {
-      const test = `${line}${word} `;
-      if (context.measureText(test).width > 815 && line) { context.fillText(line.trim(), 112, y); line = `${word} `; y += 47; if (y > 820) break; }
-      else line = test;
-    }
-    if (y <= 820) context.fillText(line.trim(), 112, y);
-    context.fillStyle = "#ffcf5c"; context.font = "700 25px Arial";
-    context.fillText(`— ${lifeQuote.author}`, 112, Math.min(y + 52, 838));
-    context.fillStyle = "#ffffff"; context.font = "700 39px Georgia";
-    context.fillText(participantName.trim() || "A curious explorer", 112, 905);
-    context.fillStyle = "rgba(255,255,255,.65)"; context.font = "24px Arial";
-    context.fillText("Sri Aurobindo Society, Lucknow · saslucknow.in/bharat-uday", 112, 958);
+    context.fillText(quoteLine.trim(), 540, quoteY);
+    context.fillStyle = "#ffcf5c"; context.font = "700 21px Arial";
+    context.fillText(`— ${lifeQuote.author}`, 540, quoteY + 40);
+    context.fillStyle = "rgba(255,255,255,.68)"; context.font = "700 18px Arial";
+    context.fillText("AN INITIATIVE BY SRI AUROBINDO SOCIETY, LUCKNOW · GOMTI NAGAR CENTRE (UC-02)", 540, 958);
+    context.textAlign = "start";
   }
 
-  function downloadCard() {
+  async function downloadCard() {
     const canvas = document.createElement("canvas"); canvas.width = 1080; canvas.height = 1080;
-    drawCard(canvas);
+    let logo: HTMLImageElement | undefined;
+    try {
+      logo = new Image();
+      logo.src = "/society-logo-transparent.png";
+      await logo.decode();
+    } catch { logo = undefined; }
+    drawCard(canvas, logo);
     const anchor = document.createElement("a");
-    anchor.download = `next-human-challenge-level-${levelNumber}-${(participantName || "explorer").trim().replace(/\s+/g, "-").toLowerCase()}.png`;
+    anchor.download = `next-human-challenge-certificate-level-${levelNumber}-${(participantName || "explorer").trim().replace(/\s+/g, "-").toLowerCase()}.png`;
     anchor.href = canvas.toDataURL("image/png"); anchor.click();
   }
 
@@ -214,7 +228,7 @@ export function BharatUdayClient() {
     if (platform === "whatsapp") window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer");
     else if (platform === "facebook") window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer");
     else if (platform === "instagram") {
-      downloadCard();
+      await downloadCard();
       await navigator.clipboard?.writeText(text).catch(() => null);
       setShareNotice("Card downloaded and caption copied. Add both to your Instagram post.");
       window.open("https://www.instagram.com/", "_blank", "noopener,noreferrer");
@@ -293,9 +307,9 @@ export function BharatUdayClient() {
         </div>}
 
         {stage === "card" && <div className="bu-experience bu-card-stage" style={{ "--accent": activeLevel.accent } as React.CSSProperties}>
-          <div className="bu-confetti" aria-hidden="true">✦ <i>●</i> ◆ <b>✺</b> ✦</div><p className="bu-kicker">{milestone ? "MILESTONE UNLOCKED" : "LEVEL COMPLETE"}</p><h2>{milestone ? "A larger light has opened." : "This discovery is now yours."}</h2><p>{milestone ? `Level ${levelNumber} has unlocked a special Next Human Challenge milestone certificate.` : "Add your name and make a square card ready to share."}</p><div className={`bu-discovery-card ${milestone ? "milestone" : ""}`}>
-            <div className="bu-card-rings"/><span>THE NEXT HUMAN CHALLENGE</span><h3>{milestone ? "Milestone Awakened" : "Discovery Awakened"}</h3><p>LEVEL {String(levelNumber).padStart(2,"0")} · {activeLevel.realm.toUpperCase()}</p><h4>{activeLevel.title}</h4><blockquote>“{lifeQuote.text}”<cite>— {lifeQuote.author}</cite></blockquote><strong>{participantName.trim() || "A curious explorer"}</strong><small>Sri Aurobindo Society, Lucknow</small>
-          </div><label className="bu-name-field"><span>Name on your card</span><input value={participantName} onChange={event => saveName(event.target.value)} maxLength={60} placeholder="Write your name"/></label><div className="bu-card-actions"><button type="button" onClick={downloadCard}>Download card</button><button type="button" onClick={() => void shareCard()}>Share</button><button type="button" onClick={() => void shareCard("whatsapp")}>WhatsApp</button><button type="button" onClick={() => void shareCard("facebook")}>Facebook</button><button type="button" onClick={() => void shareCard("instagram")}>Instagram</button><button type="button" onClick={() => void shareCard("linkedin")}>LinkedIn</button></div>{shareNotice && <p className="bu-share-notice">{shareNotice}</p>}<button className="bu-primary" type="button" onClick={nextLevel}>{levelNumber === 30 ? "Return to my complete journey" : `Proceed to Level ${String(levelNumber + 1).padStart(2,"0")}`} <b>→</b></button>
+          <div className="bu-confetti" aria-hidden="true">✦ <i>●</i> ◆ <b>✺</b> ✦</div><p className="bu-kicker">{milestone ? "MILESTONE UNLOCKED" : "LEVEL COMPLETE"}</p><h2>{milestone ? "A larger light has opened." : "Your certificate is ready."}</h2><p>{milestone ? `Level ${levelNumber} has unlocked a special Next Human Challenge milestone certificate.` : "Add your name to personalise your Certificate of Discovery."}</p><div className={`bu-discovery-card bu-certificate ${milestone ? "milestone" : ""}`}>
+            <div className="bu-card-rings"/><header className="bu-certificate-brand"><img src="/society-logo-transparent.png" alt="Sri Aurobindo Society logo"/><span><strong>Sri Aurobindo Society, Lucknow</strong><small>Gomti Nagar Centre (UC-02)</small></span></header><p className="bu-certificate-series">THE NEXT HUMAN CHALLENGE</p><h3>{milestone ? "Milestone Certificate" : "Certificate of Discovery"}</h3><p className="bu-certifies">This certifies that</p><strong className="bu-certificate-name">{participantName.trim() || "A curious explorer"}</strong><p className="bu-certificate-copy">has successfully completed <b>Level {String(levelNumber).padStart(2,"0")} — {activeLevel.title}</b> and explored <b>{activeLevel.realm}</b> through culture, science and consciousness.</p><blockquote>“{lifeQuote.text}”<cite>— {lifeQuote.author}</cite></blockquote><footer>An initiative by Sri Aurobindo Society, Lucknow · Gomti Nagar Centre (UC-02)</footer>
+          </div><label className="bu-name-field"><span>Name on your certificate</span><input value={participantName} onChange={event => saveName(event.target.value)} maxLength={60} placeholder="Write your name"/></label><div className="bu-card-actions"><button type="button" onClick={() => void downloadCard()}>Download Certificate</button><button type="button" aria-expanded={shareMenuOpen} onClick={() => setShareMenuOpen(value => !value)}>Share Certificate</button></div>{shareMenuOpen && <div className="bu-share-options" aria-label="Share certificate options"><button type="button" onClick={() => { setShareMenuOpen(false); void shareCard("whatsapp"); }}>WhatsApp</button><button type="button" onClick={() => { setShareMenuOpen(false); void shareCard("facebook"); }}>Facebook</button><button type="button" onClick={() => { setShareMenuOpen(false); void shareCard("instagram"); }}>Instagram</button><button type="button" onClick={() => { setShareMenuOpen(false); void shareCard("linkedin"); }}>LinkedIn</button></div>}{shareNotice && <p className="bu-share-notice">{shareNotice}</p>}<button className="bu-primary" type="button" onClick={nextLevel}>{levelNumber === 30 ? "Return to my complete journey" : `Proceed to Level ${String(levelNumber + 1).padStart(2,"0")}`} <b>→</b></button>
         </div>}
       </section>
     </main>
