@@ -17,6 +17,7 @@ test("The Next Human Challenge uses a real, stable intro video", async () => {
   assert.doesNotMatch(client, /bu-hero-glow/);
   assert.doesNotMatch(client, /bharat-uday-motion\.webp/);
   assert.match(css, /\.bu-hero-film\{[^}]*animation:none/);
+  assert.match(css, /\.bu-page main\{padding-top:0\}/);
   assert.ok(video.size > 100_000, "intro video should contain rendered motion scenes");
 });
 

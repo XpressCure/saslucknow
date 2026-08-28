@@ -86,7 +86,9 @@ def frame_at(t: float, background: Image.Image) -> Image.Image:
     wash = Image.new("RGBA", SIZE, (0, 0, 0, 0))
     wash_draw = ImageDraw.Draw(wash)
     wash_draw.rectangle((0, 0, SIZE[0], SIZE[1]), fill=(*MIDNIGHT, 126))
-    wash_draw.polygon([(0, 0), (800, 0), (520, SIZE[1]), (0, SIZE[1])], fill=(*MIDNIGHT, 190))
+    # Keep the original banner artwork on the right, but give all typography an
+    # opaque editorial field so no words from the source image show through.
+    wash_draw.polygon([(0, 0), (800, 0), (520, SIZE[1]), (0, SIZE[1])], fill=(*MIDNIGHT, 248))
     wash_draw.rectangle((0, SIZE[1] - 16, SIZE[0], SIZE[1]), fill=(*SAFFRON, 235))
     base = Image.alpha_composite(base, wash)
 
@@ -101,7 +103,7 @@ def frame_at(t: float, background: Image.Image) -> Image.Image:
         if marker_alpha > 0:
             draw.ellipse((marker - 7, line_y - 5, marker + 7, line_y + 9), fill=(*IVORY, int(255 * marker_alpha)))
 
-    first = scene_alpha(t, 0.0, 3.8)
+    first = scene_alpha(t, 0.0, 3.25, .35)
     if first > 0:
         add_text(draw, (82, 88), "SRI AUROBINDO SOCIETY · LUCKNOW", SANS_SMALL, SAFFRON, first)
         add_text(draw, (82, 173), "THE NEXT HUMAN\nCHALLENGE", DISPLAY, IVORY, first, spacing=-4)
@@ -109,7 +111,7 @@ def frame_at(t: float, background: Image.Image) -> Image.Image:
         draw.rounded_rectangle((86, 424, 366, 478), radius=27, fill=(*CORAL, int(238 * first)))
         add_text(draw, (226, 451), "30 LEVELS · FREE TO ENTER", SANS_SMALL, IVORY, first, anchor="mm")
 
-    second = scene_alpha(t, 3.2, 7.0)
+    second = scene_alpha(t, 3.5, 6.75, .35)
     if second > 0:
         add_text(draw, (82, 94), "FAST. CURIOUS. MADE FOR EVERY GENERATION.", SANS_SMALL, SAFFRON, second)
         add_text(draw, (82, 175), "30", DISPLAY, IVORY, second)
@@ -118,7 +120,7 @@ def frame_at(t: float, background: Image.Image) -> Image.Image:
         add_text(draw, (205, 321), "QUESTIONS IN EACH DISCOVERY", SANS_HEAVY, IVORY, second)
         add_text(draw, (84, 438), "Start one. Finish many. Your progress waits for you.", SANS, IVORY, second * 0.9)
 
-    third = scene_alpha(t, 6.4, 10.6)
+    third = scene_alpha(t, 7.0, 10.25, .35)
     if third > 0:
         add_text(draw, (82, 94), "EVERY LEVEL BECOMES AN EXPERIENCE", SANS_SMALL, SAFFRON, third)
         labels = [("ANSWER", TEAL), ("DISCOVER", SAFFRON), ("PAUSE", CORAL), ("CREATE", IVORY)]
@@ -133,7 +135,7 @@ def frame_at(t: float, background: Image.Image) -> Image.Image:
         add_text(draw, (82, 418), "Knowledge meets reflection—and becomes your own Discovery Card.",
                  DISPLAY_SMALL, IVORY, third)
 
-    fourth = scene_alpha(t, 10.0, 14.0)
+    fourth = scene_alpha(t, 10.5, 14.0, .35)
     if fourth > 0:
         add_text(draw, (82, 105), "THE JOURNEY BEGINS WITH ONE QUESTION", SANS_SMALL, SAFFRON, fourth)
         add_text(draw, (82, 186), "What will you\ndiscover about Bharat—\nand about yourself?",
