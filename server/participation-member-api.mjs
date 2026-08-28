@@ -30,6 +30,7 @@ import {
 } from "./participation-member-core.mjs";
 import { cleanText, publicSankalp } from "./participation-core.mjs";
 import { activeMemberCampaignView } from "./participation-campaign-core.mjs";
+import { handleNextHumanMemberRequest, recordNextHumanPayment } from "./next-human-event-api.mjs";
 
 const MEMBER_COOKIE = "sas_member_session";
 // Razorpay is production-ready but intentionally paused until the public contribution launch.
@@ -1321,6 +1322,7 @@ async function webhook(request, response, context) {
     const order = await db.collection("paymentOrders").findOne({ organisationKey, providerOrderId: payment.order_id, provider: "razorpay" });
     if (order && Number(payment.amount) === order.amountPaise) {
       if (order.source === "public-website") await recordVerifiedPublicContribution({ db, organisationKey, order, payment });
+      else if (order.source === "next-human") await recordNextHumanPayment({ db, organisationKey, order, payment });
       else await recordVerifiedContribution({ db, organisationKey, order, payment });
     }
   }
@@ -1380,6 +1382,7 @@ export async function handleMemberRequest({ request, response, url, db, organisa
     sendJson(response, 403, { error: MEMBERSHIP_DISABLED_MESSAGE, code: "MEMBERSHIP_DISABLED" });
     return true;
   }
+  if (await handleNextHumanMemberRequest({ request, response, url, context, actor })) return true;
   if (request.method === "GET" && url.pathname === "/api/participation/member/dashboard") return handled(dashboard(response, context, actor));
   const focusImpressionMatch = url.pathname.match(/^\/api\/participation\/member\/focus-campaigns\/([^/]+)\/impression$/);
   if (request.method === "POST" && focusImpressionMatch) return handled(recordFocusCampaignImpression(response, context, actor, focusImpressionMatch[1]));

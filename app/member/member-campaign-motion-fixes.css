@@ -1,0 +1,24 @@
+/* Motion parity with the administrator's full mobile-dashboard preview. */
+.member-focus-campaign.member-focus-motion-gentle_fade {
+  animation: member-focus-gentle-fade 4.8s ease-in-out infinite;
+  will-change: opacity, filter;
+}
+
+@keyframes member-focus-gentle-fade {
+  0%,
+  100% {
+    filter: brightness(1);
+    opacity: 1;
+  }
+
+  50% {
+    filter: brightness(1.08);
+    opacity: .72;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .member-focus-campaign.member-focus-motion-gentle_fade {
+    animation: none !important;
+  }
+}

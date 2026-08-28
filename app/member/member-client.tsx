@@ -50,10 +50,10 @@ type FocusCampaign = {
   id: string;
   creativeRevisionId: string;
   templateId: string;
-  themePackId: "teal_silence" | "indigo_savitri" | "saffron_sangha" | "rose_guidance";
+  themePackId: "teal_silence" | "indigo_savitri" | "saffron_sangha" | "rose_guidance" | "electric_uday";
   motionPresetId: string;
   displayMode: "card_only" | "coordinated_dashboard";
-  destination: "inner-room" | "watch" | "sangha" | "sakhi";
+  destination: "dashboard" | "inner-room" | "reflections" | "sound" | "sangha" | "watch" | "library" | "sakhi" | "sankalp" | "yogdaan" | "parichay" | "bharat-uday";
   locale: "all" | "en" | "hi";
   maxImpressionsPerDay: number;
   copy: { eyebrow: string; headline: string; body: string; cta: string };
@@ -1164,10 +1164,21 @@ export function MemberClient() {
     if (!focusCampaign) return;
     void api<{ recorded: boolean }>(`/focus-campaigns/${focusCampaign.id}/action`, { method: "POST", body: JSON.stringify({ locale: focusCampaignLanguage }) })
       .catch(error => console.error("Focus Campaign action could not be recorded", error));
-    if (focusCampaign.destination === "inner-room") { setTab("darshan"); setDarshanPanel("inner-room"); }
-    if (focusCampaign.destination === "watch") setTab("watch");
-    if (focusCampaign.destination === "sangha") setTab("sangha");
-    if (focusCampaign.destination === "sakhi") { setTab("darshan"); setDarshanPanel("sakhi"); }
+    switch (focusCampaign.destination) {
+      case "inner-room": setTab("darshan"); setDarshanPanel("inner-room"); break;
+      case "reflections": setTab("darshan"); setDarshanPanel("reflections"); break;
+      case "sound": setTab("sound"); break;
+      case "sangha": setTab("sangha"); break;
+      case "watch": setTab("watch"); break;
+      case "library": setTab("darshan"); setDarshanPanel("library"); break;
+      case "sakhi": setTab("darshan"); setDarshanPanel("sakhi"); break;
+      case "sankalp": setTab("sankalp"); break;
+      case "yogdaan": setTab("yogdaan"); break;
+      case "parichay": setTab("parichay"); break;
+      case "bharat-uday": window.location.assign("/bharat-uday"); return;
+      case "dashboard":
+      default: setTab("darshan"); setDarshanPanel("home"); break;
+    }
     document.documentElement.scrollTop = 0;
   };
 

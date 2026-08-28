@@ -82,4 +82,3 @@ export function publicAdministrator(member) {
     permissions: Array.isArray(member.permissions) ? member.permissions : [],
   };
 }
-

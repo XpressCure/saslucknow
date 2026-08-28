@@ -1,0 +1,105 @@
+.member-access-disabled {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: clamp(20px, 5vw, 64px);
+  background:
+    radial-gradient(circle at 50% 18%, rgba(224, 174, 69, .2), transparent 30rem),
+    linear-gradient(145deg, #102f3a, #173f4b 58%, #0c2731);
+}
+
+.member-access-disabled > section {
+  width: min(672px, 100%);
+  padding: clamp(24px, 5vw, 52px);
+  border: 1px solid rgba(229, 183, 91, .46);
+  border-radius: 24px;
+  background: rgba(255, 252, 244, .97);
+  box-shadow: 0 28px 80px rgba(4, 21, 27, .35);
+  text-align: center;
+}
+
+.member-access-disabled .member-auth-brand {
+  justify-content: center;
+  margin: 0 auto 32px;
+  color: #173846;
+}
+
+.member-access-disabled h1 {
+  margin: 9px 0 16px;
+  color: #173846;
+  font: clamp(2rem, 6vw, 3.5rem)/1.04 Georgia, serif;
+}
+
+.member-access-disabled > section > p:not(.member-eyebrow) {
+  max-width: 544px;
+  margin: 0 auto 22px;
+  color: #596e75;
+  font-size: 1.05rem;
+  line-height: 1.7;
+}
+
+.member-access-disabled > section > a {
+  display: block;
+  margin-bottom: 19px;
+  color: #173846;
+  font-weight: 800;
+}
+
+.member-access-disabled .member-secondary {
+  min-width: min(260px, 100%);
+}
+
+.member-disabled-panel {
+  width: min(760px, 100%);
+  margin: clamp(20px, 6vw, 80px) auto;
+  padding: clamp(28px, 5vw, 54px);
+  border: 1px solid rgba(197, 138, 50, .46);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 88% 15%, rgba(228, 177, 70, .2), transparent 16rem),
+    linear-gradient(145deg, #fffdf8, #f8edd7);
+  box-shadow: 0 24px 70px rgba(20, 49, 59, .12);
+}
+
+.member-disabled-panel h1 {
+  max-width: 620px;
+  margin: 12px 0 18px;
+  font: clamp(2.2rem, 6vw, 4.2rem)/1 Georgia, serif;
+}
+
+.member-disabled-panel > p:not(.member-eyebrow) {
+  max-width: 620px;
+  color: #5b7077;
+  line-height: 1.7;
+}
+
+.member-disabled-panel .member-primary {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 15px;
+  text-decoration: none;
+}
+
+.member-admin-link {
+  padding: 9px 14px;
+  border-radius: 999px;
+  background: #173846;
+  color: #fff;
+  font-size: .75rem;
+  font-weight: 800;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+@media (max-width: 720px) {
+  .member-admin-link {
+    padding: 8px 10px;
+    font-size: .66rem;
+  }
+
+  .member-disabled-panel {
+    margin-top: 10px;
+    padding: 26px 20px;
+    border-radius: 17px;
+  }
+}
