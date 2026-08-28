@@ -227,7 +227,7 @@ export function MissionHome() {
   const sakhiEndRef = useRef<HTMLDivElement>(null);
   const t = copy[lang];
   const primaryNav = [
-    { label: lang === "hi" ? "भारत उदय" : "Bharat Uday", href: "/bharat-uday" },
+    { label: lang === "hi" ? "नेक्स्ट ह्यूमन चैलेंज" : "Next Human Challenge", href: "/bharat-uday" },
     { label: t.nav[0], href: "#wisdom" },
     { label: t.nav[1], href: "#events" },
     { label: t.nav[2], href: "/joincommunity#parichay" },

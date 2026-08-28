@@ -31,6 +31,6 @@
 @media(max-width:700px){.campaign-phone{border-radius:38px;max-width:350px;padding:13px 10px 11px}.campaign-phone-screen{border-radius:29px;height:690px}.campaign-phone-dashboard{padding:16px 12px 12px}.campaign-device-card{grid-template-columns:55px minmax(0,1fr);min-height:176px;padding:15px}.campaign-device-symbol{height:52px;width:52px}.campaign-device-copy h4{font-size:23px}.campaign-phone-welcome h3{font-size:30px}}
 @media(prefers-reduced-motion:reduce){.campaign-device-card,.campaign-device-card *{animation:none!important}}
 /* Bharat Uday — full app preview parity */
-.campaign-phone.theme-electric_uday{--device-bg:#eafaff;--device-ink:#0b1246;--device-accent:#43d9ff;--device-card:#0b1246;--device-card-2:#5b25b8;--device-soft:#fff2be}
-.campaign-device-card.theme-electric_uday{--device-accent:#43d9ff;--device-card:#0b1246;--device-card-2:#5b25b8;--device-soft:#fff2be}
+.campaign-phone.theme-electric_uday{--device-bg:#fff8e8;--device-ink:#082532;--device-accent:#f4a42c;--device-card:#082532;--device-card-2:#177c78;--device-soft:#f9e6bc}
+.campaign-device-card.theme-electric_uday{--device-accent:#f4a42c;--device-card:#082532;--device-card-2:#177c78;--device-soft:#f9e6bc}
 .campaign-device-card.motion-discovery_surge .campaign-device-symbol{animation:campaign-phone-discovery 3.2s ease-in-out infinite}.campaign-device-card.motion-discovery_surge .campaign-device-copy{animation:campaign-phone-rise .65s ease both}@keyframes campaign-phone-discovery{0%,100%{filter:drop-shadow(0 0 5px var(--device-accent));transform:scale(.94) rotate(-4deg)}50%{filter:drop-shadow(0 0 18px var(--device-accent));transform:scale(1.08) rotate(4deg)}}

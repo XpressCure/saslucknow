@@ -3,11 +3,11 @@ import "./bharat-uday.css";
 import { createPageMetadata } from "../seo";
 
 export const metadata = createPageMetadata({
-  title: "Bharat Uday — The NEXT HUMAN Discovery Challenge",
-  description: "A free 30-level journey through Indian culture, science and consciousness. Answer, discover, reflect and create your personalised Bharat Uday cards.",
+  title: "The Next Human Challenge — 30 Levels of Discovery",
+  description: "A free 30-level journey through Indian culture, science and consciousness. Answer, discover, reflect and create your personalised Discovery Cards.",
   path: "/bharat-uday",
   keywords: ["Bharat quiz", "Indian culture quiz", "science quiz India", "NEXT HUMAN challenge", "youth consciousness"],
-  image: "/bharat-uday/bharat-uday-hero.png",
+  image: "/next-human-challenge-poster.jpg",
 });
 
 export default function BharatUdayPage() {

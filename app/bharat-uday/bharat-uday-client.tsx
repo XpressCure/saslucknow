@@ -30,7 +30,7 @@ function safeProgress(value: unknown): StoredProgress {
 
 function shareText(levelNumber: number, name: string, milestone: boolean) {
   const achievement = milestone ? `a milestone at Level ${levelNumber}` : `Level ${levelNumber}`;
-  return `I completed ${achievement} of Bharat Uday — The NEXT HUMAN Discovery Challenge. Culture, science and consciousness—one discovery at a time.\n\nTake the challenge: https://www.saslucknow.in/bharat-uday${name ? `\n— ${name}` : ""}`;
+  return `I completed ${achievement} of The Next Human Challenge. Culture, science and consciousness—one discovery at a time.\n\nTake the challenge: https://www.saslucknow.in/bharat-uday${name ? `\n— ${name}` : ""}`;
 }
 
 function ProgressRing({ completed }: { completed: number }) {
@@ -54,6 +54,7 @@ export function BharatUdayClient() {
   const [pauseRunning, setPauseRunning] = useState(false);
   const [shareNotice, setShareNotice] = useState("");
   const journeyRef = useRef<HTMLElement>(null);
+  const introFilmRef = useRef<HTMLVideoElement>(null);
 
   const activeLevel = bharatUdayLevels[levelNumber - 1];
   const currentQuestion = activeLevel.discoveries[questionIndex];
@@ -79,6 +80,16 @@ export function BharatUdayClient() {
     if (!hydrated) return;
     try { localStorage.setItem(storageKey, JSON.stringify(progress)); } catch { /* Continue without persistence. */ }
   }, [hydrated, progress]);
+
+  useEffect(() => {
+    const film = introFilmRef.current;
+    if (!film) return;
+    film.muted = true;
+    const beginPlayback = () => { void film.play().catch(() => undefined); };
+    beginPlayback();
+    film.addEventListener("canplay", beginPlayback);
+    return () => film.removeEventListener("canplay", beginPlayback);
+  }, []);
 
   useEffect(() => {
     if (!pauseRunning) return;
@@ -144,9 +155,9 @@ export function BharatUdayClient() {
     if (!context) return;
     const size = 1080;
     const gradient = context.createLinearGradient(0, 0, size, size);
-    gradient.addColorStop(0, "#080d31");
+    gradient.addColorStop(0, "#061a25");
     gradient.addColorStop(.46, activeLevel.accent);
-    gradient.addColorStop(1, "#ff6b35");
+    gradient.addColorStop(1, "#d8583c");
     context.fillStyle = gradient;
     context.fillRect(0, 0, size, size);
     const glow = context.createRadialGradient(820, 170, 10, 820, 170, 520);
@@ -164,7 +175,7 @@ export function BharatUdayClient() {
     context.beginPath(); context.roundRect(62, 62, 956, 956, 54); context.fill();
     context.strokeStyle = "rgba(255,211,111,.72)"; context.lineWidth = 4; context.stroke();
     context.fillStyle = "#ffcf5c"; context.font = "700 27px Arial"; context.letterSpacing = "5px";
-    context.fillText("BHARAT UDAY · THE NEXT HUMAN CHALLENGE", 112, 142);
+    context.fillText("THE NEXT HUMAN CHALLENGE", 112, 142);
     context.fillStyle = "#ffffff"; context.font = "700 76px Georgia";
     context.fillText(milestone ? "Milestone Awakened" : "Discovery Awakened", 112, 256);
     context.fillStyle = activeLevel.accent; context.font = "700 34px Arial";
@@ -200,7 +211,7 @@ export function BharatUdayClient() {
     const canvas = document.createElement("canvas"); canvas.width = 1080; canvas.height = 1080;
     drawCard(canvas);
     const anchor = document.createElement("a");
-    anchor.download = `bharat-uday-level-${levelNumber}-${(participantName || "explorer").trim().replace(/\s+/g, "-").toLowerCase()}.png`;
+    anchor.download = `next-human-challenge-level-${levelNumber}-${(participantName || "explorer").trim().replace(/\s+/g, "-").toLowerCase()}.png`;
     anchor.href = canvas.toDataURL("image/png"); anchor.click();
   }
 
@@ -216,7 +227,7 @@ export function BharatUdayClient() {
       window.open("https://www.instagram.com/", "_blank", "noopener,noreferrer");
     }
     else if (platform === "linkedin") window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`, "_blank", "noopener,noreferrer");
-    else if (navigator.share) await navigator.share({ title: "My Bharat Uday Discovery Card", text, url }).catch(() => null);
+    else if (navigator.share) await navigator.share({ title: "My Next Human Challenge Discovery Card", text, url }).catch(() => null);
     else await navigator.clipboard?.writeText(text).then(() => setShareNotice("Sharing message copied."));
   }
 
@@ -228,19 +239,22 @@ export function BharatUdayClient() {
   return <div className="bu-page">
     <header className="bu-topbar">
       <Link href="/" className="bu-brand"><img src="/society-logo-transparent.png" alt="Sri Aurobindo Society symbol"/><span>Sri Aurobindo Society<small>Lucknow · Gomti Nagar Centre</small></span></Link>
-      <nav aria-label="Bharat Uday navigation"><a href="#journey">30 Levels</a><a href="#how-it-works">How it works</a><Link href="/member">Member Login</Link></nav>
+      <nav aria-label="The Next Human Challenge navigation"><a href="#journey">30 Levels</a><a href="#how-it-works">How it works</a><Link href="/member">Member Login</Link></nav>
       <button type="button" className="bu-nav-start" onClick={() => beginLevel(progress.currentLevel)}>{completedCount ? "Continue challenge" : "Start challenge"}</button>
     </header>
 
     <main>
       <section className="bu-hero">
-        <img className="bu-hero-film" src="/bharat-uday/bharat-uday-motion.webp" alt="Bharat awakening through culture, science and consciousness"/>
-        <div className="bu-hero-grid" aria-hidden="true"/><div className="bu-hero-glow" aria-hidden="true"/>
+        <div className="bu-hero-media">
+          <video ref={introFilmRef} className="bu-hero-film" autoPlay muted loop playsInline preload="auto" poster="/next-human-challenge-poster.jpg" aria-label="A short introduction to The Next Human Challenge">
+            <source src="/next-human-challenge-intro.mp4" type="video/mp4"/>
+          </video>
+        </div>
         <div className="bu-hero-copy">
-          <span className="bu-live-pill"><i/> A new discovery journey</span>
-          <p>BHARAT UDAY</p>
-          <h1>How ready are you for the <em>NEXT HUMAN?</em></h1>
-          <h2>A Journey of Culture, Science & Consciousness</h2>
+          <span className="bu-live-pill"><i/> A 30-level discovery experience</span>
+          <p>CULTURE · SCIENCE · CONSCIOUSNESS</p>
+          <h1>The Next Human <em>Challenge</em></h1>
+          <h2>Five fast questions. One discovery. One personal reflection.</h2>
           <div className="bu-hero-actions"><button type="button" onClick={() => beginLevel(progress.currentLevel)}>{completedCount ? `Continue from Level ${progress.currentLevel}` : "Begin Level 01"}<b>↗</b></button><a href="#journey">Explore the 30 discoveries</a></div>
           <div className="bu-hero-proof"><span><strong>30</strong> vivid levels</span><span><strong>5</strong> questions each</span><span><strong>∞</strong> go at your pace</span></div>
         </div>
@@ -249,11 +263,11 @@ export function BharatUdayClient() {
 
       <section className="bu-intro" id="how-it-works">
         <div><p className="bu-kicker">NOT A TEST. A DISCOVERY.</p><h2>Culture meets science.<br/><em>Knowledge meets you.</em></h2></div>
-        <div className="bu-intro-copy"><p>Bharat Uday is a fast, free journey through 30 surprising worlds—from zero and space science to biodiversity, music, attention and the future human.</p><p>Complete one level or race through several. Your progress waits for you, and every finish reveals a Discovery Card created from your own reflection.</p></div>
+        <div className="bu-intro-copy"><p>The Next Human Challenge is a fast, free journey through 30 surprising worlds—from zero and space science to biodiversity, music, attention and the future human.</p><p>Complete one level or race through several. Your progress waits for you, and every finish reveals a Discovery Card created from your own reflection.</p></div>
       </section>
 
       <section className="bu-flow" aria-label="How each level works">
-        {[ ["01","JÑĀNA","Answer five inviting questions"], ["02","KHOJ","Unlock a surprising discovery"], ["03","SĀDHANA","Pause, notice or carry a thought"], ["04","UDAY CARD","Make the discovery your own"] ].map(item => <article key={item[0]}><span>{item[0]}</span><i/><h3>{item[1]}</h3><p>{item[2]}</p></article>)}
+        {[ ["01","JÑĀNA","Answer five inviting questions"], ["02","KHOJ","Unlock a surprising discovery"], ["03","SĀDHANA","Pause, notice or carry a thought"], ["04","DISCOVERY CARD","Make the discovery your own"] ].map(item => <article key={item[0]}><span>{item[0]}</span><i/><h3>{item[1]}</h3><p>{item[2]}</p></article>)}
       </section>
 
       <section className="bu-journey" id="journey" ref={journeyRef}>
@@ -290,13 +304,13 @@ export function BharatUdayClient() {
         </div>}
 
         {stage === "card" && <div className="bu-experience bu-card-stage" style={{ "--accent": activeLevel.accent } as React.CSSProperties}>
-          <div className="bu-confetti" aria-hidden="true">✦ <i>●</i> ◆ <b>✺</b> ✦</div><p className="bu-kicker">{milestone ? "MILESTONE UNLOCKED" : "LEVEL COMPLETE"}</p><h2>{milestone ? "A larger light has opened." : "This discovery is now yours."}</h2><p>{milestone ? `Level ${levelNumber} has unlocked a special Bharat Uday milestone certificate.` : "Add your name and make a square card ready to share."}</p><div className={`bu-discovery-card ${milestone ? "milestone" : ""}`}>
-            <div className="bu-card-rings"/><span>BHARAT UDAY · THE NEXT HUMAN CHALLENGE</span><h3>{milestone ? "Milestone Awakened" : "Discovery Awakened"}</h3><p>LEVEL {String(levelNumber).padStart(2,"0")} · {activeLevel.realm.toUpperCase()}</p><h4>{activeLevel.title}</h4><blockquote>“{reflection}”</blockquote><strong>{participantName.trim() || "A curious explorer"}</strong><small>Sri Aurobindo Society, Lucknow</small>
+          <div className="bu-confetti" aria-hidden="true">✦ <i>●</i> ◆ <b>✺</b> ✦</div><p className="bu-kicker">{milestone ? "MILESTONE UNLOCKED" : "LEVEL COMPLETE"}</p><h2>{milestone ? "A larger light has opened." : "This discovery is now yours."}</h2><p>{milestone ? `Level ${levelNumber} has unlocked a special Next Human Challenge milestone certificate.` : "Add your name and make a square card ready to share."}</p><div className={`bu-discovery-card ${milestone ? "milestone" : ""}`}>
+            <div className="bu-card-rings"/><span>THE NEXT HUMAN CHALLENGE</span><h3>{milestone ? "Milestone Awakened" : "Discovery Awakened"}</h3><p>LEVEL {String(levelNumber).padStart(2,"0")} · {activeLevel.realm.toUpperCase()}</p><h4>{activeLevel.title}</h4><blockquote>“{reflection}”</blockquote><strong>{participantName.trim() || "A curious explorer"}</strong><small>Sri Aurobindo Society, Lucknow</small>
           </div><label className="bu-name-field"><span>Name on your card</span><input value={participantName} onChange={event => saveName(event.target.value)} maxLength={60} placeholder="Write your name"/></label><div className="bu-card-actions"><button type="button" onClick={downloadCard}>Download card</button><button type="button" onClick={() => void shareCard()}>Share</button><button type="button" onClick={() => void shareCard("whatsapp")}>WhatsApp</button><button type="button" onClick={() => void shareCard("facebook")}>Facebook</button><button type="button" onClick={() => void shareCard("instagram")}>Instagram</button><button type="button" onClick={() => void shareCard("linkedin")}>LinkedIn</button></div>{shareNotice && <p className="bu-share-notice">{shareNotice}</p>}<button className="bu-primary" type="button" onClick={nextLevel}>{levelNumber === 30 ? "Return to my complete journey" : `Proceed to Level ${String(levelNumber + 1).padStart(2,"0")}`} <b>→</b></button>
         </div>}
       </section>
     </main>
 
-    <footer className="bu-footer"><div><img src="/society-logo-transparent.png" alt=""/><span><strong>Sri Aurobindo Society, Lucknow</strong><small>Gomti Nagar Centre (UC-02)</small></span></div><p>Bharat Uday · Culture, Science & Consciousness</p><Link href="/">Return to The Song of Life</Link></footer>
+    <footer className="bu-footer"><div><img src="/society-logo-transparent.png" alt=""/><span><strong>Sri Aurobindo Society, Lucknow</strong><small>Gomti Nagar Centre (UC-02)</small></span></div><p>The Next Human Challenge · Culture, Science & Consciousness</p><Link href="/">Return to The Song of Life</Link></footer>
   </div>;
 }

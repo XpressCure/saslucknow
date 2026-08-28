@@ -1331,21 +1331,21 @@ html>body{padding:0}</style>
     #sas-app-redesign .sas-nh-pass { margin-top: 12px; padding: 18px; border: 1px solid #67a07b; border-radius: 15px; background: linear-gradient(145deg,#e7f7eb,#fffdf7); color: #173d49; text-align: center; }
     #sas-app-redesign .sas-nh-pass b { display: block; margin: 10px 0; color: #a2640f; letter-spacing: .08em; }
     #sas-app-redesign .sas-dashboard-focus-uday { background: radial-gradient(circle at 90% 0%,rgba(255,194,74,.3),transparent 34%),linear-gradient(180deg,#edfaff 0%,#fff6dc 64%,#fffaf1 100%); }
-    #sas-app-redesign .sas-dashboard-focus-uday .sas-focus-campaign { min-height: 270px; overflow: hidden; border: 0; background: linear-gradient(135deg,rgba(20,16,77,.96),rgba(11,125,152,.9) 52%,rgba(255,111,79,.9)); color: #fff; box-shadow: 0 20px 45px rgba(14,27,74,.26); }
-    #sas-app-redesign .sas-dashboard-focus-uday .sas-focus-campaign::before { content:""; position:absolute; inset:0; background:url('../../public/bharat-uday/bharat-uday-hero.png') center/cover; opacity:.3; mix-blend-mode:screen; }
+    #sas-app-redesign .sas-dashboard-focus-uday .sas-focus-campaign { min-height: 270px; overflow: hidden; border: 1px solid rgba(244,200,107,.35); background: linear-gradient(135deg,rgba(5,24,35,.98),rgba(18,78,83,.94) 58%,rgba(167,75,53,.93)); color: #fff8e4; box-shadow: 0 20px 45px rgba(5,24,35,.25); }
+    #sas-app-redesign .sas-dashboard-focus-uday .sas-focus-campaign::before { content:""; position:absolute; inset:0; background:url('../../public/next-human-challenge-poster.jpg') center/cover; opacity:.2; }
     #sas-app-redesign .sas-dashboard-focus-uday .sas-focus-copy { position:relative; z-index:2; max-width:330px; }
     #sas-app-redesign .sas-dashboard-focus-uday .sas-focus-copy small { color:#ffd468; }
     #sas-app-redesign .sas-dashboard-focus-uday .sas-focus-copy h2 { color:#fff; font-size:34px; line-height:1.02; }
     #sas-app-redesign .sas-dashboard-focus-uday .sas-focus-copy p { color:rgba(255,255,255,.88); }
     #sas-app-redesign .sas-dashboard-focus-uday .sas-focus-button { background:linear-gradient(180deg,#ffd86d,#ffad32); color:#102d45; box-shadow:0 7px 0 #ad5b13,0 14px 25px rgba(0,0,0,.2); }
     #sas-app-redesign .sas-bu-screen { min-height:100%; background:#090b31; color:#fff; }
-    #sas-app-redesign .sas-bu-hero { position:relative; min-height:420px; display:flex; align-items:flex-end; padding:28px; overflow:hidden; background:#10104a; }
-    #sas-app-redesign .sas-bu-hero > img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:.66; }
-    #sas-app-redesign .sas-bu-hero::after { content:""; position:absolute; inset:0; background:linear-gradient(180deg,rgba(7,8,39,.08),rgba(7,8,39,.96)); }
+    #sas-app-redesign .sas-bu-hero { position:relative; min-height:540px; display:flex; align-items:flex-end; padding:28px; overflow:hidden; background:#061a25; }
+    #sas-app-redesign .sas-bu-hero > video { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:.72; }
+    #sas-app-redesign .sas-bu-hero::after { content:""; position:absolute; inset:0; background:linear-gradient(180deg,rgba(5,24,35,.03) 15%,rgba(5,24,35,.97) 78%); }
     #sas-app-redesign .sas-bu-copy { position:relative; z-index:2; }
     #sas-app-redesign .sas-bu-copy small { color:#ffd05b; font-weight:800; letter-spacing:.13em; }
     #sas-app-redesign .sas-bu-copy h1 { margin:8px 0 5px; font-size:47px; line-height:.92; }
-    #sas-app-redesign .sas-bu-copy h1 span { display:block; color:#61e9ff; font-size:22px; letter-spacing:.04em; }
+    #sas-app-redesign .sas-bu-copy h1 span { display:block; color:#f4a42c; font-size:22px; letter-spacing:.04em; }
     #sas-app-redesign .sas-bu-copy p { color:rgba(255,255,255,.86); line-height:1.55; }
     #sas-app-redesign .sas-bu-start { width:100%; margin-top:13px; padding:17px; border:0; border-radius:15px; background:linear-gradient(180deg,#ffd96b,#ffab32); color:#102d45; font-weight:900; font-size:17px; box-shadow:0 7px 0 #a34d16; }
     #sas-app-redesign .sas-bu-body { padding:24px 20px 110px; background:linear-gradient(180deg,#0e1748,#0b3552); }
@@ -1367,7 +1367,7 @@ html>body{padding:0}</style>
   </style>
 
   <div class="sas-board-controls" aria-label="Android screen selector">
-    <button type="button" data-screen="bharat-uday" aria-pressed="false">Bharat Uday</button>
+    <button type="button" data-screen="bharat-uday" aria-pressed="false">Next Human Challenge</button>
     <button type="button" data-screen="next-human" aria-pressed="false">NEXT HUMAN</button>
     <button type="button" data-screen="darshan" aria-pressed="true">Darshan</button>
     <button type="button" data-screen="inner-room" aria-pressed="false">Inner Room</button>
@@ -1437,7 +1437,7 @@ html>body{padding:0}</style>
 
   <template id="sas-screen-bharat-uday">
     <main class="sas-bu-screen">
-      <section class="sas-bu-hero"><img src="../../public/bharat-uday/bharat-uday-motion.webp" alt="Bharat awakening through culture, science and consciousness"><div class="sas-bu-copy"><small>THE NEXT HUMAN DISCOVERY CHALLENGE</small><h1>BHARAT UDAY <span>Culture · Science · Consciousness</span></h1><p>Thirty vivid levels. Five questions each. One growing portrait of the explorer you are becoming.</p><button type="button" class="sas-bu-start" onclick="window.open('/bharat-uday','_blank')">Continue from Level 01 →</button></div></section>
+      <section class="sas-bu-hero"><video autoplay muted loop playsinline preload="metadata" poster="../../public/next-human-challenge-poster.jpg" aria-label="A short introduction to The Next Human Challenge"><source src="../../public/next-human-challenge-intro.mp4" type="video/mp4"></video><div class="sas-bu-copy"><small>30 LEVELS · CULTURE · SCIENCE · CONSCIOUSNESS</small><h1>THE NEXT HUMAN <span>Challenge</span></h1><p>Five fast questions. One discovery. One personal reflection.</p><button type="button" class="sas-bu-start" onclick="window.open('/bharat-uday','_blank')">Continue from Level 01 →</button></div></section>
       <section class="sas-bu-body"><div class="sas-bu-progress"><span><strong>0</strong>completed</span><span><strong>30</strong>levels</span><span><strong>5</strong>questions</span><span><strong>∞</strong>your pace</span></div><article class="sas-bu-card"><small>YOUR NEXT DISCOVERY</small><h2>The Sky Above Us</h2><p>Begin with a simple question about the universe—and finish with one thought to carry inward.</p><button type="button" class="sas-bu-start" onclick="window.open('/bharat-uday','_blank')">Begin Level 01 →</button></article></section>
     </main>
   </template>
@@ -2089,7 +2089,7 @@ It opens the epic and evokes the last stillness before the spiritual Dawn. Exact
         const dashboard = mount.querySelector('.sas-dashboard');
         if (!dashboard || dashboard.querySelector('.sas-focus-campaign')) return;
         dashboard.classList.add('sas-dashboard-focus-uday');
-        dashboard.insertAdjacentHTML('afterbegin', `<article class="sas-focus-campaign" aria-label="Current focus campaign"><div class="sas-focus-copy"><small>BHARAT UDAY · CURRENT FOCUS</small><h2>How ready are you for the NEXT HUMAN?</h2><p>Thirty discoveries across culture, science and consciousness. Continue exactly where you stopped.</p><button class="sas-focus-button" type="button" data-go="bharat-uday">Continue Level 01 →</button></div></article>`);
+        dashboard.insertAdjacentHTML('afterbegin', `<article class="sas-focus-campaign" aria-label="Current focus campaign"><div class="sas-focus-copy"><small>30 LEVELS · CURRENT FOCUS</small><h2>The Next Human Challenge</h2><p>Culture, science and consciousness meet in a fast discovery journey. Continue exactly where you stopped.</p><button class="sas-focus-button" type="button" data-go="bharat-uday">Continue Level 01 →</button></div></article>`);
       }
 
       function nextHumanRowPrice(rowIndex) {
@@ -2328,7 +2328,7 @@ It opens the epic and evokes the last stillness before the spiritual Dawn. Exact
 
           const darshanSection = document.createElement('div');
           darshanSection.className = 'sas-menu-section';
-          const bharatUdayMenuButton = createMenuButton('Bharat Uday · Challenge', 'bharat-uday');
+          const bharatUdayMenuButton = createMenuButton('The Next Human Challenge', 'bharat-uday');
           bharatUdayMenuButton.classList.add('sas-menu-parent');
           menuList.append(bharatUdayMenuButton);
           const nextHumanMenuButton = createMenuButton('NEXT HUMAN · 2026', 'next-human');
