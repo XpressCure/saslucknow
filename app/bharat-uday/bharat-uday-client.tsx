@@ -246,7 +246,7 @@ export function BharatUdayClient() {
     <main>
       <section className="bu-hero">
         <div className="bu-hero-media">
-          <video ref={introFilmRef} className="bu-hero-film" autoPlay muted loop playsInline preload="auto" poster="/next-human-challenge-poster.jpg" aria-label="A short introduction to The Next Human Challenge">
+          <video ref={introFilmRef} className="bu-hero-film" autoPlay muted playsInline preload="auto" poster="/next-human-challenge-poster.jpg" aria-label="A short introduction to The Next Human Challenge">
             <source src="/next-human-challenge-intro.mp4" type="video/mp4"/>
           </video>
         </div>

@@ -10,7 +10,8 @@ test("The Next Human Challenge uses a real, stable intro video", async () => {
     read("../app/bharat-uday/bharat-uday.css"),
     stat(new URL("../public/next-human-challenge-intro.mp4", import.meta.url)),
   ]);
-  assert.match(client, /<video ref=\{introFilmRef\} className="bu-hero-film" autoPlay muted loop playsInline/);
+  assert.match(client, /<video ref=\{introFilmRef\} className="bu-hero-film" autoPlay muted playsInline/);
+  assert.doesNotMatch(client, /className="bu-hero-film"[^>]*\bloop\b/);
   assert.match(client, /film\.play\(\)\.catch/);
   assert.match(client, /next-human-challenge-intro\.mp4/);
   assert.match(client, /The Next Human <em>Challenge<\/em>/);
