@@ -4,6 +4,25 @@ export type BharatUdayDiscovery = {
   note: string;
 };
 
+export type BharatUdayLifeQuote = {
+  text: string;
+  author: "Sri Aurobindo" | "The Mother";
+  source?: string;
+};
+
+const bharatUdayLifeQuotes: BharatUdayLifeQuote[] = [
+  { text: "All life is Yoga.", author: "Sri Aurobindo", source: "The Synthesis of Yoga" },
+  { text: "The future belongs to those who want to progress.", author: "The Mother" },
+  { text: "Man is a transitional being; he is not final.", author: "Sri Aurobindo", source: "CWSA Vol. 12, p. 157" },
+  { text: "To know is good, to live is better, to be, that is perfection.", author: "The Mother" },
+  { text: "All can be done if the god-touch is there.", author: "Sri Aurobindo", source: "Savitri" },
+];
+
+export function lifeQuoteFor(levelNumber: number) {
+  const index = Math.max(0, Math.abs(levelNumber) - 1) % bharatUdayLifeQuotes.length;
+  return bharatUdayLifeQuotes[index];
+}
+
 export function questionOrderFor(attemptNumber: number) {
   const shift = Math.abs(attemptNumber) % 5;
   const order = Array.from({ length: 5 }, (_, index) => (index + shift) % 5);

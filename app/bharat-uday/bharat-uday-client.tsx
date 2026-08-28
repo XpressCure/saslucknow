@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { bharatUdayLevels, choicesFor, milestoneLevels, questionOrderFor, questionPromptFor } from "./bharat-uday-data";
+import { bharatUdayLevels, choicesFor, lifeQuoteFor, milestoneLevels, questionOrderFor, questionPromptFor } from "./bharat-uday-data";
 
-type Stage = "overview" | "welcome" | "question" | "coach" | "practice" | "reflection" | "card";
+type Stage = "overview" | "welcome" | "question" | "coach" | "quote" | "reflection" | "card";
 type StoredProgress = {
   completed: number[];
   currentLevel: number;
@@ -54,8 +54,6 @@ export function BharatUdayClient() {
   const [answers, setAnswers] = useState<string[]>([]);
   const [reflection, setReflection] = useState("");
   const [participantName, setParticipantName] = useState("");
-  const [pauseSeconds, setPauseSeconds] = useState(120);
-  const [pauseRunning, setPauseRunning] = useState(false);
   const [shareNotice, setShareNotice] = useState("");
   const journeyRef = useRef<HTMLElement>(null);
   const introFilmRef = useRef<HTMLVideoElement>(null);
@@ -68,6 +66,7 @@ export function BharatUdayClient() {
   const completedCount = progress.completed.length;
   const score = answers.reduce((total, answer, index) => total + (answer === activeLevel.discoveries[questionOrder[index]]?.answer ? 1 : 0), 0);
   const milestone = milestoneLevels.has(levelNumber);
+  const lifeQuote = lifeQuoteFor(levelNumber);
 
   useEffect(() => {
     try {
@@ -97,13 +96,6 @@ export function BharatUdayClient() {
     return () => film.removeEventListener("canplay", beginPlayback);
   }, []);
 
-  useEffect(() => {
-    if (!pauseRunning) return;
-    if (pauseSeconds <= 0) { setPauseRunning(false); return; }
-    const timer = window.setTimeout(() => setPauseSeconds(value => value - 1), 1000);
-    return () => window.clearTimeout(timer);
-  }, [pauseRunning, pauseSeconds]);
-
   function showStage(next: Stage) {
     setStage(next);
     window.setTimeout(() => journeyRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 20);
@@ -120,8 +112,6 @@ export function BharatUdayClient() {
     setSelectedChoice("");
     setAnswers([]);
     setReflection(progress.reflections[firstUnfinished] || "");
-    setPauseSeconds(120);
-    setPauseRunning(false);
     setShareNotice("");
     showStage("welcome");
   }
@@ -136,7 +126,6 @@ export function BharatUdayClient() {
   }
 
   function enterReflection() {
-    setPauseRunning(false);
     showStage("reflection");
   }
 
@@ -277,7 +266,7 @@ export function BharatUdayClient() {
       </section>
 
       <section className="bu-flow" aria-label="How each level works">
-        {[ ["01","JÑĀNA","Answer five inviting questions"], ["02","KHOJ","Unlock a surprising discovery"], ["03","SĀDHANA","Pause, notice or carry a thought"], ["04","DISCOVERY CARD","Make the discovery your own"] ].map(item => <article key={item[0]}><span>{item[0]}</span><i/><h3>{item[1]}</h3><p>{item[2]}</p></article>)}
+        {[ ["01","JÑĀNA","Answer five inviting questions"], ["02","KHOJ","Unlock a surprising discovery"], ["03","SĀDHANA","Receive a word for life"], ["04","DISCOVERY CARD","Make the discovery your own"] ].map(item => <article key={item[0]}><span>{item[0]}</span><i/><h3>{item[1]}</h3><p>{item[2]}</p></article>)}
       </section>
 
       <section className="bu-journey" id="journey" ref={journeyRef}>
@@ -302,11 +291,11 @@ export function BharatUdayClient() {
         </div>}
 
         {stage === "coach" && <div className="bu-experience bu-coach" style={{ "--accent": activeLevel.accent } as React.CSSProperties}>
-          <div className="bu-coach-score"><span>{score}</span><small>out of 5</small></div><p className="bu-kicker">KHOJ · YOUR DISCOVERY</p><h2>{score >= 4 ? "Your curiosity is wide awake." : score >= 2 ? "Good questions are opening." : "A new doorway has opened."}</h2><p className="bu-coach-fact">{activeLevel.coachFact}</p><div className="bu-answer-notes">{questionOrder.map((discoveryIndex, index) => { const item = activeLevel.discoveries[discoveryIndex]; return <details key={item.prompt}><summary><span>{answers[index] === item.answer ? "✓" : "↗"}</span>{item.answer}</summary><p>{item.note}</p></details>; })}</div><button className="bu-primary" type="button" onClick={() => showStage("practice")}>Proceed to finish this level <b>→</b></button>
+          <div className="bu-coach-score"><span>{score}</span><small>out of 5</small></div><p className="bu-kicker">KHOJ · YOUR DISCOVERY</p><h2>{score >= 4 ? "Your curiosity is wide awake." : score >= 2 ? "Good questions are opening." : "A new doorway has opened."}</h2><p className="bu-coach-fact">{activeLevel.coachFact}</p><div className="bu-answer-notes">{questionOrder.map((discoveryIndex, index) => { const item = activeLevel.discoveries[discoveryIndex]; return <details key={item.prompt}><summary><span>{answers[index] === item.answer ? "✓" : "↗"}</span>{item.answer}</summary><p>{item.note}</p></details>; })}</div><button className="bu-primary" type="button" onClick={() => showStage("quote")}>Proceed to finish this level <b>→</b></button>
         </div>}
 
-        {stage === "practice" && <div className="bu-experience bu-practice" style={{ "--accent": activeLevel.accent } as React.CSSProperties}>
-          <div className={`bu-breathing-orb ${pauseRunning ? "running" : ""}`}><span>{pauseRunning ? `${String(Math.floor(pauseSeconds/60)).padStart(2,"0")}:${String(pauseSeconds%60).padStart(2,"0")}` : activeLevel.symbol}</span></div><p className="bu-kicker">SĀDHANA · LET IT BECOME PERSONAL</p><h2>{levelNumber % 3 === 0 ? "Carry one thought." : "Take a two-minute inner pause."}</h2><blockquote>“{activeLevel.innerPrompt}”</blockquote>{pauseSeconds > 0 && levelNumber % 3 !== 0 ? <button className="bu-primary" type="button" onClick={() => setPauseRunning(value => !value)}>{pauseRunning ? "Pause timer" : pauseSeconds < 120 ? "Continue pause" : "Begin two minutes"}</button> : null}<button className="bu-text-button" type="button" onClick={enterReflection}>{pauseSeconds === 0 || levelNumber % 3 === 0 ? "I am ready to reflect →" : "Continue when ready →"}</button>
+        {stage === "quote" && <div className="bu-experience bu-life-quote" style={{ "--accent": activeLevel.accent } as React.CSSProperties}>
+          <div className="bu-quote-aura" aria-hidden="true"><span>{activeLevel.symbol}</span></div><p className="bu-kicker">SĀDHANA · A WORD FOR LIFE</p><h2>Carry this into your day.</h2><blockquote>“{lifeQuote.text}”</blockquote><cite>— {lifeQuote.author}{lifeQuote.source ? <small>{lifeQuote.source}</small> : null}</cite><p className="bu-quote-guidance">Read it once, quietly. Let its meaning travel with you beyond this level.</p><button className="bu-primary" type="button" onClick={enterReflection}>Carry this with me <b>→</b></button>
         </div>}
 
         {stage === "reflection" && <div className="bu-experience bu-reflection" style={{ "--accent": activeLevel.accent } as React.CSSProperties}>

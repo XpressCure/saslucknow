@@ -52,3 +52,19 @@ test("challenge attempts rotate questions and keep answers private until complet
   assert.match(css, /\.bu-question-progress\{display:grid;grid-template-columns:repeat\(5,1fr\)/);
   assert.match(css, /\.bu-question-progress span\.current/);
 });
+
+test("Sadhana is a life quotation, not a timed activity", async () => {
+  const [client, data, css] = await Promise.all([
+    read("../app/bharat-uday/bharat-uday-client.tsx"),
+    read("../app/bharat-uday/bharat-uday-data.ts"),
+    read("../app/bharat-uday/bharat-uday.css"),
+  ]);
+  assert.match(client, /SĀDHANA · A WORD FOR LIFE/);
+  assert.match(client, /Carry this with me/);
+  assert.match(client, /lifeQuoteFor\(levelNumber\)/);
+  assert.doesNotMatch(client, /pauseSeconds|pauseRunning|Begin two minutes|Take a two-minute inner pause/);
+  assert.match(data, /author: "Sri Aurobindo" \| "The Mother"/);
+  assert.match(data, /The future belongs to those who want to progress/);
+  assert.match(css, /\.bu-life-quote/);
+  assert.match(css, /\.bu-quote-aura/);
+});
