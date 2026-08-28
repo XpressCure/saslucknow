@@ -36,3 +36,19 @@ test("challenge presentation avoids the former neon-blue campaign palette", asyn
   assert.match(page, /--bu-night:#061a25/);
   assert.match(page, /--bu-saffron:#f4a42c/);
 });
+
+test("challenge attempts rotate questions and keep answers private until completion", async () => {
+  const [client, data, css] = await Promise.all([
+    read("../app/bharat-uday/bharat-uday-client.tsx"),
+    read("../app/bharat-uday/bharat-uday-data.ts"),
+    read("../app/bharat-uday/bharat-uday.css"),
+  ]);
+  assert.match(client, /attempts: Record<number, number>/);
+  assert.match(client, /setQuestionOrder\(questionOrderFor\(nextAttempt\)\)/);
+  assert.match(client, /Answers are revealed only after all five questions/);
+  assert.match(client, /Array\.from\(\{ length: 5 \}/);
+  assert.match(data, /function questionOrderFor/);
+  assert.match(data, /function questionPromptFor/);
+  assert.match(css, /\.bu-question-progress\{display:grid;grid-template-columns:repeat\(5,1fr\)/);
+  assert.match(css, /\.bu-question-progress span\.current/);
+});

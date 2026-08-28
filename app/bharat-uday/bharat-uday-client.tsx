@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { bharatUdayLevels, choicesFor, milestoneLevels } from "./bharat-uday-data";
+import { bharatUdayLevels, choicesFor, milestoneLevels, questionOrderFor, questionPromptFor } from "./bharat-uday-data";
 
 type Stage = "overview" | "welcome" | "question" | "coach" | "practice" | "reflection" | "card";
 type StoredProgress = {
@@ -10,11 +10,12 @@ type StoredProgress = {
   currentLevel: number;
   scores: Record<number, number>;
   reflections: Record<number, string>;
+  attempts: Record<number, number>;
   name: string;
 };
 
 const storageKey = "sas-bharat-uday-progress-v1";
-const blankProgress: StoredProgress = { completed: [], currentLevel: 1, scores: {}, reflections: {}, name: "" };
+const blankProgress: StoredProgress = { completed: [], currentLevel: 1, scores: {}, reflections: {}, attempts: {}, name: "" };
 
 function safeProgress(value: unknown): StoredProgress {
   if (!value || typeof value !== "object") return blankProgress;
@@ -24,6 +25,7 @@ function safeProgress(value: unknown): StoredProgress {
     currentLevel: Math.min(30, Math.max(1, Number(source.currentLevel) || 1)),
     scores: source.scores && typeof source.scores === "object" ? source.scores : {},
     reflections: source.reflections && typeof source.reflections === "object" ? source.reflections : {},
+    attempts: source.attempts && typeof source.attempts === "object" ? source.attempts : {},
     name: typeof source.name === "string" ? source.name.slice(0, 60) : "",
   };
 }
@@ -46,6 +48,8 @@ export function BharatUdayClient() {
   const [stage, setStage] = useState<Stage>("overview");
   const [levelNumber, setLevelNumber] = useState(1);
   const [questionIndex, setQuestionIndex] = useState(0);
+  const [questionOrder, setQuestionOrder] = useState([0, 1, 2, 3, 4]);
+  const [attemptNumber, setAttemptNumber] = useState(0);
   const [selectedChoice, setSelectedChoice] = useState("");
   const [answers, setAnswers] = useState<string[]>([]);
   const [reflection, setReflection] = useState("");
@@ -57,10 +61,12 @@ export function BharatUdayClient() {
   const introFilmRef = useRef<HTMLVideoElement>(null);
 
   const activeLevel = bharatUdayLevels[levelNumber - 1];
-  const currentQuestion = activeLevel.discoveries[questionIndex];
-  const choices = useMemo(() => choicesFor(activeLevel, questionIndex), [activeLevel, questionIndex]);
+  const currentDiscoveryIndex = questionOrder[questionIndex] ?? questionIndex;
+  const currentQuestion = activeLevel.discoveries[currentDiscoveryIndex];
+  const currentPrompt = questionPromptFor(currentQuestion, attemptNumber, questionIndex);
+  const choices = useMemo(() => choicesFor(activeLevel, currentDiscoveryIndex, attemptNumber), [activeLevel, currentDiscoveryIndex, attemptNumber]);
   const completedCount = progress.completed.length;
-  const score = answers.reduce((total, answer, index) => total + (answer === activeLevel.discoveries[index]?.answer ? 1 : 0), 0);
+  const score = answers.reduce((total, answer, index) => total + (answer === activeLevel.discoveries[questionOrder[index]]?.answer ? 1 : 0), 0);
   const milestone = milestoneLevels.has(levelNumber);
 
   useEffect(() => {
@@ -105,7 +111,11 @@ export function BharatUdayClient() {
 
   function beginLevel(number: number) {
     const firstUnfinished = progress.completed.includes(number) ? Math.min(30, Math.max(number, progress.currentLevel)) : number;
+    const nextAttempt = (progress.attempts[firstUnfinished] || 0) + 1;
     setLevelNumber(firstUnfinished);
+    setAttemptNumber(nextAttempt);
+    setQuestionOrder(questionOrderFor(nextAttempt));
+    setProgress(current => ({ ...current, attempts: { ...current.attempts, [firstUnfinished]: nextAttempt } }));
     setQuestionIndex(0);
     setSelectedChoice("");
     setAnswers([]);
@@ -288,11 +298,11 @@ export function BharatUdayClient() {
         </div>}
 
         {stage === "question" && <div className="bu-experience bu-question" style={{ "--accent": activeLevel.accent } as React.CSSProperties}>
-          <header><button className="bu-back" type="button" onClick={() => showStage("welcome")}>← Exit level</button><span>LEVEL {String(levelNumber).padStart(2,"0")}</span><strong>{questionIndex + 1} / 5</strong></header><div className="bu-question-progress"><i style={{ width: `${((questionIndex + 1) / 5) * 100}%` }}/></div><p className="bu-kicker">DISCOVERY QUESTION {questionIndex + 1}</p><h2>{currentQuestion.prompt}</h2><div className="bu-options">{choices.map((choice, index) => <button type="button" key={choice} className={selectedChoice === choice ? "selected" : ""} onClick={() => setSelectedChoice(choice)}><span>{String.fromCharCode(65 + index)}</span>{choice}<i>{selectedChoice === choice ? "●" : "○"}</i></button>)}</div><button className="bu-primary" type="button" disabled={!selectedChoice} onClick={confirmAnswer}>{questionIndex === 4 ? "Reveal my discovery" : "Next question"}<b>→</b></button>
+          <header><button className="bu-back" type="button" onClick={() => showStage("welcome")}>← Exit level</button><span>LEVEL {String(levelNumber).padStart(2,"0")}</span><strong>{questionIndex + 1} / 5</strong></header><div className="bu-question-progress" aria-label={`Question ${questionIndex + 1} of 5`}>{Array.from({ length: 5 }, (_, index) => <span key={index} className={index < questionIndex ? "completed" : index === questionIndex ? "current" : ""} aria-hidden="true"/>)}</div><p className="bu-kicker">DISCOVERY QUESTION {questionIndex + 1}</p><h2 className="bu-question-prompt">{currentPrompt}</h2><div className="bu-options">{choices.map((choice, index) => <button type="button" key={choice} aria-pressed={selectedChoice === choice} className={selectedChoice === choice ? "selected" : ""} onClick={() => setSelectedChoice(choice)}><span>{String.fromCharCode(65 + index)}</span>{choice}<i>{selectedChoice === choice ? "●" : "○"}</i></button>)}</div><p className="bu-answer-privacy">Your choice is recorded privately. Answers are revealed only after all five questions.</p><button className="bu-primary" type="button" disabled={!selectedChoice} onClick={confirmAnswer}>{questionIndex === 4 ? "Reveal my discovery" : "Next question"}<b>→</b></button>
         </div>}
 
         {stage === "coach" && <div className="bu-experience bu-coach" style={{ "--accent": activeLevel.accent } as React.CSSProperties}>
-          <div className="bu-coach-score"><span>{score}</span><small>out of 5</small></div><p className="bu-kicker">KHOJ · YOUR DISCOVERY</p><h2>{score >= 4 ? "Your curiosity is wide awake." : score >= 2 ? "Good questions are opening." : "A new doorway has opened."}</h2><p className="bu-coach-fact">{activeLevel.coachFact}</p><div className="bu-answer-notes">{activeLevel.discoveries.map((item, index) => <details key={item.prompt}><summary><span>{answers[index] === item.answer ? "✓" : "↗"}</span>{item.answer}</summary><p>{item.note}</p></details>)}</div><button className="bu-primary" type="button" onClick={() => showStage("practice")}>Proceed to finish this level <b>→</b></button>
+          <div className="bu-coach-score"><span>{score}</span><small>out of 5</small></div><p className="bu-kicker">KHOJ · YOUR DISCOVERY</p><h2>{score >= 4 ? "Your curiosity is wide awake." : score >= 2 ? "Good questions are opening." : "A new doorway has opened."}</h2><p className="bu-coach-fact">{activeLevel.coachFact}</p><div className="bu-answer-notes">{questionOrder.map((discoveryIndex, index) => { const item = activeLevel.discoveries[discoveryIndex]; return <details key={item.prompt}><summary><span>{answers[index] === item.answer ? "✓" : "↗"}</span>{item.answer}</summary><p>{item.note}</p></details>; })}</div><button className="bu-primary" type="button" onClick={() => showStage("practice")}>Proceed to finish this level <b>→</b></button>
         </div>}
 
         {stage === "practice" && <div className="bu-experience bu-practice" style={{ "--accent": activeLevel.accent } as React.CSSProperties}>

@@ -4,6 +4,19 @@ export type BharatUdayDiscovery = {
   note: string;
 };
 
+export function questionOrderFor(attemptNumber: number) {
+  const shift = Math.abs(attemptNumber) % 5;
+  const order = Array.from({ length: 5 }, (_, index) => (index + shift) % 5);
+  return Math.floor(Math.abs(attemptNumber) / 5) % 2 ? [order[0], ...order.slice(1).reverse()] : order;
+}
+
+export function questionPromptFor(discovery: BharatUdayDiscovery, attemptNumber: number, position: number) {
+  const variant = Math.abs(attemptNumber + position) % 3;
+  if (variant === 0) return discovery.prompt;
+  if (variant === 1) return `Which answer is most closely connected with this discovery?\n${discovery.note}`;
+  return `Identify the idea described here:\n${discovery.note}`;
+}
+
 export type BharatUdayLevel = {
   number: number;
   title: string;
@@ -250,14 +263,14 @@ export const bharatUdayLevels: BharatUdayLevel[] = [
 
 export const milestoneLevels = new Set([7, 15, 21, 30]);
 
-export function choicesFor(levelData: BharatUdayLevel, questionIndex: number) {
+export function choicesFor(levelData: BharatUdayLevel, questionIndex: number, attemptNumber = 0) {
   const answer = levelData.discoveries[questionIndex].answer;
   const alternatives = levelData.discoveries
     .filter((_, index) => index !== questionIndex)
     .map(item => item.answer)
     .slice(0, 3);
   const choices = [...alternatives];
-  const answerPosition = (levelData.number + questionIndex * 2) % 4;
+  const answerPosition = (levelData.number + questionIndex * 2 + Math.abs(attemptNumber)) % 4;
   choices.splice(answerPosition, 0, answer);
   return choices;
 }
