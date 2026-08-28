@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { bharatUdayLevels, choicesFor, lifeQuoteFor, milestoneLevels, questionOrderFor, questionPromptFor } from "./bharat-uday-data";
 
-type Stage = "overview" | "welcome" | "question" | "coach" | "quote" | "reflection" | "card";
+type Stage = "overview" | "welcome" | "question" | "coach" | "quote" | "card";
 type StoredProgress = {
   completed: number[];
   currentLevel: number;
@@ -52,7 +52,6 @@ export function BharatUdayClient() {
   const [attemptNumber, setAttemptNumber] = useState(0);
   const [selectedChoice, setSelectedChoice] = useState("");
   const [answers, setAnswers] = useState<string[]>([]);
-  const [reflection, setReflection] = useState("");
   const [participantName, setParticipantName] = useState("");
   const [shareNotice, setShareNotice] = useState("");
   const journeyRef = useRef<HTMLElement>(null);
@@ -111,7 +110,6 @@ export function BharatUdayClient() {
     setQuestionIndex(0);
     setSelectedChoice("");
     setAnswers([]);
-    setReflection(progress.reflections[firstUnfinished] || "");
     setShareNotice("");
     showStage("welcome");
   }
@@ -125,12 +123,7 @@ export function BharatUdayClient() {
     else showStage("coach");
   }
 
-  function enterReflection() {
-    showStage("reflection");
-  }
-
   function completeLevel() {
-    if (!reflection.trim()) return;
     const nextCompleted = [...new Set([...progress.completed, levelNumber])].sort((a, b) => a - b);
     const nextLevel = Math.min(30, levelNumber + 1);
     const nextProgress: StoredProgress = {
@@ -138,7 +131,6 @@ export function BharatUdayClient() {
       completed: nextCompleted,
       currentLevel: nextLevel,
       scores: { ...progress.scores, [levelNumber]: score },
-      reflections: { ...progress.reflections, [levelNumber]: reflection.trim().slice(0, 600) },
     };
     setProgress(nextProgress);
     showStage("card");
@@ -191,15 +183,17 @@ export function BharatUdayClient() {
     context.fillStyle = "rgba(255,255,255,.78)"; context.font = "32px Arial";
     context.fillText(`${score}/5 discoveries · ${progress.completed.length}/30 levels completed`, 112, titleY + 86);
     context.fillStyle = "#ffcf5c"; context.font = "700 31px Arial";
-    context.fillText("ONE THOUGHT I CARRY FORWARD", 112, titleY + 175);
+    context.fillText("A WORD FOR LIFE", 112, titleY + 175);
     context.fillStyle = "#ffffff"; context.font = "italic 35px Georgia";
-    const words = reflection.trim().split(/\s+/); let line = "", y = titleY + 235;
+    const words = lifeQuote.text.split(/\s+/); let line = "", y = titleY + 235;
     for (const word of words) {
       const test = `${line}${word} `;
       if (context.measureText(test).width > 815 && line) { context.fillText(line.trim(), 112, y); line = `${word} `; y += 47; if (y > 820) break; }
       else line = test;
     }
     if (y <= 820) context.fillText(line.trim(), 112, y);
+    context.fillStyle = "#ffcf5c"; context.font = "700 25px Arial";
+    context.fillText(`— ${lifeQuote.author}`, 112, Math.min(y + 52, 838));
     context.fillStyle = "#ffffff"; context.font = "700 39px Georgia";
     context.fillText(participantName.trim() || "A curious explorer", 112, 905);
     context.fillStyle = "rgba(255,255,255,.65)"; context.font = "24px Arial";
@@ -253,7 +247,7 @@ export function BharatUdayClient() {
           <span className="bu-live-pill"><i/> A 30-level discovery experience</span>
           <p>CULTURE · SCIENCE · CONSCIOUSNESS</p>
           <h1>The Next Human <em>Challenge</em></h1>
-          <h2>Five fast questions. One discovery. One personal reflection.</h2>
+          <h2>Five fast questions. One discovery. One life quote.</h2>
           <div className="bu-hero-actions"><button type="button" onClick={() => beginLevel(progress.currentLevel)}>{completedCount ? `Continue from Level ${progress.currentLevel}` : "Begin Level 01"}<b>↗</b></button><a href="#journey">Explore the 30 discoveries</a></div>
           <div className="bu-hero-proof"><span><strong>30</strong> vivid levels</span><span><strong>5</strong> questions each</span><span><strong>∞</strong> go at your pace</span></div>
         </div>
@@ -262,7 +256,7 @@ export function BharatUdayClient() {
 
       <section className="bu-intro" id="how-it-works">
         <div><p className="bu-kicker">NOT A TEST. A DISCOVERY.</p><h2>Culture meets science.<br/><em>Knowledge meets you.</em></h2></div>
-        <div className="bu-intro-copy"><p>The Next Human Challenge is a fast, free journey through 30 surprising worlds—from zero and space science to biodiversity, music, attention and the future human.</p><p>Complete one level or race through several. Your progress waits for you, and every finish reveals a Discovery Card created from your own reflection.</p></div>
+        <div className="bu-intro-copy"><p>The Next Human Challenge is a fast, free journey through 30 surprising worlds—from zero and space science to biodiversity, music, attention and the future human.</p><p>Complete one level or race through several. Your progress waits for you, and every finish reveals a Discovery Card carrying a word for life.</p></div>
       </section>
 
       <section className="bu-flow" aria-label="How each level works">
@@ -295,16 +289,12 @@ export function BharatUdayClient() {
         </div>}
 
         {stage === "quote" && <div className="bu-experience bu-life-quote" style={{ "--accent": activeLevel.accent } as React.CSSProperties}>
-          <div className="bu-quote-aura" aria-hidden="true"><span>{activeLevel.symbol}</span></div><p className="bu-kicker">SĀDHANA · A WORD FOR LIFE</p><h2>Carry this into your day.</h2><blockquote>“{lifeQuote.text}”</blockquote><cite>— {lifeQuote.author}{lifeQuote.source ? <small>{lifeQuote.source}</small> : null}</cite><p className="bu-quote-guidance">Read it once, quietly. Let its meaning travel with you beyond this level.</p><button className="bu-primary" type="button" onClick={enterReflection}>Carry this with me <b>→</b></button>
-        </div>}
-
-        {stage === "reflection" && <div className="bu-experience bu-reflection" style={{ "--accent": activeLevel.accent } as React.CSSProperties}>
-          <p className="bu-kicker">ABHIVYAKTI · YOUR VOICE</p><h2>What stayed with you?</h2><p>There is no right answer here. Write one honest sentence—this becomes part of your personal Discovery Card.</p><label><span>My reflection</span><textarea value={reflection} onChange={event => setReflection(event.target.value)} maxLength={600} rows={6} placeholder="Something I noticed, questioned or want to carry forward…"/><small>{reflection.length}/600</small></label><button className="bu-primary" type="button" disabled={!reflection.trim()} onClick={completeLevel}>Submit & create my Discovery Card <b>✦</b></button>
+          <div className="bu-quote-aura" aria-hidden="true"><span>{activeLevel.symbol}</span></div><p className="bu-kicker">SĀDHANA · A WORD FOR LIFE</p><h2>Carry this into your day.</h2><blockquote>“{lifeQuote.text}”</blockquote><cite>— {lifeQuote.author}{lifeQuote.source ? <small>{lifeQuote.source}</small> : null}</cite><p className="bu-quote-guidance">Read it once, quietly. Let its meaning travel with you beyond this level.</p><button className="bu-primary" type="button" onClick={completeLevel}>Carry this with me & create my card <b>→</b></button>
         </div>}
 
         {stage === "card" && <div className="bu-experience bu-card-stage" style={{ "--accent": activeLevel.accent } as React.CSSProperties}>
           <div className="bu-confetti" aria-hidden="true">✦ <i>●</i> ◆ <b>✺</b> ✦</div><p className="bu-kicker">{milestone ? "MILESTONE UNLOCKED" : "LEVEL COMPLETE"}</p><h2>{milestone ? "A larger light has opened." : "This discovery is now yours."}</h2><p>{milestone ? `Level ${levelNumber} has unlocked a special Next Human Challenge milestone certificate.` : "Add your name and make a square card ready to share."}</p><div className={`bu-discovery-card ${milestone ? "milestone" : ""}`}>
-            <div className="bu-card-rings"/><span>THE NEXT HUMAN CHALLENGE</span><h3>{milestone ? "Milestone Awakened" : "Discovery Awakened"}</h3><p>LEVEL {String(levelNumber).padStart(2,"0")} · {activeLevel.realm.toUpperCase()}</p><h4>{activeLevel.title}</h4><blockquote>“{reflection}”</blockquote><strong>{participantName.trim() || "A curious explorer"}</strong><small>Sri Aurobindo Society, Lucknow</small>
+            <div className="bu-card-rings"/><span>THE NEXT HUMAN CHALLENGE</span><h3>{milestone ? "Milestone Awakened" : "Discovery Awakened"}</h3><p>LEVEL {String(levelNumber).padStart(2,"0")} · {activeLevel.realm.toUpperCase()}</p><h4>{activeLevel.title}</h4><blockquote>“{lifeQuote.text}”<cite>— {lifeQuote.author}</cite></blockquote><strong>{participantName.trim() || "A curious explorer"}</strong><small>Sri Aurobindo Society, Lucknow</small>
           </div><label className="bu-name-field"><span>Name on your card</span><input value={participantName} onChange={event => saveName(event.target.value)} maxLength={60} placeholder="Write your name"/></label><div className="bu-card-actions"><button type="button" onClick={downloadCard}>Download card</button><button type="button" onClick={() => void shareCard()}>Share</button><button type="button" onClick={() => void shareCard("whatsapp")}>WhatsApp</button><button type="button" onClick={() => void shareCard("facebook")}>Facebook</button><button type="button" onClick={() => void shareCard("instagram")}>Instagram</button><button type="button" onClick={() => void shareCard("linkedin")}>LinkedIn</button></div>{shareNotice && <p className="bu-share-notice">{shareNotice}</p>}<button className="bu-primary" type="button" onClick={nextLevel}>{levelNumber === 30 ? "Return to my complete journey" : `Proceed to Level ${String(levelNumber + 1).padStart(2,"0")}`} <b>→</b></button>
         </div>}
       </section>

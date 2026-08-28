@@ -68,3 +68,12 @@ test("Sadhana is a life quotation, not a timed activity", async () => {
   assert.match(css, /\.bu-life-quote/);
   assert.match(css, /\.bu-quote-aura/);
 });
+
+test("life quote leads directly to the Discovery Card without Abhivyakti", async () => {
+  const client = await read("../app/bharat-uday/bharat-uday-client.tsx");
+  assert.match(client, /onClick=\{completeLevel\}>Carry this with me & create my card/);
+  assert.doesNotMatch(client, /ABHIVYAKTI · YOUR VOICE/);
+  assert.doesNotMatch(client, /What stayed with you\?/);
+  assert.doesNotMatch(client, /stage === "reflection"/);
+  assert.doesNotMatch(client, /<textarea/);
+});
