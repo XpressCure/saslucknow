@@ -262,10 +262,14 @@ export function BharatUdayClient() {
           <p>CULTURE · SCIENCE · CONSCIOUSNESS</p>
           <h1>The Next Human <em>Challenge</em></h1>
           <h2>Five fast questions. One discovery. One life quote.</h2>
-          <div className="bu-hero-actions"><button type="button" onClick={() => beginLevel(progress.currentLevel)}>{completedCount ? `Continue from Level ${progress.currentLevel}` : "Begin Level 01"}<b>↗</b></button><a href="#journey">Explore the 30 discoveries</a></div>
           <div className="bu-hero-proof"><span><strong>30</strong> vivid levels</span><span><strong>5</strong> questions each</span><span><strong>∞</strong> go at your pace</span></div>
         </div>
         <div className="bu-scroll-cue"><span>Scroll to discover</span><i>↓</i></div>
+      </section>
+
+      <section className="bu-hero-cta" aria-label="Start The Next Human Challenge">
+        <div><span>YOUR NEXT DISCOVERY IS READY</span><strong>{completedCount ? `Continue from Level ${progress.currentLevel}` : "The journey begins with one question."}</strong></div>
+        <div className="bu-hero-cta-actions"><button type="button" onClick={() => beginLevel(progress.currentLevel)}>{completedCount ? "Continue challenge" : "Begin Level 01"}<b>→</b></button><a href="#journey">Explore all 30 levels</a></div>
       </section>
 
       <section className="bu-intro" id="how-it-works">

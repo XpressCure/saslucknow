@@ -22,6 +22,21 @@ test("The Next Human Challenge uses a real, stable intro video", async () => {
   assert.ok(video.size > 100_000, "intro video should contain rendered motion scenes");
 });
 
+test("the film holds its closing message while the real CTA stays outside it", async () => {
+  const [client, css, generator] = await Promise.all([
+    read("../app/bharat-uday/bharat-uday-client.tsx"),
+    read("../app/bharat-uday/bharat-uday.css"),
+    read("../scripts/generate-bharat-uday-motion.py"),
+  ]);
+  assert.match(generator, /fourth = ease\(\(t - 10\.5\) \/ \.35\)/);
+  assert.doesNotMatch(generator, /BEGIN LEVEL 01  >/);
+  assert.match(client, /<section className="bu-hero-cta" aria-label="Start The Next Human Challenge">/);
+  assert.match(client, /The journey begins with one question\./);
+  assert.doesNotMatch(client, /<div className="bu-hero-actions">/);
+  assert.match(css, /\.bu-hero-cta\{display:flex/);
+  assert.match(css, /\.bu-hero-cta-actions button\{/);
+});
+
 test("challenge presentation avoids the former neon-blue campaign palette", async () => {
   const [page, studio, preview, member] = await Promise.all([
     read("../app/bharat-uday/bharat-uday.css"),

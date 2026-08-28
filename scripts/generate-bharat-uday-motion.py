@@ -135,14 +135,15 @@ def frame_at(t: float, background: Image.Image) -> Image.Image:
         add_text(draw, (82, 418), "Knowledge meets reflection—and becomes your own Discovery Card.",
                  DISPLAY_SMALL, IVORY, third)
 
-    fourth = scene_alpha(t, 10.5, 14.0, .35)
+    # The closing scene fades in once and then remains fully visible. Browsers
+    # retain this final frame when playback ends, so the closing invitation
+    # never disappears.
+    fourth = ease((t - 10.5) / .35)
     if fourth > 0:
         add_text(draw, (82, 105), "THE JOURNEY BEGINS WITH ONE QUESTION", SANS_SMALL, SAFFRON, fourth)
         add_text(draw, (82, 186), "What will you\ndiscover about Bharat—\nand about yourself?",
                  DISPLAY_SMALL, IVORY, fourth, spacing=3)
-        draw.rounded_rectangle((82, 456, 385, 520), radius=32, fill=(*SAFFRON, int(255 * fourth)))
-        add_text(draw, (234, 488), "BEGIN LEVEL 01  >", SANS_BOLD, MIDNIGHT, fourth, anchor="mm")
-        add_text(draw, (82, 554), "THE NEXT HUMAN CHALLENGE", SANS_SMALL, IVORY, fourth * 0.86)
+        add_text(draw, (82, 500), "THE NEXT HUMAN CHALLENGE", SANS_SMALL, IVORY, fourth)
 
     return Image.alpha_composite(base, overlay).convert("RGB")
 
