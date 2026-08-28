@@ -93,3 +93,13 @@ test("every level produces a Society-branded certificate with a compact share me
   assert.match(css, /\.bu-certificate-brand/);
   assert.match(css, /\.bu-share-options/);
 });
+
+test("all 150 questions use dedicated contextual distractors", async () => {
+  const data = await read("../app/bharat-uday/bharat-uday-data.ts");
+  assert.match(data, /contextualDistractorsByLevel/);
+  assert.match(data, /Missing contextual choices for level/);
+  assert.doesNotMatch(data, /\.filter\(\(_, index\) => index !== questionIndex\)/);
+  for (let level = 1; level <= 30; level += 1) {
+    assert.match(data, new RegExp(`\\n  ${level}: \\[`, "m"), `level ${level} needs a contextual choice bank`);
+  }
+});

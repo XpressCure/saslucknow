@@ -282,14 +282,224 @@ export const bharatUdayLevels: BharatUdayLevel[] = [
 
 export const milestoneLevels = new Set([7, 15, 21, 30]);
 
+const contextualDistractorsByLevel: Record<number, [string, string, string][]> = {
+  1: [
+    ["Varahamihira", "Bhaskara II", "Brahmagupta"],
+    ["Ujjain Observatory", "Madras Observatory", "Vedh Shala"],
+    ["The Moon's shadow on Earth", "Clouds covering the Moon", "The Moon entering the Sun's shadow"],
+    ["Chandrayaan-1", "Mangalyaan", "Aditya-L1"],
+    ["Sirius", "Vega", "Betelgeuse"],
+  ],
+  2: [
+    ["Aryabhata", "Bhaskara II", "Ramanujan"],
+    ["No hundreds", "No ones", "No thousands"],
+    ["100", "300", "10,000"],
+    ["Triangle", "Square", "Spiral"],
+    ["7", "1", "Undefined"],
+  ],
+  3: [
+    ["Science of breath", "Study of herbs", "Art of surgery"],
+    ["Changing bedtime daily", "Skipping sleep on weekdays", "Using bright screens in bed"],
+    ["Taste", "Hearing", "Touch"],
+    ["It colours the blood", "It replaces all nutrients", "It prevents every infection"],
+    ["Only supplements", "Only intense exercise", "One quick remedy"],
+  ],
+  4: [
+    ["A hill fort", "A stone bridge", "A grain store"],
+    ["Diverts all rain to roads", "Evaporates rain immediately", "Turns rain into seawater"],
+    ["Zabo", "Ahar-pyne", "Bamboo drip channel"],
+    ["To increase water pressure", "To warm the water", "To change water colour"],
+    ["Flows straight to the sea", "Evaporates from roads", "Freezes on the surface"],
+  ],
+  5: [
+    ["A solid stone pillar", "A roof beam", "A water channel"],
+    ["Tension", "Magnetism", "Buoyancy"],
+    ["They block all daylight", "They store groundwater", "They eliminate outdoor air"],
+    ["Bilateral symmetry", "Translational symmetry", "Asymmetry"],
+    ["Fired brick", "Cast iron", "Timber frame"],
+  ],
+  6: [
+    ["Tamil", "Malayalam", "Gurmukhi"],
+    ["Replacing meaning with sound", "Shortening every sentence", "Writing without context"],
+    ["Punjabi", "Gujarati", "Marathi"],
+    ["A system for measuring sound", "A list of word meanings", "A method of translating speech"],
+    ["They make every language identical", "They remove regional memory", "They prevent multilingual learning"],
+  ],
+  7: [
+    ["Distillation", "Freezing", "Filtration"],
+    ["Artificial colouring", "Added salt", "Stored starch only"],
+    ["Protein", "Vitamins", "Minerals"],
+    ["Every food has identical nutrients", "It removes the need for water", "It guarantees unlimited energy"],
+    ["Cooking excessive quantities", "Ignoring expiry dates", "Discarding leftovers immediately"],
+  ],
+  8: [
+    ["A commercial timber plantation", "A city recreation park", "A single protected tree"],
+    ["Only the number of large animals", "The age of a forest", "The amount of rainfall in a region"],
+    ["They stop all seed formation", "They remove nutrients from soil", "They prevent flowers from opening"],
+    ["Replacing habitat with isolated lawns", "Removing native vegetation", "Building barriers through migration routes"],
+    ["On every continent naturally", "Only in captivity", "Wherever humans introduce it"],
+  ],
+  9: [
+    ["Colour", "Temperature alone", "Stillness"],
+    ["Amplitude", "Duration", "Direction"],
+    ["Sound disappearing in air", "Two unrelated notes cancelling forever", "Light bending through glass"],
+    ["Tabla", "Flute", "Sitar"],
+    ["Yes, without any medium", "Only if it is very loud", "Only at low frequency"],
+  ],
+  10: [
+    ["Biceps", "Hamstring", "Trapezius"],
+    ["Rapid muscle growth", "Visual memory training", "Digestive chemistry"],
+    ["It always stops", "It becomes sharply irregular", "It must become faster"],
+    ["Physical strength only", "Perfect memory", "Speed reading"],
+    ["Forcing the breath", "Holding as long as possible", "Ignoring dizziness"],
+  ],
+  11: [
+    ["Crosswise", "Diagonally only", "In circles"],
+    ["Machine-knitted synthetic fabric", "Printed silk only", "Unwoven felt"],
+    ["Wool", "Silk", "Jute"],
+    ["Printing after weaving", "Painting the finished cloth", "Cutting motifs into fabric"],
+    ["Threads arrange themselves randomly", "Counting changes fibre chemistry", "Only the loom's weight matters"],
+  ],
+  12: [
+    ["Zinc", "Aluminium", "Nickel"],
+    ["A thick layer of paint", "A coating of wax", "A copper-rich core"],
+    ["Cast bronze", "Pure aluminium", "Low-carbon iron"],
+    ["Only pure metal", "Two non-metallic gases only", "A single chemical element"],
+    ["Casting", "Annealing", "Electroplating"],
+  ],
+  13: [
+    ["Ocean tides", "River currents", "Polar ice"],
+    ["East or west of Greenwich", "Height above sea level", "Distance from the coast"],
+    ["Sextant", "Barometer", "Hourglass"],
+    ["Celestial bearing", "Magnetic declination", "Depth sounding"],
+    ["They isolated travellers", "They stopped language exchange", "Only one community could enter"],
+  ],
+  14: [
+    ["Winter", "Spring", "Autumn"],
+    ["Growing the same crop continuously", "Removing all soil organisms", "Keeping nutrient demand unchanged"],
+    ["Fresh mineral rock", "Synthetic pesticide", "Undecomposed plastic"],
+    ["They require flooded fields", "They need constant snowfall", "They grow only under glass"],
+    ["Extra sodium chloride", "Artificial pesticides", "Carbon dioxide bubbles"],
+  ],
+  15: [
+    ["Reflection and absorption", "Magnetism and conduction", "Evaporation and condensation"],
+    ["Retina", "Cornea", "Optic nerve"],
+    ["Sound echoes from its surface", "The surface creates new light", "Heat passes through the glass"],
+    ["Red, yellow and blue", "Cyan, magenta and yellow", "Orange, violet and green"],
+    ["Light bending around a corner", "Light speeding up", "Two colours mixing"],
+  ],
+  16: [
+    ["Notice every signal equally", "Eliminate all sensory input", "Remember information without awareness"],
+    ["A quiet environment", "One clear task", "Adequate rest"],
+    ["Predicting the future", "Suppressing every thought", "Increasing muscular strength"],
+    ["It erases all learning", "It prevents attention", "It replaces practice entirely"],
+    ["Speed of physical movement", "Knowledge of other people's thoughts", "The absence of all emotion"],
+  ],
+  17: [
+    ["Truth Alone Triumphs", "Liberty for Every State", "Justice by the Government"],
+    ["The Indian Penal Code", "The Union Budget", "The Census of India"],
+    ["Competition between citizens", "Uniformity of language", "Rule by one community"],
+    ["Jawaharlal Nehru", "Rajendra Prasad", "Sardar Vallabhbhai Patel"],
+    ["15 August 1947", "26 November 1949", "2 October 1950"],
+  ],
+  18: [
+    ["Sunita Williams", "Bachendri Pal", "Tessy Thomas"],
+    ["Kadambini Ganguly", "Janaki Ammal", "Asima Chatterjee"],
+    ["Pandita Ramabai", "Tarabai Shinde", "Ramabai Ranade"],
+    ["Sarojini Naidu", "Nellie Sengupta", "Vijaya Lakshmi Pandit"],
+    ["Kalpana Chawla", "Ritu Karidhal", "Muthayya Vanitha"],
+  ],
+  19: [
+    ["Rohini", "Bhaskara-I", "INSAT-1A"],
+    ["Venus", "Jupiter", "Mercury"],
+    ["International Satellite Research Office", "Indian Science and Rocket Organisation", "Integrated Space Research Observatory"],
+    ["To make the rocket heavier", "To avoid using fuel", "To keep every engine on forever"],
+    ["Sirius", "Proxima Centauri", "Polaris"],
+  ],
+  20: [
+    ["A single uniform habitat", "Permanent ice cover", "Very low species diversity"],
+    ["Increasing wave height", "Removing coastal sediment", "Blocking all tidal water"],
+    ["Seaweeds", "Molluscs", "Sponges"],
+    ["The most numerous species", "A species found only in zoos", "Any newly discovered species"],
+    ["Blue whale", "Olive ridley turtle", "Gharial"],
+  ],
+  21: [
+    ["Sound", "Gravity", "Chemical waste"],
+    ["Respiration", "Fermentation", "Transpiration"],
+    ["Coal", "Petroleum", "Natural gas"],
+    ["Using more energy for less work", "Avoiding every energy source", "Storing energy without using it"],
+    ["Earth's core", "The Moon", "Ocean tides alone"],
+  ],
+  22: [
+    ["A short weather report", "A list of unrelated facts", "A single-line instruction"],
+    ["Arthashastra", "Yoga Sutras", "Natya Shastra"],
+    ["Printed copies only", "Digital storage only", "Silent individual reading only"],
+    ["They remove imagination", "They make every statement literal", "They disconnect related experiences"],
+    ["Ramayana", "Rig Veda", "Panchatantra"],
+  ],
+  23: [
+    ["Villages becoming colder than mountains", "Cities receiving more rainfall everywhere", "Buildings producing natural snow"],
+    ["Condensation", "Combustion", "Freezing"],
+    ["Access to nearby services", "Neighbourhood walkability", "Shorter distances between daily needs"],
+    ["Move one person per vehicle", "Replace all walking", "Increase empty road space"],
+    ["Run off immediately", "Remain permanently on the surface", "Evaporate before touching soil"],
+  ],
+  24: [
+    ["Treatment only after illness", "Ignoring early risks", "Waiting for harm to spread"],
+    ["It seals all windows", "It increases indoor smoke", "It removes all humidity instantly"],
+    ["Digestive system", "Skeletal system", "Muscular system"],
+    ["It permanently sterilises skin", "It changes skin colour", "It replaces vaccination"],
+    ["Anonymous forwarded messages", "Unverified advertisements", "Rumours on social media"],
+  ],
+  25: [
+    ["A personal preference without support", "A repeated rumour", "An unrelated opinion"],
+    ["A proven scientific law", "A type of measurement", "A complete set of evidence"],
+    ["To make it more popular", "To avoid reading it", "To agree without checking"],
+    ["Similarity", "Probability", "Measurement"],
+    ["How quickly one can reply", "How loudly it is stated", "Only one's own assumptions"],
+  ],
+  26: [
+    ["The Moon's orbit around Earth", "Earth's orbit around the Sun", "The changing seasons"],
+    ["Earth's daily rotation", "Moon phases", "Ocean tides"],
+    ["Earth's magnetic field", "Sunspot cycles", "Monsoon winds"],
+    ["Every month has equal weather", "Clocks lose one hour daily", "The Moon stops moving"],
+    ["Longest in the year", "Shortest in the year", "Completely dark"],
+  ],
+  27: [
+    ["Four rotating sections", "No matching parts", "A random arrangement"],
+    ["Shapes overlapping with large gaps", "One shape placed at the centre", "Colours blending into a gradient"],
+    ["Straight rulers only", "Photographic templates", "Solid colour blocks"],
+    ["Next to each other", "At the centre together", "On the same side"],
+    ["Only the painted subject", "The artist's signature", "The material's weight"],
+  ],
+  28: [
+    ["Predict another person's future", "Make everyone agree", "Ignore another person's feelings"],
+    ["Constant competition", "Hidden goals", "Unreliable behaviour"],
+    ["A judgement based on complete evidence", "A carefully tested conclusion", "A neutral measurement"],
+    ["Interrupting quickly", "Planning one's reply only", "Ignoring non-verbal cues"],
+    ["Complete cultural uniformity", "One language replacing all others", "The removal of local traditions"],
+  ],
+  29: [
+    ["A random collection of data", "A physical computer component", "A secret password"],
+    ["Data can never affect people", "All information is automatically public", "Consent is unnecessary online"],
+    ["Perfect neutrality in every output", "A harmless spelling variation", "Random screen brightness"],
+    ["Maximum screen time", "Constant notifications", "Technology directing every choice"],
+    ["Only the manufacturer", "Only the fastest users", "Nobody beyond the buyer"],
+  ],
+  30: [
+    ["Passive memorisation", "Competition alone", "Unquestioning certainty"],
+    ["Collecting facts without use", "Avoiding experience", "Repeating words mechanically"],
+    ["Rigidly defending one answer", "Working alone without feedback", "Ignoring changing conditions"],
+    ["A final and unchanging being", "A purely mechanical being", "A being without further possibilities"],
+    ["Toward a higher score only", "Toward collecting certificates", "Toward finishing without change"],
+  ],
+};
+
 export function choicesFor(levelData: BharatUdayLevel, questionIndex: number, attemptNumber = 0) {
   const answer = levelData.discoveries[questionIndex].answer;
-  const alternatives = levelData.discoveries
-    .filter((_, index) => index !== questionIndex)
-    .map(item => item.answer)
-    .slice(0, 3);
-  const choices = [...alternatives];
-  const answerPosition = (levelData.number + questionIndex * 2 + Math.abs(attemptNumber)) % 4;
-  choices.splice(answerPosition, 0, answer);
-  return choices;
+  const alternatives = contextualDistractorsByLevel[levelData.number]?.[questionIndex];
+  if (!alternatives) throw new Error(`Missing contextual choices for level ${levelData.number}, question ${questionIndex + 1}`);
+  const choices = [answer, ...alternatives];
+  const shift = (levelData.number + questionIndex * 2 + Math.abs(attemptNumber)) % choices.length;
+  return choices.map((_, index) => choices[(index + shift) % choices.length]);
 }
