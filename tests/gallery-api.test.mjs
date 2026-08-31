@@ -65,7 +65,7 @@ test("saves a public photo submission as pending", async () => {
   }
 });
 
-test("publishes a submitted YouTube video immediately", async () => {
+test("publishes a submitted video immediately", async () => {
   const uploadDir = await mkdtemp(path.join(os.tmpdir(), "sas-gallery-video-test-"));
   process.env.UPLOAD_DIR = uploadDir;
   delete process.env.MONGODB_URI;
@@ -82,7 +82,7 @@ test("publishes a submitted YouTube video immediately", async () => {
     form.set("category", "Sunday meeting");
     form.set("description", "A video from the collective meditation session.");
     form.set("permission", "yes");
-    form.set("youtubeUrl", "https://youtu.be/dQw4w9WgXcQ");
+    form.append("media", new Blob(["test-video"], { type: "video/mp4" }), "meditation.mp4");
 
     const response = await fetch(`http://127.0.0.1:${address.port}/api/gallery-submissions`, { method: "POST", body: form });
     assert.equal(response.status, 201);
@@ -93,58 +93,11 @@ test("publishes a submitted YouTube video immediately", async () => {
     const manifest = JSON.parse(await readFile(path.join(uploadDir, "manifests", manifests[0]), "utf8"));
     assert.equal(manifest.status, "approved");
     assert.equal(manifest.media[0].kind, "video");
-    assert.equal(manifest.media[0].storage, "youtube");
-    assert.equal(manifest.media[0].youtubeId, "dQw4w9WgXcQ");
-    assert.equal(manifest.media[0].thumbnailUrl, "https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg");
 
     const gallery = await fetch(`http://127.0.0.1:${address.port}/api/gallery-items`).then(value => value.json());
     assert.equal(gallery.items.length, 1);
     assert.equal(gallery.items[0].title, "Sunday meditation video");
     assert.equal(gallery.items[0].kind, "video");
-    assert.equal(gallery.items[0].youtubeId, "dQw4w9WgXcQ");
-    assert.equal(gallery.items[0].mediaUrl, "");
-  } finally {
-    server.closeAllConnections();
-    await new Promise(resolve => server.close(resolve));
-    await rm(uploadDir, { recursive: true, force: true });
-  }
-});
-
-test("publishes a Song of Savitri YouTube link without storing video bytes", async () => {
-  const uploadDir = await mkdtemp(path.join(os.tmpdir(), "sas-savitri-youtube-test-"));
-  process.env.UPLOAD_DIR = uploadDir;
-  delete process.env.MONGODB_URI;
-  delete process.env.STORAGE_PROVIDER;
-  const { createGalleryServer } = await import(`../server/gallery-api.mjs?savitri=${Date.now()}`);
-  const server = createGalleryServer();
-  await new Promise(resolve => server.listen(0, "127.0.0.1", resolve));
-  const address = server.address();
-
-  try {
-    const form = new FormData();
-    form.set("part", "Part One");
-    form.set("bookNo", "1");
-    form.set("cantoNo", "1");
-    form.set("cantoName", "The Symbol Dawn");
-    form.set("lineNos", "1–5");
-    form.set("pageNo", "1");
-    form.set("description", "The opening five lines in English and Hindi.");
-    form.set("youtubeUrl", "https://www.youtube.com/watch?v=dQw4w9WgXcQ");
-
-    const response = await fetch(`http://127.0.0.1:${address.port}/api/savitri-video-submissions`, { method: "POST", body: form });
-    assert.equal(response.status, 201);
-    const result = await response.json();
-    assert.equal(result.status, "approved");
-
-    const manifests = await readdir(path.join(uploadDir, "savitri-manifests"));
-    const manifest = JSON.parse(await readFile(path.join(uploadDir, "savitri-manifests", manifests[0]), "utf8"));
-    assert.equal(manifest.media.storage, "youtube");
-    assert.equal(manifest.media.youtubeId, "dQw4w9WgXcQ");
-
-    const videos = await fetch(`http://127.0.0.1:${address.port}/api/savitri-videos`).then(value => value.json());
-    assert.equal(videos.items.length, 1);
-    assert.equal(videos.items[0].youtubeId, "dQw4w9WgXcQ");
-    await assert.rejects(readdir(path.join(uploadDir, "savitri-videos")), { code: "ENOENT" });
   } finally {
     server.closeAllConnections();
     await new Promise(resolve => server.close(resolve));

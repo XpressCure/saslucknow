@@ -1,0 +1,490 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>SAS Lucknow Android App — Interactive Test</title>
+  <script>
+    const previewQuery = new URLSearchParams(window.location.search);
+    if ([...previewQuery.keys()].some(key => key.startsWith('installed-preview-'))) {
+      document.documentElement.classList.add('installed-preview');
+    }
+  </script>
+  <style>
+    :root {
+      --ink: #113844;
+      --ink-deep: #082a35;
+      --gold: #d99a2b;
+      --gold-soft: #f5d184;
+      --cream: #fffaf0;
+      --paper: #fffdf8;
+      --line: #e7d3ab;
+      --muted: #667b81;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+    body {
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 50% 0%, rgba(245, 209, 132, .42), transparent 36rem),
+        linear-gradient(145deg, #061f29 0%, #0d3541 58%, #082630 100%);
+      overflow: hidden;
+    }
+    button, input, textarea { font: inherit; }
+    .test-shell { height: 100%; display: grid; place-items: center; padding: 14px; }
+    .phone {
+      position: relative;
+      width: min(100%, 430px);
+      height: min(900px, calc(100dvh - 28px));
+      min-height: 610px;
+      overflow: hidden;
+      border: 10px solid #071d25;
+      border-radius: 42px;
+      background: var(--cream);
+      box-shadow: 0 26px 70px rgba(0,0,0,.42), 0 0 0 1px rgba(255,255,255,.18);
+    }
+    .status {
+      height: 30px;
+      padding: 0 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: #fff;
+      background: var(--ink-deep);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .03em;
+    }
+    .entry { height: calc(100% - 30px); overflow: auto; background: var(--cream); }
+    .hero {
+      position: relative;
+      min-height: 250px;
+      display: grid;
+      align-items: end;
+      padding: 28px 26px;
+      color: white;
+      background: #143f4a url('/mobile-app/song-of-life-banner-clean.png') center/cover no-repeat;
+      isolation: isolate;
+    }
+    .hero::after { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, rgba(5,26,33,.05), rgba(4,30,38,.84)); }
+    .brand { display: flex; align-items: center; gap: 11px; margin-bottom: 26px; }
+    .brand img { width: 48px; height: 48px; object-fit: contain; filter: drop-shadow(0 4px 9px rgba(0,0,0,.25)); }
+    .brand strong { display: block; font-family: Georgia, serif; font-size: 20px; }
+    .brand small { display: block; margin-top: 3px; color: var(--gold-soft); font-weight: 700; letter-spacing: .1em; font-size: 9px; }
+    .hero h1 { max-width: 340px; margin: 0; font: 600 42px/1.02 Georgia, serif; letter-spacing: -.025em; text-wrap: balance; }
+    .hero p { margin: 9px 0 0; color: #fff1cf; font-size: 13px; }
+    .login-panel { padding: 25px 24px 28px; }
+    .eyebrow { color: #b06b11; font-size: 11px; font-weight: 900; letter-spacing: .17em; text-transform: uppercase; }
+    h2 { margin: 8px 0 8px; font: 600 30px/1.08 Georgia, serif; }
+    .intro { margin: 0 0 20px; color: var(--muted); font-size: 14px; line-height: 1.55; }
+    label { display: block; margin: 0 0 14px; color: var(--ink); font-size: 13px; font-weight: 800; }
+    input {
+      width: 100%; height: 51px; margin-top: 7px; padding: 0 15px;
+      color: var(--ink); background: var(--paper); border: 1px solid var(--line); border-radius: 15px; outline: none;
+    }
+    input:focus { border-color: var(--gold); box-shadow: 0 0 0 4px rgba(217,154,43,.14); }
+    .password-entry { position: relative; display: block; margin-top: 7px; }
+    .password-entry input { margin-top: 0; padding-right: 56px; }
+    .password-toggle { position: absolute; top: 50%; right: 7px; width: 40px; height: 40px; display: grid; place-items: center; padding: 0; transform: translateY(-50%); border: 1px solid var(--line); border-radius: 50%; color: var(--ink); background: #fffaf0; cursor: pointer; }
+    .password-toggle svg { width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+    .password-toggle[aria-pressed="true"]::after { content: ""; position: absolute; width: 25px; height: 2px; border-radius: 2px; background: currentColor; transform: rotate(-45deg); }
+    .password-toggle:focus-visible { outline: 3px solid rgba(217,154,43,.35); outline-offset: 2px; }
+    .primary, .secondary {
+      width: 100%; min-height: 53px; border-radius: 16px; font-weight: 900; cursor: pointer;
+      transition: transform .15s ease, box-shadow .15s ease;
+    }
+    .primary { border: 1px solid #1e4e59; color: white; background: linear-gradient(180deg, #245965, #103b47); box-shadow: 0 8px 0 #072b35, 0 14px 25px rgba(9,42,52,.2); }
+    .secondary { margin-top: 18px; border: 1px solid var(--line); color: var(--ink); background: var(--paper); }
+    .primary:active, .secondary:active { transform: translateY(3px); box-shadow: none; }
+    .new-member { margin: 26px 0 0; padding-top: 20px; border-top: 1px solid var(--line); text-align: center; color: var(--muted); font-size: 14px; }
+    .new-member button { padding: 2px 0; color: #a46008; border: 0; border-bottom: 1px solid #d69c49; background: transparent; font-weight: 900; cursor: pointer; }
+    .privacy { margin: 15px 0 0; color: #7a8b8f; font-size: 11px; text-align: center; }
+    .app-stage { display: none; position: absolute; inset: 0; background: white; }
+    .app-stage.active { display: block; }
+    .app-stage iframe { width: 100%; height: 100%; border: 0; background: white; }
+    .join-stage {
+      display: none;
+      position: absolute;
+      inset: 30px 0 0;
+      overflow-y: auto;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 92% 2%, rgba(245, 209, 132, .4), transparent 13rem),
+        linear-gradient(180deg, #fffdf8 0%, #fff7e6 100%);
+      scrollbar-width: thin;
+    }
+    .join-stage.active { display: block; }
+    .join-appbar {
+      position: sticky;
+      z-index: 4;
+      top: 0;
+      min-height: 68px;
+      padding: 11px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255, 253, 248, .96);
+      backdrop-filter: blur(12px);
+    }
+    .join-brand { display: flex; align-items: center; min-width: 0; gap: 10px; }
+    .join-brand img { width: 39px; height: 39px; object-fit: contain; }
+    .join-brand strong { display: block; overflow: hidden; font: 600 17px/1.05 Georgia, serif; white-space: nowrap; text-overflow: ellipsis; }
+    .join-brand small { display: block; margin-top: 4px; color: #9a621a; font-size: 8px; font-weight: 800; letter-spacing: .08em; }
+    .join-back {
+      flex: 0 0 auto;
+      width: 39px;
+      height: 39px;
+      border: 1px solid var(--line);
+      border-radius: 50%;
+      color: var(--ink);
+      background: white;
+      cursor: pointer;
+    }
+    .join-body { padding: 24px 20px 34px; }
+    .join-copy h2 { margin: 8px 0 9px; font-size: clamp(29px, 8vw, 37px); }
+    .join-copy .intro { margin-bottom: 18px; }
+    .join-steps { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin: 0 0 17px; }
+    .join-step {
+      min-height: 106px;
+      padding: 13px;
+      border: 1px solid rgba(217, 154, 43, .42);
+      border-radius: 17px;
+      background: rgba(255,255,255,.72);
+      box-shadow: 0 8px 24px rgba(110, 73, 18, .06);
+    }
+    .join-step i {
+      width: 27px;
+      height: 27px;
+      display: grid;
+      place-items: center;
+      margin-bottom: 8px;
+      border-radius: 50%;
+      color: #fff;
+      background: var(--gold);
+      font-size: 10px;
+      font-style: normal;
+      font-weight: 900;
+    }
+    .join-step b { display: block; font-size: 12px; }
+    .join-step small { display: block; margin-top: 5px; color: var(--muted); font-size: 10px; line-height: 1.35; }
+    .join-form {
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: rgba(255,255,255,.88);
+      box-shadow: 0 14px 36px rgba(75, 49, 8, .08);
+    }
+    .join-grid { display: grid; grid-template-columns: 1fr; }
+    .join-grid .join-email { grid-column: 1 / -1; }
+    .join-form input, .join-form textarea {
+      width: 100%;
+      margin-top: 7px;
+      padding: 0 14px;
+      color: var(--ink);
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      outline: none;
+    }
+    .join-form input { height: 49px; }
+    .join-form textarea { min-height: 78px; padding-top: 13px; resize: vertical; }
+    .join-form input:focus, .join-form textarea:focus { border-color: var(--gold); box-shadow: 0 0 0 4px rgba(217,154,43,.14); }
+    .join-consent { display: grid; grid-template-columns: 19px 1fr; align-items: start; gap: 9px; margin: 2px 0 18px; color: var(--muted); font-size: 11px; font-weight: 600; line-height: 1.45; }
+    .join-consent input { width: 18px; height: 18px; margin: 1px 0 0; accent-color: var(--gold); }
+    .password-rules {
+      display: none;
+      grid-template-columns: 1fr 1fr;
+      gap: 7px 10px;
+      margin: -3px 0 16px;
+      padding: 12px;
+      list-style: none;
+      border: 1px solid #e7c9c6;
+      border-radius: 14px;
+      background: #fff7f6;
+    }
+    .password-rules.show { display: grid; }
+    .password-rule { display: flex; align-items: flex-start; gap: 7px; color: #8a3430; font-size: 10px; font-weight: 750; line-height: 1.35; }
+    .password-rule .rule-mark { flex: 0 0 auto; width: 16px; color: #be342d; font-size: 13px; font-weight: 950; line-height: 1; text-align: center; }
+    .password-rule.valid { color: #287044; }
+    .password-rule.valid .rule-mark { color: #1c8a4b; }
+    .member-return { width: 100%; margin: 18px 0 0; padding: 4px; color: #8c5915; border: 0; background: transparent; font-weight: 850; cursor: pointer; }
+    .join-status { display: none; margin: 17px 0 0; padding: 13px; border: 1px solid #98c3ab; border-radius: 14px; color: #174b32; background: #ecf8f0; font-size: 12px; font-weight: 750; line-height: 1.45; }
+    .join-status.show { display: block; }
+    .login-status { display: none; margin: 15px 0 0; padding: 12px; border: 1px solid #d9a3a0; border-radius: 13px; color: #7c2925; background: #fff0ef; font-size: 12px; font-weight: 750; line-height: 1.4; }
+    .login-status.show { display: block; }
+    .demo-note { margin: 13px 0 0; color: #7d6b49; font-size: 11px; line-height: 1.45; text-align: center; }
+    html.installed-preview body { background: var(--cream); }
+    html.installed-preview .test-shell { height: 100dvh; display: block; padding: 0; }
+    html.installed-preview .phone {
+      width: 100%;
+      height: 100dvh;
+      min-height: 0;
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+    }
+    html.installed-preview .status { display: none; }
+    html.installed-preview .entry { height: 100%; }
+    html.installed-preview .join-stage { inset: 0; }
+    @media (min-width: 800px) {
+      .phone { width: 460px; }
+    }
+    @media (max-height: 720px) {
+      .phone { min-height: 0; border-radius: 28px; border-width: 7px; }
+      .hero { min-height: 190px; padding: 18px 22px; }
+      .hero h1 { font-size: 34px; }
+      .brand { margin-bottom: 12px; }
+      .login-panel { padding: 18px 22px; }
+    }
+    @media (max-width: 370px) {
+      .join-grid, .join-steps { grid-template-columns: 1fr; }
+      .join-step { min-height: 0; }
+      .password-rules { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="test-shell">
+    <section class="phone" aria-label="Android mobile app test interface">
+      <div class="status"><span>9:41</span><span>5G&nbsp;&nbsp;▮▮▮&nbsp;&nbsp;92%</span></div>
+      <div class="entry" id="entry">
+        <header class="hero">
+          <div>
+            <div class="brand">
+              <img src="/society-logo-transparent.png" alt="Sri Aurobindo Society logo">
+              <span><strong>Sri Aurobindo Society</strong><small>LUCKNOW · GOMTI NAGAR CENTRE</small></span>
+            </div>
+            <h1>The Song of Life</h1>
+            <p>A quiet digital home for study, meditation and community.</p>
+          </div>
+        </header>
+        <form class="login-panel" id="loginForm">
+          <span class="eyebrow">Member space</span>
+          <h2>Welcome back</h2>
+          <p class="intro">Enter your member account details to continue to Darshan and all member features.</p>
+          <label>Email or mobile number
+            <input id="email" type="text" autocomplete="username" inputmode="email" placeholder="Email address or mobile number" required>
+          </label>
+          <label>Password
+            <span class="password-entry"><input id="password" type="password" autocomplete="current-password" placeholder="Your password" required><button class="password-toggle" type="button" data-password-toggle="password" aria-label="Show password" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"></path><circle cx="12" cy="12" r="3"></circle></svg></button></span>
+          </label>
+          <button class="primary" type="submit">Enter Member Space →</button>
+          <p class="login-status" id="loginStatus" role="alert"></p>
+          <p class="demo-note">Use your real SAS Lucknow member or administrator account. Applications are saved securely to the live administrator review queue.</p>
+          <p class="new-member">New member? <button type="button" id="joinButton">Join here</button></p>
+          <p class="privacy">Interactive Android test application · securely connected to SAS Lucknow</p>
+        </form>
+      </div>
+      <div class="app-stage" id="appStage">
+        <iframe id="appFrame" title="SAS Lucknow complete Android app test" loading="eager" allow="autoplay; encrypted-media; picture-in-picture; fullscreen"></iframe>
+      </div>
+      <section class="join-stage" id="joinStage" aria-hidden="true" aria-label="Create member account">
+        <header class="join-appbar">
+          <div class="join-brand">
+            <img src="/society-logo-transparent.png" alt="Sri Aurobindo Society logo">
+            <span><strong>Sri Aurobindo Society</strong><small>LUCKNOW · MEMBER REGISTRATION</small></span>
+          </div>
+          <button class="join-back" id="joinBackButton" type="button" aria-label="Back to Member Login">←</button>
+        </header>
+        <div class="join-body">
+          <div class="join-copy">
+            <span class="eyebrow">Create your member account</span>
+            <h2>Tell us about yourself</h2>
+            <p class="intro">Your Parichay helps us understand your interests, abilities and the seva you would like to explore.</p>
+          </div>
+          <div class="join-steps" aria-label="Two steps to join">
+            <article class="join-step"><i>01</i><b>Join the Community</b><small>Complete Parichay and create a secure password.</small></article>
+            <article class="join-step"><i>02</i><b>Enter Darshan</b><small>Sign in immediately after joining.</small></article>
+          </div>
+          <form class="join-form" id="joinForm">
+            <div class="join-grid">
+              <label>Full name
+                <input name="fullName" autocomplete="name" placeholder="Your name" required>
+              </label>
+              <label>Mobile
+                <input name="mobile" type="tel" autocomplete="tel" inputmode="tel" placeholder="+91" required>
+              </label>
+              <label class="join-email">Email
+                <input name="joinEmail" type="email" autocomplete="email" placeholder="you@example.com" required>
+              </label>
+            </div>
+            <label>Create your member password
+              <span class="password-entry"><input id="newPassword" name="newPassword" type="password" autocomplete="new-password" minlength="8" placeholder="Minimum 8 characters" aria-describedby="passwordRules" required><button class="password-toggle" type="button" data-password-toggle="newPassword" aria-label="Show password" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"></path><circle cx="12" cy="12" r="3"></circle></svg></button></span>
+            </label>
+            <ul class="password-rules" id="passwordRules" aria-live="polite" aria-label="Password requirements">
+              <li class="password-rule" data-password-rule="length"><span class="rule-mark">✕</span><span>At least 8 characters</span></li>
+            </ul>
+            <label class="join-consent">
+              <input name="consent" type="checkbox" required>
+              <span>I permit the centre to use these details to contact me about membership, gatherings and seva.</span>
+            </label>
+            <button class="primary" type="submit">Create My Account →</button>
+            <p class="join-status" id="joinStatus" role="status"></p>
+            <button class="member-return" id="existingMemberButton" type="button">Already have an account? Member Login</button>
+          </form>
+        </div>
+      </section>
+    </section>
+  </main>
+  <script>
+    const stage = document.getElementById('appStage');
+    const frame = document.getElementById('appFrame');
+    const loginForm = document.getElementById('loginForm');
+    const loginIdentifier = document.getElementById('email');
+    const loginPassword = document.getElementById('password');
+    const loginStatus = document.getElementById('loginStatus');
+    const joinStage = document.getElementById('joinStage');
+    const joinForm = document.getElementById('joinForm');
+    const joinStatus = document.getElementById('joinStatus');
+    const newPassword = document.getElementById('newPassword');
+    const passwordRules = document.getElementById('passwordRules');
+    const installedPreviewMode = document.documentElement.classList.contains('installed-preview');
+    const dashboardPreviewMode = [...new URLSearchParams(window.location.search).keys()].some(key => key.startsWith('dashboard-preview-'));
+    const installedPreviewSessionKey = 'sas-lucknow-installed-preview-session-v1';
+    let lastCreatedUsername = '';
+    document.querySelectorAll('[data-password-toggle]').forEach(button => {
+      button.addEventListener('click', () => {
+        const input = document.getElementById(button.dataset.passwordToggle);
+        if (!input) return;
+        const show = input.type === 'password';
+        input.type = show ? 'text' : 'password';
+        button.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+        button.setAttribute('aria-pressed', String(show));
+        input.focus({ preventScroll: true });
+      });
+    });
+    const normaliseMobile = (value) => value.replace(/\D/g, '').slice(-10);
+    const hashPassword = async (value) => {
+      const bytes = new TextEncoder().encode(value);
+      const digest = await crypto.subtle.digest('SHA-256', bytes);
+      return Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('');
+    };
+    const passwordTests = {
+      length: value => value.length >= 8
+    };
+    const updatePasswordRules = () => {
+      const value = newPassword.value;
+      const states = Object.entries(passwordTests).map(([rule, test]) => {
+        const valid = test(value);
+        const item = passwordRules.querySelector(`[data-password-rule="${rule}"]`);
+        item.classList.toggle('valid', valid);
+        item.querySelector('.rule-mark').textContent = valid ? '✓' : '✕';
+        return valid;
+      });
+      const allValid = states.every(Boolean);
+      newPassword.setCustomValidity(value && !allValid ? 'Please meet every password requirement shown below.' : '');
+      return allValid;
+    };
+    const returnToLogin = (username = '') => {
+      stage.classList.remove('active');
+      joinStage.classList.remove('active');
+      joinStage.setAttribute('aria-hidden', 'true');
+      loginForm.reset();
+      loginStatus.classList.remove('show');
+      loginStatus.textContent = '';
+      if (username) loginIdentifier.value = username;
+    };
+    const openJoin = () => {
+      stage.classList.remove('active');
+      joinForm.reset();
+      joinStatus.classList.remove('show');
+      joinStatus.textContent = '';
+      passwordRules.classList.remove('show');
+      updatePasswordRules();
+      joinForm.querySelector('.primary').textContent = 'Create My Account →';
+      joinStage.classList.add('active');
+      joinStage.setAttribute('aria-hidden', 'false');
+      joinStage.scrollTop = 0;
+    };
+    const openApp = () => {
+      if (!frame.src) frame.src = 'sas-lucknow-android-redesign-preview.html?member-interface-v17&native-dashboard-v26&dashboard-cards-v1&sangha-media-polls-v2&creative-video-v1&system-back-only-v2';
+      stage.classList.add('active');
+    };
+    loginForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      loginStatus.classList.remove('show');
+      const submitButton = loginForm.querySelector('.primary');
+      submitButton.disabled = true;
+      submitButton.textContent = 'Signing in…';
+      try {
+        const response = await fetch('/api/participation/member/auth/login', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify({ identity: loginIdentifier.value.trim(), password: loginPassword.value })
+        });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(result.error || 'Sign-in failed.');
+        if (installedPreviewMode) localStorage.setItem(installedPreviewSessionKey, 'active');
+        openApp();
+      } catch (error) {
+        loginStatus.textContent = String(error?.message || 'Sign-in failed.');
+        loginStatus.classList.add('show');
+      } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = 'Enter Member Space →';
+      }
+    });
+    document.getElementById('joinButton').addEventListener('click', openJoin);
+    document.getElementById('joinBackButton').addEventListener('click', () => returnToLogin());
+    document.getElementById('existingMemberButton').addEventListener('click', () => returnToLogin(lastCreatedUsername));
+    newPassword.addEventListener('focus', () => passwordRules.classList.add('show'));
+    newPassword.addEventListener('input', () => {
+      passwordRules.classList.add('show');
+      updatePasswordRules();
+    });
+    joinForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      passwordRules.classList.add('show');
+      if (!updatePasswordRules()) {
+        newPassword.reportValidity();
+        return;
+      }
+      const data = new FormData(joinForm);
+      const email = String(data.get('joinEmail')).trim().toLowerCase();
+      const mobile = normaliseMobile(String(data.get('mobile')));
+      const password = String(data.get('newPassword'));
+      const account = {
+        fullName: String(data.get('fullName')).trim(),
+        email,
+        mobile,
+        passwordHash: await hashPassword(password),
+        createdAt: new Date().toISOString()
+      };
+      localStorage.setItem('sasLucknowPrototypeMember', JSON.stringify(account));
+      lastCreatedUsername = email || mobile;
+      joinForm.querySelector('.primary').textContent = 'Account Created ✓';
+      joinStatus.textContent = `Test account created for ${account.fullName}. Sign in with ${email} or ${mobile}. This account is stored only in this browser.`;
+      joinStatus.classList.add('show');
+      joinStatus.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+    window.addEventListener('message', (event) => {
+      if (event.data?.type === 'sas-member-logout') {
+        if (installedPreviewMode) localStorage.removeItem(installedPreviewSessionKey);
+        returnToLogin();
+      }
+    });
+    window.sasHandleAndroidBack = () => {
+      if (!stage.classList.contains('active')) return false;
+      const previewFrame = frame.contentDocument?.getElementById('sas-preview-frame');
+      const handler = previewFrame?.contentWindow?.sasHandleSystemBack;
+      if (typeof handler === 'function' && handler() === true) return true;
+      if (previewFrame?.contentDocument?.querySelector('.sas-bum')) {
+        frame.contentWindow.location.reload();
+        return true;
+      }
+      return false;
+    };
+    if (dashboardPreviewMode) {
+      openApp();
+    } else if (installedPreviewMode && localStorage.getItem(installedPreviewSessionKey) === 'active') {
+      fetch('/api/participation/member/auth/me', { credentials: 'same-origin', headers: { Accept: 'application/json' } })
+        .then(response => response.ok ? openApp() : localStorage.removeItem(installedPreviewSessionKey))
+        .catch(() => localStorage.removeItem(installedPreviewSessionKey));
+    }
+  </script>
+</body>
+</html>

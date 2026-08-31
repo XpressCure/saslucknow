@@ -50,10 +50,13 @@ type FocusCampaign = {
   id: string;
   creativeRevisionId: string;
   templateId: string;
-  themePackId: "teal_silence" | "indigo_savitri" | "saffron_sangha" | "rose_guidance";
+  themePackId: "teal_silence" | "indigo_savitri" | "saffron_sangha" | "rose_guidance" | "electric_uday";
   motionPresetId: string;
   displayMode: "card_only" | "coordinated_dashboard";
-  destination: "inner-room" | "watch" | "sangha" | "sakhi";
+  destination: "dashboard" | "inner-room" | "reflections" | "sound" | "sangha" | "watch" | "library" | "sakhi" | "sankalp" | "yogdaan" | "parichay" | "next-human" | "bharat-uday";
+  pageVisibility?: { nextHuman2026: boolean; nextHumanChallenge: boolean };
+  dashboardCards?: { primaryFeature?: boolean; nextHumanChallenge?: boolean; latestSangha?: boolean; meaningfulAction?: boolean; consciousOffering?: boolean };
+  dashboardShortcuts?: { sangha?: boolean; innerRoom?: boolean; sankalp?: boolean; yogdaan?: boolean; reflections?: boolean };
   locale: "all" | "en" | "hi";
   maxImpressionsPerDay: number;
   copy: { eyebrow: string; headline: string; body: string; cta: string };
@@ -1159,15 +1162,33 @@ export function MemberClient() {
 
   const focusCampaign = dashboard?.focusCampaign || null;
   const focusCampaignCopy = focusCampaign?.copies?.[focusCampaignLanguage] || focusCampaign?.copy;
+  const focusCampaignPageLive = focusCampaign?.destination === "next-human" ? focusCampaign.pageVisibility?.nextHuman2026 !== false : focusCampaign?.destination === "bharat-uday" ? focusCampaign.pageVisibility?.nextHumanChallenge !== false : true;
+  const dashboardCards = { primaryFeature: true, nextHumanChallenge: true, latestSangha: true, meaningfulAction: true, consciousOffering: true, ...focusCampaign?.dashboardCards };
+  const dashboardShortcuts = { sangha: true, innerRoom: true, sankalp: true, yogdaan: true, reflections: true, ...focusCampaign?.dashboardShortcuts };
+  const nextHumanChallengeLive = focusCampaign?.pageVisibility?.nextHumanChallenge !== false;
+  const nextHuman2026Live = focusCampaign?.pageVisibility?.nextHuman2026 !== false;
+  const latestSanghaPost = sanghaPosts[0] || null;
   const coordinatedCampaignClass = focusCampaign?.displayMode === "coordinated_dashboard" ? ` member-campaign-theme-${focusCampaign.themePackId}` : "";
   const openFocusCampaign = () => {
     if (!focusCampaign) return;
     void api<{ recorded: boolean }>(`/focus-campaigns/${focusCampaign.id}/action`, { method: "POST", body: JSON.stringify({ locale: focusCampaignLanguage }) })
       .catch(error => console.error("Focus Campaign action could not be recorded", error));
-    if (focusCampaign.destination === "inner-room") { setTab("darshan"); setDarshanPanel("inner-room"); }
-    if (focusCampaign.destination === "watch") setTab("watch");
-    if (focusCampaign.destination === "sangha") setTab("sangha");
-    if (focusCampaign.destination === "sakhi") { setTab("darshan"); setDarshanPanel("sakhi"); }
+    switch (focusCampaign.destination) {
+      case "inner-room": setTab("darshan"); setDarshanPanel("inner-room"); break;
+      case "reflections": setTab("darshan"); setDarshanPanel("reflections"); break;
+      case "sound": setTab("sound"); break;
+      case "sangha": setTab("sangha"); break;
+      case "watch": setTab("watch"); break;
+      case "library": setTab("darshan"); setDarshanPanel("library"); break;
+      case "sakhi": setTab("darshan"); setDarshanPanel("sakhi"); break;
+      case "sankalp": setTab("sankalp"); break;
+      case "yogdaan": setTab("yogdaan"); break;
+      case "parichay": setTab("parichay"); break;
+      case "next-human": window.location.assign("/next-human"); return;
+      case "bharat-uday": window.location.assign("/bharat-uday"); return;
+      case "dashboard":
+      default: setTab("darshan"); setDarshanPanel("home"); break;
+    }
     document.documentElement.scrollTop = 0;
   };
 
@@ -1206,7 +1227,7 @@ export function MemberClient() {
         <p>Your account remains secure and you can sign in, but Darshan, Sankalp, Yogdaan, Sangha and Parichay actions are unavailable until the Lucknow Centre enables membership again.</p>
         <a className="member-primary" href="mailto:info.saslucknow@gmail.com">Contact the concerned centre</a>
       </section> : <>
-      {tab === "darshan" && <><PageHeading eyebrow="A SHARED FIELD OF WORK" title={`Namaste, ${member.fullName.split(" ")[0]}`} text="A quiet member space for study, meditation, conversation and inward discovery." />
+      {tab === "darshan" && <><div className={darshanPanel === "home" ? "member-dashboard-home" : ""}><PageHeading eyebrow="A SHARED FIELD OF WORK" title={`Namaste, ${member.fullName.split(" ")[0]}`} text="A quiet member space for study, meditation, conversation and inward discovery." />
         {darshanPanel === "library" && <MemberLibrary query={memberLibraryQuery} setQuery={setMemberLibraryQuery} collections={filteredMemberLibrary} />}
         {darshanPanel === "sakhi" && <MemberSakhi messages={memberSakhiMessages} input={memberSakhiInput} setInput={setMemberSakhiInput} thinking={memberSakhiThinking} ask={askMemberSakhi} />}
         {darshanPanel === "reflections" && <MyReflections reflections={reflections} selectedId={selectedReflectionId} setSelectedId={setSelectedReflectionId} addFollowUp={addReflectionFollowUp} />}
@@ -1218,15 +1239,29 @@ export function MemberClient() {
           <div className="member-inner-room-launch-actions"><button className="member-primary" onClick={openInnerRoom}>Open Inner Room</button><button className="member-secondary" onClick={() => setDarshanPanel("reflections")}>Open My Reflections</button></div>
         </section>}
         {darshanPanel === "home" && <>
-        {focusCampaign && focusCampaignCopy && <section className={`member-focus-campaign member-focus-${focusCampaign.themePackId} member-focus-motion-${focusCampaign.motionPresetId}`}>
+        <section className="member-dashboard-shortcuts" aria-label="Member shortcuts">
+          {dashboardShortcuts.sangha && <button type="button" onClick={() => setTab("sangha")}><b aria-hidden="true">✦</b><span>Sangha</span></button>}
+          {dashboardShortcuts.innerRoom && <button type="button" onClick={() => setDarshanPanel("inner-room")}><b aria-hidden="true">◉</b><span>Inner Room</span></button>}
+          {dashboardShortcuts.sankalp && <button type="button" onClick={() => setTab("sankalp")}><b aria-hidden="true">◆</b><span>Sankalp</span></button>}
+          {dashboardShortcuts.yogdaan && <button type="button" onClick={() => setTab("yogdaan")}><b aria-hidden="true">₹</b><span>Yogdaan</span></button>}
+          {dashboardShortcuts.reflections && <button type="button" onClick={() => setDarshanPanel("reflections")}><b aria-hidden="true">✎</b><span>Reflections</span></button>}
+        </section>
+        <div className="member-dashboard-card-grid">
+        {dashboardCards.nextHumanChallenge && nextHumanChallengeLive && <section className="member-dashboard-challenge-card">
+          <p>30 LEVELS · CULTURE · SCIENCE · CONSCIOUSNESS</p><h2>The Next Human Challenge</h2><span>Ten discoveries at every level. Continue from exactly where you paused.</span><Link href="/bharat-uday">Continue Level 1 <b>→</b></Link>
+        </section>}
+        {dashboardCards.primaryFeature && focusCampaign && focusCampaignCopy && focusCampaignPageLive && <section className={`member-focus-campaign member-focus-${focusCampaign.themePackId} member-focus-motion-${focusCampaign.motionPresetId}`}>
           <div className="member-focus-aureole" aria-hidden="true"><i /><i /><i /></div>
           <div className="member-focus-copy">{focusCampaign.locale === "all" && <div className="member-focus-language" aria-label="Campaign language"><button type="button" className={focusCampaignLanguage === "en" ? "active" : ""} onClick={() => setFocusCampaignLanguage("en")}>English</button><button type="button" className={focusCampaignLanguage === "hi" ? "active" : ""} onClick={() => setFocusCampaignLanguage("hi")}>हिन्दी</button></div>}<p>{focusCampaignCopy.eyebrow}</p><h2>{focusCampaignCopy.headline}</h2><span>{focusCampaignCopy.body}</span><button className="member-focus-action" onClick={openFocusCampaign}>{focusCampaignCopy.cta}<b>→</b></button></div>
         </section>}
+        {dashboardCards.primaryFeature && !focusCampaign && nextHuman2026Live && <section className="member-dashboard-next-human-card"><p>DECEMBER 2026 · LUCKNOW</p><h2>NEXT HUMAN 2026</h2><span>A seven-evening inquiry into consciousness, evolution and the future human. Details are coming soon.</span><Link href="/next-human">Enter the experience <b>→</b></Link></section>}
+        {dashboardCards.latestSangha && <section className="member-dashboard-sangha-card"><div><p>LATEST FROM SANGHA</p><h2>{latestSanghaPost?.type || "The community space"}</h2><span>{latestSanghaPost?.text || "A living space for reflections, images, conversations and shared learning."}</span>{latestSanghaPost && <small>{latestSanghaPost.author} · {displayIstDateTime(latestSanghaPost.createdAt)}</small>}</div><button type="button" onClick={() => setTab("sangha")}>Open Sangha <b>→</b></button></section>}
+        </div>
         <section className="member-metrics"><div><span>Live Sankalp</span><strong>{liveSankalps.length}</strong></div><div><span>My Yogdaan</span><strong>{money.format(dashboard?.totals.contributedRupees || 0)}</strong></div><div><span>Acknowledgements</span><strong>{dashboard?.contributions.length || 0}</strong></div></section>
-        <section className="member-band"><div><p>NEXT MEANINGFUL ACTION</p><h2>{liveSankalps[0]?.title || "New Sankalp are being prepared"}</h2><span>{liveSankalps[0]?.summary || "Return soon to participate in the centre's shared work."}</span></div>{liveSankalps[0] && <button className="member-primary" onClick={() => { setTab("sankalp"); document.documentElement.scrollTop = 0; }}>View Sankalp</button>}</section>
-        <section className="member-quiet"><h2>A conscious offering</h2><blockquote>&ldquo;All life is Yoga.&rdquo;</blockquote><p>Participation is most powerful when aspiration, responsibility and transparent action move together.</p></section>
+        {dashboardCards.meaningfulAction && <section className="member-band"><div><p>NEXT MEANINGFUL ACTION</p><h2>{liveSankalps[0]?.title || "New Sankalp are being prepared"}</h2><span>{liveSankalps[0]?.summary || "Return soon to participate in the centre's shared work."}</span></div>{liveSankalps[0] && <button className="member-primary" onClick={() => { setTab("sankalp"); document.documentElement.scrollTop = 0; }}>View Sankalp</button>}</section>}
+        {dashboardCards.consciousOffering && <section className="member-quiet"><h2>A conscious offering</h2><blockquote>&ldquo;All life is Yoga.&rdquo;</blockquote><p>Participation is most powerful when aspiration, responsibility and transparent action move together.</p></section>}
         </>}
-      </>}
+      </div></>}
       {tab === "watch" && <WatchSpace items={filteredWatchItems} allItems={watchItems} filter={watchFilter} setFilter={setWatchFilter} search={watchSearch} setSearch={setWatchSearch} later={watchLater} favourites={watchFavourites} bookmarks={watchBookmarks} playlists={watchPlaylists} toggleList={toggleList} openItem={setWatchItem} savedMoments={savedMoments} />}
       {tab === "sound" && <InnerSound playing={innerSoundPlaying} setPlaying={setInnerSoundPlaying} volume={innerSoundVolume} setVolume={setInnerSoundVolume} mood={innerSoundMood} setMood={setInnerSoundMood} openInnerRoom={openInnerRoom} />}
       {tab === "sangha" && <Sangha posts={sanghaPosts} draft={sanghaDraft} setDraft={setSanghaDraft} type={sanghaType} setType={setSanghaType} pollOptions={sanghaPollOptions} setPollOptions={setSanghaPollOptions} publishing={sanghaPublishing} publish={publishSanghaPost} vote={voteOnSanghaPoll} resonate={resonateWithSanghaPost} savePost={saveSanghaPost} comment={commentOnSanghaPost} share={shareSanghaPost} />}

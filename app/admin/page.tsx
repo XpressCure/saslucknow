@@ -1,14 +1,20 @@
 import type { Metadata } from "next";
 import { AdminClient } from "./admin-client";
 import "./admin.css";
+import "./campaign-studio.css";
+import "./campaign-studio-operations.css";
+import "./campaign-mobile-preview.css";
+import "./campaign-motion-fixes.css";
+import "./campaign-destinations.css";
+import "./admin-responsive-nav-fix.css";
+import "./next-human-event-studio.css";
+import "./control-panel.css";
 
 export const metadata: Metadata = {
-  title: "Administration",
-  description: "Secure administration for Parichay, Sankalp and the shared work of Sri Aurobindo Society Lucknow.",
-  robots: { index: false, follow: false },
+  title: "Administration | Sri Aurobindo Society Lucknow",
+  description: "Secure member administration and Sangha moderation for Sri Aurobindo Society Lucknow.",
 };
 
 export default function AdminPage() {
   return <AdminClient />;
 }
-

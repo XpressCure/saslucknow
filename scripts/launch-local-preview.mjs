@@ -31,6 +31,5 @@ const backendPid = launch([
 ], "preview-backend");
 
 const proxyPid = launch(["scripts/local-preview-proxy.mjs"], "preview-proxy");
-const participationPid = launch(["server/participation-api.mjs"], "participation-api");
 
-console.log(JSON.stringify({ backendPid, proxyPid, participationPid }));
+console.log(JSON.stringify({ backendPid, proxyPid }));

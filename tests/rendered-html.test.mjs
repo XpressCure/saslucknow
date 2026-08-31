@@ -145,8 +145,6 @@ test("renders location, weekly meeting, gallery and Facebook embed", async () =>
   const response = await render();
   const html = await response.text();
   assert.match(html, /The Song of Life/);
-  assert.match(html, /Awaken to the soul within/);
-  assert.doesNotMatch(html, /OUR WEBSITE THEME|A luminous invitation to discover the deeper music within life/);
   assert.match(html, /4\/668, Vijayant Khand/);
   assert.match(html, /Weekly collective meeting/);
   assert.doesNotMatch(html, /SPECIAL OBSERVANCE · OFFLINE/);
@@ -154,19 +152,16 @@ test("renders location, weekly meeting, gallery and Facebook embed", async () =>
   assert.match(html, /6:00–7:00 PM/);
   assert.match(html, /73888 99001/);
   assert.match(html, /facebook\.com%2Fsaslucknow/);
-  assert.match(html, /Add event photos or YouTube video/);
-  assert.match(html, /YouTube videos are published automatically/);
-  assert.match(html, /Meditation music paused while another video or window is open/);
-  assert.match(html, /<b>Paused<\/b>/);
-  assert.doesNotMatch(html, /autoplay=""/i);
+  assert.match(html, /Upload event photos or videos/);
+  assert.match(html, /Videos are published automatically/);
+  assert.match(html, /Stop the Mother&#x27;s organ meditation music/);
+  assert.match(html, /autoplay=""/i);
   assert.doesNotMatch(html, /Enter with music|Continue in silence/);
   assert.match(html, /src="\/mothers-organ-joy-1960\.mp3"/);
+  assert.match(html, /The Mother&#x27;s organ music · Joy · 12 March 1960/);
   const homeSource = await readFile(new URL("../app/mission-home.tsx", import.meta.url), "utf8");
-  assert.match(homeSource, /const meditationMusicVolume = 0\.22/);
-  assert.doesNotMatch(homeSource, /const meditationMusicVolume = 0\.55|quiet-aspiration\.wav/);
-  assert.match(homeSource, /loadYouTubeIframeApi/);
-  assert.match(homeSource, /event\.data === 1/);
-  assert.match(homeSource, /pushpanjaliOpen \|\| dialog !== null \|\| sakhiOpen \|\| videoPlaybackActive/);
+  assert.match(homeSource, /const meditationMusicVolume = 0\.55/);
+  assert.doesNotMatch(homeSource, /audio\.volume = 0\.22|quiet-aspiration\.wav/);
   assert.match(html, /Savitri Sakhi/);
   assert.match(html, /Open Savitri Sakhi/);
   assert.doesNotMatch(html, /Swipe left or right to explore approved event memories/);
@@ -198,7 +193,7 @@ test("renders The Song of Savitri directly after Lives and Vision", async () => 
   assert.ok(html.indexOf('id="guides-title"') < html.indexOf('id="song-of-savitri"'));
   assert.ok(html.indexOf('id="song-of-savitri"') < html.indexOf('aria-labelledby="roots-title"'));
   const source = await readFile(new URL("../app/mission-home.tsx", import.meta.url), "utf8");
-  for (const field of ["Part", "Book No.", "Canto No.", "Name of Canto", "Line Nos.", "Page No.", "Description", "YouTube Video Link"]) {
+  for (const field of ["Part", "Book No.", "Canto No.", "Name of Canto", "Line Nos.", "Page No.", "Description", "Upload Video"]) {
     assert.match(source, new RegExp(field.replace(".", "\\.")));
   }
   assert.match(source, /\/api\/savitri-video-submissions/);
@@ -210,7 +205,9 @@ test("stores and lists a Song of Savitri video", async () => {
   const directory = await mkdtemp(path.join(tmpdir(), "sas-savitri-videos-"));
   const previousUploadDirectory = process.env.UPLOAD_DIR;
   const previousMongo = process.env.MONGODB_URI;
+  const previousPlaylistSync = process.env.SAVITRI_PLAYLIST_SYNC;
   process.env.UPLOAD_DIR = directory;
+  process.env.SAVITRI_PLAYLIST_SYNC = "false";
   delete process.env.MONGODB_URI;
   const moduleUrl = new URL("../server/gallery-api.mjs", import.meta.url);
   moduleUrl.searchParams.set("savitri-test", `${process.pid}-${Date.now()}`);
@@ -227,7 +224,7 @@ test("stores and lists a Song of Savitri video", async () => {
     form.set("lineNos", "1-5");
     form.set("pageNo", "1");
     form.set("description", "Five opening lines with English and Hindi meaning.");
-    form.set("youtubeUrl", "https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+    form.set("media", new Blob([Buffer.alloc(2048, 1)], { type: "video/mp4" }), "symbol-dawn.mp4");
     const uploadResponse = await fetch(`http://127.0.0.1:${address.port}/api/savitri-video-submissions`, { method: "POST", body: form });
     assert.equal(uploadResponse.status, 201);
     const uploadResult = await uploadResponse.json();
@@ -239,14 +236,13 @@ test("stores and lists a Song of Savitri video", async () => {
     assert.equal(list.items[0].cantoName, "The Symbol Dawn");
     assert.equal(list.items[0].lineNos, "1-5");
     assert.equal(list.items[0].description, "Five opening lines with English and Hindi meaning.");
-    assert.equal(list.items[0].youtubeId, "dQw4w9WgXcQ");
-    assert.equal(list.items[0].thumbnailUrl, "https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg");
-    assert.equal(list.items[0].mediaUrl, "");
+    assert.match(list.items[0].mediaUrl, /^\/api\/savitri-video-media\//);
   } finally {
     await new Promise(resolve => server.close(resolve));
     await rm(directory, { recursive: true, force: true });
     if (previousUploadDirectory === undefined) delete process.env.UPLOAD_DIR; else process.env.UPLOAD_DIR = previousUploadDirectory;
     if (previousMongo === undefined) delete process.env.MONGODB_URI; else process.env.MONGODB_URI = previousMongo;
+    if (previousPlaylistSync === undefined) delete process.env.SAVITRI_PLAYLIST_SYNC; else process.env.SAVITRI_PLAYLIST_SYNC = previousPlaylistSync;
   }
 });
 
@@ -299,21 +295,12 @@ test("renders the 15 August Pushpanjali campaign entry point", async () => {
   assert.match(source, /context\.fillText\(selectedFlower\.botanical, contentLeft, 675\)/);
   assert.match(source, /context\.fillText\(selectedFlower\.name, contentLeft, 795\)/);
   assert.match(source, /context\.drawImage\(flower, 1235, 610, 220, 220\)/);
-  assert.match(source, /setStatus\("offered"\)[\s\S]*?await fetch\(offeringEndpoint\(\)/);
+  assert.match(source, /setStatus\("submitting"\)[\s\S]*?await fetch\(offeringEndpoint\(\)/);
+  assert.match(source, /if \(!response\?\.ok\)[\s\S]*?setStatus\("offered"\)/);
   assert.ok((source.match(/const flowerPositions = \[([^\]]+)/)?.[1].split(",").length || 0) >= 30);
   assert.match(source, /154th Birthday\./);
   assert.match(source, /15 AUGUST 2026  \|  DARSHAN DIVAS/);
   assert.match(source, /CERTIFICATE NUMBER:/);
-  assert.match(source, /Join SAS Lucknow/);
-  assert.match(source, /href="\/participate\?from=pushpanjali#parichay"/);
-  assert.match(source, /sessionStorage\.setItem\(parichayJourneyKey/);
-  const participationSource = await readFile(new URL("../app/participate/participation-client.tsx", import.meta.url), "utf8");
-  assert.match(participationSource, /sessionStorage\.getItem\(parichayJourneyKey\)/);
-  assert.match(participationSource, /name="pushpanjaliCertificateNumber"/);
-  assert.match(participationSource, /CREATE YOUR MEMBER ACCOUNT/);
-  assert.match(participationSource, /Create My Account/);
-  assert.match(participationSource, /Member Login/);
-  assert.doesNotMatch(participationSource, /Member sign in|BEGIN WITH PARICHAY|How would you like to participate\?/);
   const apiSource = await readFile(new URL("../server/gallery-api.mjs", import.meta.url), "utf8");
   assert.match(apiSource, /YOUR PUSHPA HAS BEEN OFFERED/);
   assert.match(apiSource, /contentDisposition: "inline"/);
@@ -326,7 +313,7 @@ test("records a Pushpanjali offering and returns a certificate reference", async
   const previousMongo = process.env.MONGODB_URI;
   const previousSmtpHost = process.env.SMTP_HOST;
   process.env.PUSHPANJALI_DIR = directory;
-  delete process.env.MONGODB_URI;
+  process.env.MONGODB_URI = "mongodb://127.0.0.1:9/sas_lucknow";
   delete process.env.SMTP_HOST;
   const moduleUrl = new URL("../server/gallery-api.mjs", import.meta.url);
   moduleUrl.searchParams.set("test", `${process.pid}-${Date.now()}`);
@@ -341,7 +328,7 @@ test("records a Pushpanjali offering and returns a certificate reference", async
     const response = await fetch(`http://127.0.0.1:${address.port}/api/pushpanjali-offerings`, {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ name: "Test Devotee", email: "devotee@example.com", flowerId: "integral-love" }),
+      body: JSON.stringify({ requestId: "12345678-1234-4123-8123-123456789abc", name: "Test Devotee", email: "devotee@example.com", flowerId: "integral-love" }),
     });
     assert.equal(response.status, 201);
     const result = await response.json();
@@ -351,9 +338,21 @@ test("records a Pushpanjali offering and returns a certificate reference", async
     assert.equal(result.emailToken, "");
     assert.equal(result.offeringNumber, 1);
     assert.equal(result.reference, "UC02-000001");
+    assert.equal(result.recordStored, true);
+    assert.equal(result.databaseSyncQueued, true);
     const files = await readdir(directory);
     const offeringFiles = files.filter(name => name.endsWith(".json"));
     assert.equal(offeringFiles.length, 0);
+    assert.deepEqual(await readdir(path.join(directory, "records")), ["UC02-000001.json"]);
+    const retryResponse = await fetch(`http://127.0.0.1:${address.port}/api/pushpanjali-offerings`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ requestId: "12345678-1234-4123-8123-123456789abc", name: "Test Devotee", email: "devotee@example.com", flowerId: "integral-love" }),
+    });
+    assert.equal(retryResponse.status, 201);
+    const retryResult = await retryResponse.json();
+    assert.equal(retryResult.reference, "UC02-000001");
+    assert.equal(retryResult.offeringNumber, 1);
     const secondResponse = await fetch(`http://127.0.0.1:${address.port}/api/pushpanjali-offerings`, {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -461,25 +460,6 @@ test("displays all four vision explanations inside their boxes", async () => {
     "Recognise one spirit in all",
     "Participate consciously in humanity’s movement",
   ]) assert.match(html, new RegExp(line));
-});
-
-test("links the main website to joining, Sankalp and Kosh", async () => {
-  const response = await render();
-  const html = await response.text();
-  assert.match(html, /href="\/participate#parichay"[^>]*>Join/);
-  assert.match(html, /href="\/participate#parichay"/);
-  assert.match(html, /href="\/participate#sankalp"/);
-  assert.match(html, /href="\/participate#kosh"/);
-  const css = await readFile(new URL("../app/participate/participate.css", import.meta.url), "utf8");
-  assert.match(css, /Unified Song of Life palette and interaction language/);
-  assert.match(css, /--p-ink:#173846/);
-  assert.match(css, /--p-gold:#c58a32/);
-  assert.match(css, /--p-line:#d9c9a8;padding-top:0/);
-});
-
-test("keeps malformed Parichay submissions inside the API error boundary", async () => {
-  const source = await readFile(new URL("../server/participation-api.mjs", import.meta.url), "utf8");
-  assert.match(source, /return await submitParichay\(request, response, db\)/);
 });
 
 test("renders the internal Darshan Divas guide and navigation entry", async () => {

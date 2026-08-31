@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>SAS Lucknow Native Android — Member Entry Flow</title>
+  <style>
+    :root{
+      --deep:#071c25;--ink:#123b48;--teal:#235867;--gold:#c88829;--bright:#f2be55;
+      --aura:#ffe39a;--paper:#fbf5e9;--surface:#fffdfa;--cream:#f5e6c5;--line:#dfc89f;
+      --muted:#62777c;--shadow:0 30px 65px rgba(5,27,35,.24);
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;min-height:100%;background:#dfe8e7;color:var(--ink);font-family:Inter,"Segoe UI",Arial,sans-serif}
+    body{padding:34px;background:
+      radial-gradient(circle at 8% 2%,rgba(255,227,154,.72),transparent 27%),
+      radial-gradient(circle at 92% 85%,rgba(35,88,103,.22),transparent 30%),#eef2ef}
+    .review-head{max-width:1420px;margin:0 auto 26px;display:flex;align-items:end;justify-content:space-between;gap:30px}
+    .review-head small,.eyebrow{font-size:11px;line-height:1.2;letter-spacing:2.1px;font-weight:800;color:var(--gold);text-transform:uppercase}
+    .review-head h1{margin:8px 0 0;font:500 42px/1.02 Georgia,serif;color:var(--deep)}
+    .review-head p{margin:0;max-width:460px;color:var(--muted);line-height:1.55;text-align:right}
+    .board{max-width:1420px;margin:auto;display:grid;grid-template-columns:repeat(3,350px);justify-content:space-between;gap:26px;align-items:start}
+    .unit h2{font:500 18px/1.2 Georgia,serif;margin:0 0 10px;color:var(--deep)}
+    .unit>p{font-size:12px;color:var(--muted);margin:0 0 13px;line-height:1.5;min-height:36px}
+    .device{height:754px;border:10px solid #071c25;border-radius:42px;background:#071c25;padding:4px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+    .screen{height:100%;border-radius:29px;overflow:hidden;position:relative;background:linear-gradient(#fffdf7,#f7ecd6);isolation:isolate}
+    .status{position:absolute;z-index:20;top:0;left:0;right:0;height:27px;padding:7px 14px 0;color:#fff;display:flex;justify-content:space-between;font-size:10px;font-weight:700}
+    .launch{background:var(--deep)}
+    .banner{position:absolute;inset:0;background:url('../../android-native/app/src/main/res/drawable-nodpi/song_of_life_banner_clean.png') center/cover no-repeat;animation:cinema 11s ease-in-out infinite alternate;transform:scale(1.03)}
+    @keyframes cinema{to{transform:scale(1.11) translate3d(-1.5%,0,0)}}
+    .launch:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(3,16,21,.13),rgba(3,16,21,.02) 38%,rgba(3,16,21,.44) 65%,rgba(3,16,21,.98))}
+    .aura{position:absolute;right:-80px;top:-80px;width:310px;height:310px;border-radius:50%;background:radial-gradient(circle,rgba(255,243,191,.58),rgba(255,214,97,.17) 46%,transparent 72%);animation:breathe 4.2s ease-in-out infinite alternate}
+    @keyframes breathe{to{transform:scale(1.17);opacity:.72}}
+    .brand-top{position:absolute;z-index:3;top:34px;left:18px;right:18px;display:flex;align-items:center;gap:10px;color:white;text-shadow:0 2px 8px #061921}
+    .brand-top img{width:48px;height:48px;object-fit:contain;filter:drop-shadow(0 3px 8px rgba(0,0,0,.25))}
+    .brand-top strong{display:block;font:700 13px Georgia,serif;letter-spacing:.4px}
+    .brand-top span{display:block;margin-top:3px;color:var(--aura);font-size:7px;letter-spacing:1.1px}
+    .launch-copy{position:absolute;z-index:4;left:20px;right:20px;bottom:28px;text-align:center;color:#fff}
+    .launch-copy .eyebrow{color:var(--aura);font-size:8px;letter-spacing:1.4px}
+    .launch-copy h3{font:500 39px/1 Georgia,serif;margin:10px 0 8px}
+    .launch-copy p{font:400 13px/1.45 Georgia,serif;color:#dbe6e4;margin:0 0 17px}
+    button,.btn{height:48px;border-radius:13px;border:1px solid #0a2a36;width:100%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;letter-spacing:.1px;cursor:default}
+    .btn.gold{color:#17333c;background:linear-gradient(#ffe7a8,#f2be55 58%,#c7892d);box-shadow:0 8px 0 #8d5d1d,0 17px 28px rgba(2,17,23,.38)}
+    .btn.teal{color:white;background:linear-gradient(#2b6271,#123b48 60%,#071c25);box-shadow:0 7px 0 #061a21,0 15px 25px rgba(6,26,33,.22)}
+    .joinlink{margin-top:20px;color:#d8e4e4;font-size:12px}.joinlink b{color:var(--aura);padding:8px}
+    .appbar{height:84px;padding:32px 16px 11px;display:flex;gap:9px;align-items:center;background:rgba(255,253,250,.98);border-bottom:1px solid var(--line)}
+    .appbar img{width:40px;height:40px;object-fit:contain}
+    .appbar strong{font:700 14px Georgia,serif;display:block;white-space:nowrap}.appbar span{font-size:7px;letter-spacing:.75px;color:#8a632f;display:block;margin-top:3px}
+    .body{padding:16px;height:calc(100% - 84px);overflow:hidden;background:linear-gradient(#fffdf7,#f7ecd6)}
+    .card{background:rgba(255,253,250,.96);border:1px solid var(--line);border-radius:19px;box-shadow:0 12px 25px rgba(27,52,57,.11);padding:19px}
+    .card h3,.join h3{margin:7px 0 8px;font:500 31px/1.04 Georgia,serif;color:var(--deep)}
+    .card .desc,.join .desc{font-size:12px;line-height:1.48;color:var(--muted);margin-bottom:17px}
+    label{font-size:10px;font-weight:800;color:var(--ink);display:block;margin:10px 0 6px}
+    .field{height:48px;border:1px solid var(--line);border-radius:12px;background:#fff;display:flex;align-items:center;padding:0 13px;color:#8b9a9c;font-size:12px}
+    .sp10{height:11px}.secondary{margin-top:12px;border:1px solid var(--line);background:#fffdfa;color:var(--ink);box-shadow:0 3px 8px rgba(20,60,70,.06)}
+    .login .body{display:flex;align-items:center}
+    .login .card{width:100%}
+    .join .body{padding:15px;overflow:hidden}
+    .join .topcopy{padding:3px 2px 10px}.join .topcopy h3{font-size:27px}.join .topcopy .desc{margin:0}
+    .steps{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:7px 0 10px}.step{border:1px solid var(--line);background:#f8ebcc;border-radius:12px;padding:10px}.step b{display:block;font-size:10px}.step small{display:block;color:var(--muted);font-size:8px;line-height:1.35;margin-top:4px}.step i{font-style:normal;color:var(--gold);font-size:8px;font-weight:800;letter-spacing:1px}
+    .join .card{padding:14px}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.join .field{height:43px;font-size:10px}.join label{margin-top:7px;margin-bottom:4px;font-size:9px}.join .btn{height:46px;margin-top:12px}.tiny{font-size:8px;color:var(--muted);line-height:1.35;margin:8px 0}
+    .tablet-unit{min-width:0;grid-column:1/-1;margin-top:8px}.tablet{height:640px;border:10px solid #071c25;border-radius:34px;background:#071c25;padding:4px;box-shadow:var(--shadow);overflow:hidden}.tablet .screen{border-radius:21px}.tablet .brand-top{left:30px;top:38px}.tablet .brand-top img{width:58px;height:58px}.tablet .launch-copy{left:auto;right:55px;bottom:46px;width:430px;text-align:left}.tablet .launch-copy h3{font-size:58px}.tablet .launch-copy .btn{width:290px}.tablet .joinlink{text-align:left}.tablet .banner{background-position:center}.tablet .status{padding-left:24px;padding-right:24px}
+    .flow-note{max-width:1420px;margin:30px auto 0;background:var(--deep);border-radius:20px;color:white;padding:18px 22px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px;box-shadow:0 16px 35px rgba(6,28,37,.18)}
+    .flow-note div{border-left:2px solid var(--bright);padding-left:13px}.flow-note b{display:block;color:var(--aura);font-size:12px;margin-bottom:4px}.flow-note span{font-size:11px;color:#d3e0e0;line-height:1.45}
+    @media(max-width:1250px){.board{grid-template-columns:repeat(3,1fr)}.tablet{height:600px}.tablet .launch-copy{width:48%}}
+  </style>
+</head>
+<body>
+  <header class="review-head">
+    <div><small>Native Android · Entry journey v4</small><h1>Independent member application</h1></div>
+    <p>The public website disappears. The app begins with the Society’s visual identity and leads members directly to login or account creation.</p>
+  </header>
+  <main class="board">
+    <section class="unit">
+      <h2>01 · Animated welcome</h2><p>Website banner in motion, golden breathing aura and one decisive entry point.</p>
+      <div class="device"><div class="screen launch">
+        <div class="status"><span>9:41</span><span>5G&nbsp;&nbsp;▮▮▮&nbsp;&nbsp;92%</span></div><div class="banner"></div><div class="aura"></div>
+        <div class="brand-top"><img src="../../android-native/app/src/main/res/drawable-nodpi/society_logo_transparent.png"><div><strong>SRI AUROBINDO SOCIETY</strong><span>LUCKNOW · GOMTI NAGAR CENTRE</span></div></div>
+        <div class="launch-copy"><div class="eyebrow">A member space for silence, study &amp; Sangha</div><h3>The Song of Life</h3><p>Enter a quieter field of attention.</p><div class="btn gold">Member Login</div><div class="joinlink">New member? <b>Join here</b></div></div>
+      </div></div>
+    </section>
+    <section class="unit">
+      <h2>02 · Member login</h2><p>Focused, secure and consistent. Login uses registered mobile number or email.</p>
+      <div class="device"><div class="screen login">
+        <div class="status" style="color:#123b48"><span>9:41</span><span>5G&nbsp;&nbsp;▮▮▮&nbsp;&nbsp;92%</span></div>
+        <div class="appbar"><img src="../../android-native/app/src/main/res/drawable-nodpi/society_logo_transparent.png"><div><strong>Sri Aurobindo Society</strong><span>LUCKNOW · GOMTI NAGAR CENTRE</span></div></div>
+        <div class="body"><div class="card"><div class="eyebrow">Member access</div><h3>Member Login</h3><div class="desc">Use your registered mobile number or email and password.</div><label>Mobile number or email</label><div class="field">Enter your registered identity</div><label>Password</label><div class="field">••••••••••</div><div class="sp10"></div><div class="btn teal">Enter Member Space</div><div class="btn secondary">New here? Join the Community</div></div></div>
+      </div></div>
+    </section>
+    <section class="unit">
+      <h2>03 · New member</h2><p>“Join here” opens the original Parichay account-creation journey.</p>
+      <div class="device"><div class="screen join">
+        <div class="status" style="color:#123b48"><span>9:41</span><span>5G&nbsp;&nbsp;▮▮▮&nbsp;&nbsp;92%</span></div>
+        <div class="appbar"><img src="../../android-native/app/src/main/res/drawable-nodpi/society_logo_transparent.png"><div><strong>Sri Aurobindo Society</strong><span>LUCKNOW · GOMTI NAGAR CENTRE</span></div></div>
+        <div class="body"><div class="topcopy"><div class="eyebrow">Create your member account</div><h3>Tell us about yourself</h3><div class="desc">Your Parichay helps us understand your interests, abilities and the seva you would like to explore.</div></div>
+          <div class="steps"><div class="step"><i>01</i><b>Join the Community</b><small>Complete Parichay and create a secure password.</small></div><div class="step"><i>02</i><b>Enter Darshan</b><small>Sign in immediately after joining.</small></div></div>
+          <div class="card"><div class="grid2"><div><label>Full name</label><div class="field">Your name</div></div><div><label>Mobile</label><div class="field">+91</div></div><div><label>Email (optional)</label><div class="field">Email</div></div><div><label>City</label><div class="field">Lucknow</div></div></div><label>Areas of interest</label><div class="field">Study, meditation…</div><label>Create your member password</label><div class="field">••••••••••</div><div class="tiny">☐ I permit the centre to use these details to contact me about membership, gatherings and seva.</div><div class="btn teal">Create My Account</div></div>
+        </div>
+      </div></div>
+    </section>
+    <section class="unit tablet-unit">
+      <h2>Tablet adaptation</h2><p>The same independent welcome screen expands naturally; it is not a stretched phone layout.</p>
+      <div class="tablet"><div class="screen launch"><div class="status"><span>9:41</span><span>Wi-Fi&nbsp;&nbsp;▮▮▮&nbsp;&nbsp;92%</span></div><div class="banner"></div><div class="aura"></div><div class="brand-top"><img src="../../android-native/app/src/main/res/drawable-nodpi/society_logo_transparent.png"><div><strong>SRI AUROBINDO SOCIETY</strong><span>LUCKNOW · GOMTI NAGAR CENTRE</span></div></div><div class="launch-copy"><div class="eyebrow">A member space for silence, study &amp; Sangha</div><h3>The Song of Life</h3><p>Enter a quieter field of attention.</p><div class="btn gold">Member Login</div><div class="joinlink">New member? <b>Join here</b></div></div></div></div>
+    </section>
+  </main>
+  <section class="flow-note"><div><b>Tap banner or Member Login</b><span>Opens the secure Member Login screen.</span></div><div><b>Tap “Join here”</b><span>Opens the original Parichay-based member account form.</span></div><div><b>Responsive by design</b><span>Phone stacks content; tablet gains space without oversized controls.</span></div></section>
+</body>
+</html>

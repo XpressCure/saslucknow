@@ -24,4 +24,3 @@ test("rejects a filled honeypot", () => {
   const result = validateNextHumanVolunteerInquiry({ ...valid, website: "spam" });
   assert.equal(result.ok, false);
 });
-

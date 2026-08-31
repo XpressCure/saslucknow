@@ -48,7 +48,6 @@ const flowers: Flower[] = [
 
 const flowerPositions = [5, 10, 16, 22, 28, 34, 40, 46, 52, 58, 64, 70, 76, 82, 88, 94, 8, 19, 31, 43, 55, 67, 79, 91, 13, 25, 37, 49, 61, 73, 85];
 const pushpanjaliLandingUrl = "https://www.saslucknow.in/?pushpanjali=1";
-const parichayJourneyKey = "sas-pushpanjali-parichay";
 
 function offeringEndpoint() {
   return window.location.hostname.endsWith("chatgpt.site")
@@ -100,7 +99,7 @@ function isMobileBrowser() {
   return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
 }
 
-export function PushpanjaliCampaign({ onOpenChange }: { onOpenChange?: (open: boolean) => void }) {
+export function PushpanjaliCampaign() {
   const modalRef = useRef<HTMLElement>(null);
   const [open, setOpen] = useState(true);
   const [selectedId, setSelectedId] = useState<Flower["id"]>("divine-love");
@@ -114,9 +113,6 @@ export function PushpanjaliCampaign({ onOpenChange }: { onOpenChange?: (open: bo
   const [certificatePreviewUrl, setCertificatePreviewUrl] = useState("");
   const [shareNotice, setShareNotice] = useState("");
   const selectedFlower = flowers.find(flower => flower.id === selectedId) || flowers[0];
-  useEffect(() => {
-    onOpenChange?.(open);
-  }, [onOpenChange, open]);
   const fallingFlowers = useMemo(() => flowerPositions.map((left, index) => ({
     left,
     delay: `${index * 0.11}s`,
@@ -124,6 +120,27 @@ export function PushpanjaliCampaign({ onOpenChange }: { onOpenChange?: (open: bo
     size: `${42 + ((index * 7) % 22)}px`,
   })), []);
   const shareMessage = `🙏 With gratitude, I have offered Pushpanjali to Sri Aurobindo on his 154th Birthday.\n\nYou too can offer your Pushpanjali and receive a personalised e-Certificate:\n${pushpanjaliLandingUrl}\n\nInitiative of: Sri Aurobindo Society, Lucknow, Gomti Nagar Centre (UC-02)`;
+
+  const joinCommunity = () => {
+    try {
+      sessionStorage.setItem("sas-pushpanjali-parichay", JSON.stringify({
+        fullName: name.trim(),
+        email: email.trim(),
+        pushpanjaliCertificateNumber: result?.reference || "",
+        savedAt: new Date().toISOString(),
+      }));
+    } catch {
+      // Registration still works if browser storage is unavailable.
+    }
+    window.location.assign("/joincommunity?from=pushpanjali#parichay");
+  };
+
+  const contribute = () => {
+    const parameters = new URLSearchParams({ contribute: "1", from: "pushpanjali" });
+    if (name.trim()) parameters.set("name", name.trim());
+    if (email.trim()) parameters.set("email", email.trim());
+    window.location.assign(`/?${parameters.toString()}#support`);
+  };
 
   useEffect(() => {
     let active = true;
@@ -194,26 +211,46 @@ export function PushpanjaliCampaign({ onOpenChange }: { onOpenChange?: (open: bo
   const submitOffering = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (status === "submitting") return;
-    setStatus("offered");
+    setStatus("submitting");
     setError("");
     setResult(null);
     setCertificateBlob(null);
     setShareNotice("");
     try {
-      const response = await fetch(offeringEndpoint(), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, flowerId: selectedFlower.id, website: "" }),
-      });
-      const payload = await response.json().catch(() => ({})) as {
+      const requestId = crypto.randomUUID();
+      let response: Response | null = null;
+      let payload: {
         error?: string;
         reference?: string;
         offeringNumber?: number;
         emailed?: boolean;
         emailQueued?: boolean;
         emailToken?: string;
-      };
-      if (!response.ok) throw new Error(payload.error || "Your Pushpanjali could not be recorded. Please try again.");
+      } = {};
+      for (let attempt = 0; attempt < 3; attempt += 1) {
+        const controller = new AbortController();
+        const timeout = window.setTimeout(() => controller.abort(), 8_000);
+        try {
+          response = await fetch(offeringEndpoint(), {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ requestId, name, email, flowerId: selectedFlower.id, website: "" }),
+            signal: controller.signal,
+          });
+          payload = await response.json().catch(() => ({}));
+        } catch (requestError) {
+          if (attempt === 2) throw requestError;
+          await new Promise(resolve => window.setTimeout(resolve, attempt === 0 ? 400 : 900));
+          continue;
+        } finally {
+          window.clearTimeout(timeout);
+        }
+        if (response.ok) break;
+        const requestError = new Error(payload.error || "Your Pushpanjali could not be recorded. Please try again.");
+        if (response.status < 500 || attempt === 2) throw requestError;
+        await new Promise(resolve => window.setTimeout(resolve, attempt === 0 ? 400 : 900));
+      }
+      if (!response?.ok) throw new Error(payload.error || "Your Pushpanjali could not be recorded. Please try again.");
       const offeringResult = {
         reference: String(payload.reference || "SAS-PUSHPA-2026"),
         offeringNumber: Number(payload.offeringNumber || 0),
@@ -222,12 +259,7 @@ export function PushpanjaliCampaign({ onOpenChange }: { onOpenChange?: (open: bo
         emailToken: String(payload.emailToken || ""),
       };
       setResult(offeringResult);
-      sessionStorage.setItem(parichayJourneyKey, JSON.stringify({
-        fullName: name.trim(),
-        email: email.trim().toLowerCase(),
-        pushpanjaliCertificateNumber: offeringResult.reference,
-        savedAt: new Date().toISOString(),
-      }));
+      setStatus("offered");
       setOfferingCount(current => current + 1);
       try {
         const blob = await buildCertificate(offeringResult);
@@ -586,11 +618,11 @@ export function PushpanjaliCampaign({ onOpenChange }: { onOpenChange?: (open: bo
               <button className="pushpanjali-instagram" type="button" onClick={shareCertificateOnInstagram} disabled={!result}>Share on Instagram</button>
               <button type="button" onClick={downloadCertificate} disabled={!result}>Download e-Certificate</button>
             </div>
-            {shareNotice && <p className="pushpanjali-share-notice" role="status">{shareNotice}</p>}
-            <div className="pushpanjali-next-step">
-              <div><span>CONTINUE YOUR JOURNEY</span><strong>Join the Community.</strong><p>Your name, email and certificate connection will be carried securely to the account form in this browser.</p></div>
-              <a href="/participate?from=pushpanjali#parichay">Join the Community <b aria-hidden="true">&rarr;</b></a>
+            <div className="pushpanjali-community-actions">
+              <button className="pushpanjali-community-primary" type="button" onClick={joinCommunity}>Join the Community</button>
+              <button type="button" onClick={contribute}>Contribute</button>
             </div>
+            {shareNotice && <p className="pushpanjali-share-notice" role="status">{shareNotice}</p>}
             <button className="pushpanjali-finish" type="button" onClick={closeCampaign}>Return to the website</button>
           </div>}
         </div>
@@ -599,4 +631,3 @@ export function PushpanjaliCampaign({ onOpenChange }: { onOpenChange?: (open: bo
     </div>}
   </>;
 }
-

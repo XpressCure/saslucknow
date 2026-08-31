@@ -1,0 +1,8 @@
+[Unit]
+Description=Retain the active and rollback SAS Lucknow website releases
+After=saslucknow.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/saslucknow-prune-releases
+

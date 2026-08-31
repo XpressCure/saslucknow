@@ -15,9 +15,15 @@ const PORT = Number(process.env.PORT || 3001);
 const UPLOAD_DIR = process.env.UPLOAD_DIR || path.resolve("work/gallery-submissions");
 const PUSHPANJALI_DIR = process.env.PUSHPANJALI_DIR || path.resolve("work/pushpanjali-offerings");
 const PUSHPANJALI_COUNTER_FILE = path.join(PUSHPANJALI_DIR, ".certificate-counter");
+const PUSHPANJALI_RECORD_DIR = path.join(PUSHPANJALI_DIR, "records");
 const TEMP_DIR = path.join(UPLOAD_DIR, ".tmp");
 const MANIFEST_DIR = path.join(UPLOAD_DIR, "manifests");
 const SAVITRI_MANIFEST_DIR = path.join(UPLOAD_DIR, "savitri-manifests");
+const SAVITRI_YOUTUBE_PLAYLIST_ID = String(process.env.SAVITRI_YOUTUBE_PLAYLIST_ID || "PLd_qJzN6LPeU").trim();
+const SAVITRI_PLAYLIST_SYNC_ENABLED = process.env.SAVITRI_PLAYLIST_SYNC !== "false";
+const SAVITRI_PLAYLIST_CACHE_MS = 5 * 60 * 1000;
+const GATHERINGS_YOUTUBE_PLAYLIST_ID = String(process.env.GATHERINGS_YOUTUBE_PLAYLIST_ID || "PLJf4jD8jYb0A").trim();
+const GATHERINGS_PLAYLIST_SYNC_ENABLED = process.env.GATHERINGS_PLAYLIST_SYNC !== "false";
 const MAX_REQUEST_BYTES = 130 * 1024 * 1024;
 const MAX_VIDEO_BYTES = 80 * 1024 * 1024;
 const MAX_IMAGE_BYTES = 12 * 1024 * 1024;
@@ -31,7 +37,11 @@ const rateLimits = new Map();
 const pushpanjaliRateLimits = new Map();
 const pendingPushpanjaliEmails = new Map();
 let mongoClientPromise;
+let pushpanjaliIndexPromise;
 let pushpanjaliCounterQueue = Promise.resolve();
+let pushpanjaliSyncPromise;
+let savitriPlaylistCache = { expiresAt: 0, items: [] };
+let gatheringsPlaylistCache = { expiresAt: 0, items: [] };
 
 const pushpanjaliFlowers = new Map([
   ["divine-love", {
@@ -81,8 +91,8 @@ async function approvedGalleryItems() {
   try {
     names = await readdir(MANIFEST_DIR);
   } catch (error) {
-    if (error?.code === "ENOENT") return [];
-    throw error;
+    if (error?.code === "ENOENT") names = [];
+    else throw error;
   }
   const documents = await Promise.all(names.filter(name => name.endsWith(".json")).map(async name => {
     try {
@@ -91,10 +101,11 @@ async function approvedGalleryItems() {
       return null;
     }
   }));
-  return documents
+  const localItems = documents
     .filter(document => document?.status === "approved")
     .flatMap(document => (document.media || [])
-      .filter(media => (media.storage === "local" && allowedTypes.has(media.mimeType)) || (media.storage === "youtube" && media.youtubeId))
+      .filter(media => (media.storage === "local" && allowedTypes.has(media.mimeType))
+        || (media.storage === "youtube" && media.kind === "video" && media.youtubeId))
       .map((media, index) => ({
         id: `${document.submissionId}-${index}`,
         submissionId: document.submissionId,
@@ -104,11 +115,20 @@ async function approvedGalleryItems() {
         description: cleanText(document.description, 2500),
         kind: media.kind,
         mimeType: media.mimeType,
-        mediaUrl: media.storage === "local" ? `/api/gallery-media/${encodeURIComponent(document.submissionId)}/${encodeURIComponent(path.basename(media.key))}` : "",
-        youtubeId: media.storage === "youtube" ? media.youtubeId : "",
-        youtubeUrl: media.storage === "youtube" ? media.youtubeUrl : "",
-        thumbnailUrl: media.storage === "youtube" ? media.thumbnailUrl : "",
-      })))
+        mediaUrl: media.storage === "youtube"
+          ? `https://www.youtube.com/watch?v=${encodeURIComponent(cleanText(media.youtubeId, 20))}`
+          : `/api/gallery-media/${encodeURIComponent(document.submissionId)}/${encodeURIComponent(path.basename(media.key))}`,
+        youtubeId: media.storage === "youtube" ? cleanText(media.youtubeId, 20) : "",
+        thumbnailUrl: media.storage === "youtube" ? cleanText(media.thumbnailUrl, 500) : "",
+      })));
+  let playlistItems = [];
+  try {
+    playlistItems = await youtubeGatheringsPlaylistItems();
+  } catch (error) {
+    console.error("YouTube Gatherings playlist sync failed; stored entries retained", error instanceof Error ? error.message : error);
+  }
+  const localYoutubeIds = new Set(localItems.map(item => item.youtubeId).filter(Boolean));
+  return [...playlistItems.filter(item => !localYoutubeIds.has(item.youtubeId)), ...localItems]
     .sort((a, b) => String(b.eventDate).localeCompare(String(a.eventDate)));
 }
 
@@ -127,8 +147,10 @@ async function savitriVideoItems() {
       return null;
     }
   }));
-  return documents
-    .filter(document => document?.status === "approved" && document?.media?.storage === "youtube" && document.media.youtubeId)
+  const localItems = documents
+    .filter(document => document?.status === "approved" && document?.media?.kind === "video"
+      && ((document.media.storage === "local" && allowedTypes.has(document.media.mimeType))
+        || (document.media.storage === "youtube" && document.media.youtubeId)))
     .map(document => ({
       id: document.submissionId,
       part: cleanText(document.part, 80),
@@ -138,13 +160,22 @@ async function savitriVideoItems() {
       lineNos: cleanText(document.lineNos, 120),
       pageNo: cleanText(document.pageNo, 80),
       description: cleanText(document.description, 2500),
-      mimeType: "text/html",
-      mediaUrl: "",
-      youtubeId: document.media.youtubeId,
-      youtubeUrl: document.media.youtubeUrl,
-      thumbnailUrl: document.media.thumbnailUrl,
+      mimeType: document.media.mimeType,
+      mediaUrl: document.media.storage === "youtube"
+        ? `https://www.youtube.com/watch?v=${encodeURIComponent(cleanText(document.media.youtubeId, 20))}`
+        : `/api/savitri-video-media/${encodeURIComponent(document.submissionId)}/${encodeURIComponent(path.basename(document.media.key))}`,
+      youtubeId: document.media.storage === "youtube" ? cleanText(document.media.youtubeId, 20) : "",
+      thumbnailUrl: document.media.storage === "youtube" ? cleanText(document.media.thumbnailUrl, 500) : "",
       createdAt: document.createdAt,
-    }))
+    }));
+  let playlistItems = [];
+  try {
+    playlistItems = await youtubeSavitriPlaylistItems(localItems);
+  } catch (error) {
+    console.error("YouTube Savitri playlist sync failed; stored entries retained", error instanceof Error ? error.message : error);
+  }
+  const localYoutubeIds = new Set(localItems.map(item => item.youtubeId).filter(Boolean));
+  return [...localItems, ...playlistItems.filter(item => !localYoutubeIds.has(item.youtubeId))]
     .sort((a, b) => String(a.bookNo).localeCompare(String(b.bookNo), undefined, { numeric: true })
       || String(a.cantoNo).localeCompare(String(b.cantoNo), undefined, { numeric: true })
       || String(a.lineNos).localeCompare(String(b.lineNos), undefined, { numeric: true }));
@@ -243,34 +274,95 @@ function cleanText(value, max = 1000) {
   return String(value || "").replace(/[\u0000-\u001f<>]/g, " ").replace(/\s+/g, " ").trim().slice(0, max);
 }
 
-function parseYouTubeUrl(value) {
-  const input = cleanText(value, 500);
-  if (!input) return null;
-  let parsed;
+function decodeXmlText(value = "") {
+  return String(value)
+    .replace(/^<!\[CDATA\[|\]\]>$/g, "")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;|&apos;/g, "'");
+}
+
+function xmlValue(source, tag) {
+  const escapedTag = tag.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const match = String(source).match(new RegExp(`<${escapedTag}[^>]*>([\\s\\S]*?)<\\/${escapedTag}>`, "i"));
+  return cleanText(decodeXmlText(match?.[1] || ""), 4000);
+}
+
+function parseSavitriPlaylistTitle(title) {
+  const match = String(title).match(/P(?:art)?\s*(\d+)\s+B(?:ook)?\s*([IVXLCDM\d]+)\s+C(?:anto)?\s*([IVXLCDM\d]+)\s*\(([^)]+)\)/i);
+  if (!match) return null;
+  return { part: match[1], bookNo: match[2].toUpperCase(), cantoNo: match[3].toUpperCase(), lineNos: cleanText(match[4], 120) };
+}
+
+async function youtubePlaylistEntries(playlistId, cache) {
+  if (cache.expiresAt > Date.now()) return cache.items;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 6000);
   try {
-    parsed = new URL(input);
-  } catch {
-    return null;
+    const response = await fetch(`https://www.youtube.com/feeds/videos.xml?playlist_id=${encodeURIComponent(playlistId)}`, {
+      signal: controller.signal,
+      headers: { "User-Agent": "SASLucknow-Playlist/1.0" },
+    });
+    if (!response.ok) throw new Error(`YouTube playlist returned ${response.status}`);
+    const xml = await response.text();
+    return (xml.match(/<entry>[\s\S]*?<\/entry>/gi) || []).map(entry => ({
+      youtubeId: xmlValue(entry, "yt:videoId"),
+      title: xmlValue(entry, "title"),
+      description: xmlValue(entry, "media:description"),
+      published: xmlValue(entry, "published"),
+    })).filter(entry => entry.youtubeId);
+  } finally {
+    clearTimeout(timeout);
   }
-  const hostname = parsed.hostname.toLowerCase().replace(/^www\./, "");
-  let videoId = "";
-  if (hostname === "youtu.be") videoId = parsed.pathname.split("/").filter(Boolean)[0] || "";
-  if (["youtube.com", "m.youtube.com", "music.youtube.com"].includes(hostname)) {
-    if (parsed.pathname === "/watch") videoId = parsed.searchParams.get("v") || "";
-    else {
-      const parts = parsed.pathname.split("/").filter(Boolean);
-      if (["shorts", "embed", "live"].includes(parts[0])) videoId = parts[1] || "";
-    }
-  }
-  if (!/^[A-Za-z0-9_-]{11}$/.test(videoId)) return null;
-  return {
-    storage: "youtube",
+}
+
+async function youtubeGatheringsPlaylistItems() {
+  if (!GATHERINGS_PLAYLIST_SYNC_ENABLED || !GATHERINGS_YOUTUBE_PLAYLIST_ID) return [];
+  if (gatheringsPlaylistCache.expiresAt > Date.now()) return gatheringsPlaylistCache.items;
+  const entries = await youtubePlaylistEntries(GATHERINGS_YOUTUBE_PLAYLIST_ID, gatheringsPlaylistCache);
+  const items = entries.map(entry => ({
+    id: `youtube-${entry.youtubeId}`,
+    submissionId: `youtube-${entry.youtubeId}`,
+    title: entry.title,
+    eventDate: String(entry.published || "").slice(0, 10),
+    category: "Collective Learnings",
+    description: cleanText(entry.description, 420) || "A recorded gathering from Sri Aurobindo Society, Lucknow.",
     kind: "video",
-    mimeType: "text/html",
-    youtubeId: videoId,
-    youtubeUrl: `https://www.youtube.com/watch?v=${videoId}`,
-    thumbnailUrl: `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
-  };
+    mimeType: "video/youtube",
+    mediaUrl: `https://www.youtube.com/watch?v=${encodeURIComponent(entry.youtubeId)}&list=${encodeURIComponent(GATHERINGS_YOUTUBE_PLAYLIST_ID)}`,
+    youtubeId: entry.youtubeId,
+    thumbnailUrl: `https://i.ytimg.com/vi/${encodeURIComponent(entry.youtubeId)}/hqdefault.jpg`,
+  }));
+  gatheringsPlaylistCache = { expiresAt: Date.now() + SAVITRI_PLAYLIST_CACHE_MS, items };
+  return items;
+}
+
+async function youtubeSavitriPlaylistItems(localItems) {
+  if (!SAVITRI_PLAYLIST_SYNC_ENABLED || !SAVITRI_YOUTUBE_PLAYLIST_ID) return [];
+  if (savitriPlaylistCache.expiresAt > Date.now()) return savitriPlaylistCache.items;
+  const entries = await youtubePlaylistEntries(SAVITRI_YOUTUBE_PLAYLIST_ID, savitriPlaylistCache);
+  const items = entries.map(entry => {
+    const youtubeId = entry.youtubeId;
+    const reference = parseSavitriPlaylistTitle(entry.title);
+    if (!youtubeId || !reference) return null;
+    const chapter = localItems.find(item => item.part === reference.part && item.bookNo.toUpperCase() === reference.bookNo && item.cantoNo.toUpperCase() === reference.cantoNo);
+    return {
+      id: `youtube-${youtubeId}`,
+      ...reference,
+      cantoName: chapter?.cantoName || `Book ${reference.bookNo}, Canto ${reference.cantoNo}`,
+      pageNo: chapter?.pageNo || "To be added",
+      description: entry.description || "A visual passage from Savitri with English and Hindi meaning.",
+      mimeType: "video/youtube",
+      mediaUrl: `https://www.youtube.com/watch?v=${encodeURIComponent(youtubeId)}&list=${encodeURIComponent(SAVITRI_YOUTUBE_PLAYLIST_ID)}`,
+      youtubeId,
+      thumbnailUrl: `https://i.ytimg.com/vi/${encodeURIComponent(youtubeId)}/hqdefault.jpg`,
+      createdAt: entry.published,
+    };
+  }).filter(Boolean);
+  savitriPlaylistCache = { expiresAt: Date.now() + SAVITRI_PLAYLIST_CACHE_MS, items };
+  return items;
 }
 
 function safeFilename(name) {
@@ -295,7 +387,9 @@ function isRateLimited(address) {
 function isPushpanjaliRateLimited(address) {
   const now = Date.now();
   const recent = (pushpanjaliRateLimits.get(address) || []).filter(time => now - time < 60 * 60 * 1000);
-  if (recent.length >= 8) return true;
+  // A shared household, institution or mobile carrier can legitimately present one IP.
+  // Keep abuse protection without rejecting a public observance after only eight people.
+  if (recent.length >= 120) return true;
   recent.push(now);
   pushpanjaliRateLimits.set(address, recent);
   return false;
@@ -340,14 +434,24 @@ async function readBinaryBody(request, maxBytes) {
 }
 
 async function readPushpanjaliCounter() {
+  let fileValue = 0;
   try {
-    const value = Number((await readFile(PUSHPANJALI_COUNTER_FILE, "utf8")).trim());
-    if (!Number.isSafeInteger(value) || value < 0) throw new Error("The Pushpanjali certificate counter is invalid.");
-    return value;
+    fileValue = Number((await readFile(PUSHPANJALI_COUNTER_FILE, "utf8")).trim());
+    if (!Number.isSafeInteger(fileValue) || fileValue < 0) throw new Error("The Pushpanjali certificate counter is invalid.");
   } catch (error) {
-    if (error?.code === "ENOENT") return 0;
-    throw error;
+    if (error?.code !== "ENOENT") throw error;
   }
+  let recordValue = 0;
+  try {
+    const names = await readdir(PUSHPANJALI_RECORD_DIR);
+    for (const name of names) {
+      const match = name.match(/^UC02-(\d{6})\.json$/);
+      if (match) recordValue = Math.max(recordValue, Number(match[1]));
+    }
+  } catch (error) {
+    if (error?.code !== "ENOENT") throw error;
+  }
+  return Math.max(fileValue, recordValue);
 }
 
 function withPushpanjaliCounterLock(operation) {
@@ -356,21 +460,231 @@ function withPushpanjaliCounterLock(operation) {
   return pending;
 }
 
-async function savePushpanjaliOffering(document) {
-  void document;
-  return withPushpanjaliCounterLock(async () => {
-    await mkdir(PUSHPANJALI_DIR, { recursive: true });
-    const offeringNumber = (await readPushpanjaliCounter()) + 1;
-    const temporaryFile = `${PUSHPANJALI_COUNTER_FILE}.${process.pid}.${randomUUID()}.tmp`;
-    await writeFile(temporaryFile, String(offeringNumber), { encoding: "utf8", flag: "wx" });
+async function writeJsonAtomically(filePath, value, { createOnly = false } = {}) {
+  await mkdir(path.dirname(filePath), { recursive: true });
+  const temporaryFile = `${filePath}.${process.pid}.${randomUUID()}.tmp`;
+  try {
+    await writeFile(temporaryFile, JSON.stringify(value, null, 2), { encoding: "utf8", flag: "wx", mode: 0o600 });
+    if (createOnly) {
+      try {
+        await stat(filePath);
+        throw Object.assign(new Error("The certificate number has already been reserved."), { code: "EEXIST" });
+      } catch (error) {
+        if (error?.code !== "ENOENT") throw error;
+      }
+    }
+    await rename(temporaryFile, filePath);
+  } catch (error) {
+    await rm(temporaryFile, { force: true }).catch(() => {});
+    throw error;
+  }
+}
+
+function pushpanjaliRecordPath(reference) {
+  return path.join(PUSHPANJALI_RECORD_DIR, `${reference}.json`);
+}
+
+async function writePushpanjaliCounterBestEffort(offeringNumber) {
+  const temporaryFile = `${PUSHPANJALI_COUNTER_FILE}.${process.pid}.${randomUUID()}.tmp`;
+  try {
+    await writeFile(temporaryFile, String(offeringNumber), { encoding: "utf8", flag: "wx", mode: 0o600 });
     await rename(temporaryFile, PUSHPANJALI_COUNTER_FILE);
-    return {
-      mongo: false,
-      mongoQueued: false,
-      offeringNumber,
-      reference: `UC02-${String(offeringNumber).padStart(6, "0")}`,
+  } catch (error) {
+    await rm(temporaryFile, { force: true }).catch(() => {});
+    console.error("Pushpanjali counter file update deferred; local record remains authoritative", error instanceof Error ? error.message : error);
+  }
+}
+
+async function pushpanjaliMongoCollection() {
+  if (!process.env.MONGODB_URI) return null;
+  mongoClientPromise ||= new MongoClient(process.env.MONGODB_URI, { serverSelectionTimeoutMS: 8000 }).connect();
+  const client = await mongoClientPromise;
+  const database = client.db(process.env.SAS_DATABASE_NAME || "sas_lucknow");
+  const certificates = database.collection("pushpanjaliCertificates");
+  pushpanjaliIndexPromise ||= Promise.all([
+    certificates.createIndex({ organisationKey: 1, certificateNumber: 1 }, { unique: true, name: "pushpanjali_certificate_unique" }),
+    certificates.createIndex({ organisationKey: 1, generatedAt: -1 }, { name: "pushpanjali_certificate_date" }),
+    certificates.createIndex({ organisationKey: 1, email: 1 }, { name: "pushpanjali_certificate_email" }),
+  ]);
+  await pushpanjaliIndexPromise;
+  return { database, certificates };
+}
+
+async function syncPushpanjaliRecord(record, recordPath) {
+  try {
+    const mongo = await pushpanjaliMongoCollection();
+    if (!mongo) return false;
+    const { database, certificates } = mongo;
+    const storedRecord = {
+      ...record,
+      generatedAt: new Date(record.generatedAt),
+      createdAt: new Date(record.createdAt),
+      emailedAt: record.emailedAt ? new Date(record.emailedAt) : null,
+      updatedAt: record.updatedAt ? new Date(record.updatedAt) : new Date(),
     };
+    delete storedRecord.mongoSyncedAt;
+    const result = await certificates.updateOne(
+      { organisationKey: storedRecord.organisationKey, certificateNumber: storedRecord.certificateNumber },
+      { $set: { ...storedRecord, updatedAt: new Date() } },
+      { upsert: true },
+    );
+    if (result.upsertedId) {
+      await database.collection("auditLogs").insertOne({
+        organisationKey: storedRecord.organisationKey,
+        actorType: "public",
+        actorMemberId: null,
+        actorName: storedRecord.name,
+        action: "pushpanjali.certificate_created",
+        entityType: "pushpanjaliCertificate",
+        entityId: String(result.upsertedId),
+        details: { certificateNumber: storedRecord.certificateNumber, flowerName: storedRecord.flowerName, email: storedRecord.email },
+        createdAt: storedRecord.generatedAt,
+      });
+    }
+    let latestRecord = record;
+    try {
+      latestRecord = JSON.parse(await readFile(recordPath, "utf8"));
+    } catch {
+      // The original durable record is still sufficient if a concurrent status read fails.
+    }
+    await writeJsonAtomically(recordPath, { ...latestRecord, mongoSyncedAt: new Date() });
+    return true;
+  } catch (error) {
+    mongoClientPromise = undefined;
+    pushpanjaliIndexPromise = undefined;
+    console.error(`Pushpanjali ${record.certificateNumber}: MongoDB synchronization queued`, error instanceof Error ? error.message : error);
+    return false;
+  }
+}
+
+async function findPushpanjaliOffering(offeringId) {
+  if (!offeringId) return null;
+  let names = [];
+  try {
+    names = await readdir(PUSHPANJALI_RECORD_DIR);
+  } catch (error) {
+    if (error?.code === "ENOENT") return null;
+    throw error;
+  }
+  for (const name of names.filter(value => /^UC02-\d{6}\.json$/.test(value))) {
+    try {
+      const record = JSON.parse(await readFile(path.join(PUSHPANJALI_RECORD_DIR, name), "utf8"));
+      if (record.offeringId === offeringId) {
+        return {
+          mongo: Boolean(record.mongoSyncedAt),
+          mongoQueued: !record.mongoSyncedAt,
+          recordId: record.offeringId,
+          offeringNumber: Number(record.offeringNumber),
+          reference: record.certificateNumber,
+        };
+      }
+    } catch (error) {
+      console.error(`Pushpanjali idempotency record ${name} could not be read`, error instanceof Error ? error.message : error);
+    }
+  }
+  return null;
+}
+
+async function syncPendingPushpanjaliRecords() {
+  if (!process.env.MONGODB_URI || pushpanjaliSyncPromise) return pushpanjaliSyncPromise;
+  pushpanjaliSyncPromise = (async () => {
+    let names = [];
+    try {
+      names = await readdir(PUSHPANJALI_RECORD_DIR);
+    } catch (error) {
+      if (error?.code !== "ENOENT") throw error;
+    }
+    for (const name of names.filter(value => /^UC02-\d{6}\.json$/.test(value)).sort()) {
+      const recordPath = path.join(PUSHPANJALI_RECORD_DIR, name);
+      try {
+        const record = JSON.parse(await readFile(recordPath, "utf8"));
+        if (!record.mongoSyncedAt) await syncPushpanjaliRecord(record, recordPath);
+      } catch (error) {
+        console.error(`Pushpanjali queue record ${name} could not be synchronized`, error instanceof Error ? error.message : error);
+      }
+    }
+  })().finally(() => { pushpanjaliSyncPromise = undefined; });
+  return pushpanjaliSyncPromise;
+}
+
+async function countPendingPushpanjaliRecords() {
+  let names = [];
+  try {
+    names = await readdir(PUSHPANJALI_RECORD_DIR);
+  } catch (error) {
+    if (error?.code === "ENOENT") return 0;
+    throw error;
+  }
+  let pending = 0;
+  for (const name of names.filter(value => /^UC02-\d{6}\.json$/.test(value))) {
+    try {
+      const record = JSON.parse(await readFile(path.join(PUSHPANJALI_RECORD_DIR, name), "utf8"));
+      if (!record.mongoSyncedAt) pending += 1;
+    } catch {
+      pending += 1;
+    }
+  }
+  return pending;
+}
+
+async function savePushpanjaliOffering(document) {
+  return withPushpanjaliCounterLock(async () => {
+    await mkdir(PUSHPANJALI_RECORD_DIR, { recursive: true });
+    const existing = await findPushpanjaliOffering(document.offeringId);
+    if (existing) return existing;
+    const offeringNumber = (await readPushpanjaliCounter()) + 1;
+    const generatedAt = new Date();
+    const reference = `UC02-${String(offeringNumber).padStart(6, "0")}`;
+    const recordPath = pushpanjaliRecordPath(reference);
+    const record = {
+      organisationKey: process.env.SAS_ORGANISATION_KEY || "sas-lucknow",
+      offeringId: document.offeringId,
+      offeringNumber,
+      certificateNumber: reference,
+      name: document.participant.name,
+      email: document.participant.email,
+      participant: document.participant,
+      flowerId: document.flowerId,
+      flowerName: document.flower.name,
+      flowerBotanical: document.flower.botanical,
+      flowerMeaning: document.flower.meaning,
+      ceremonyDate: document.ceremonyDate,
+      generatedAt,
+      createdAt: generatedAt,
+      emailStatus: process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASSWORD ? "awaiting_certificate" : "not_configured",
+      emailedAt: null,
+      mongoSyncedAt: null,
+    };
+    await writeJsonAtomically(recordPath, record, { createOnly: true });
+    await writePushpanjaliCounterBestEffort(offeringNumber);
+    void syncPendingPushpanjaliRecords();
+    return { mongo: false, mongoQueued: true, recordId: document.offeringId, offeringNumber, reference };
   });
+}
+
+async function updatePushpanjaliCertificate(reference, update) {
+  const recordPath = pushpanjaliRecordPath(reference);
+  let localRecord;
+  try {
+    localRecord = JSON.parse(await readFile(recordPath, "utf8"));
+    localRecord = { ...localRecord, ...update, updatedAt: new Date(), mongoSyncedAt: null };
+    await writeJsonAtomically(recordPath, localRecord);
+  } catch (error) {
+    if (error?.code !== "ENOENT") console.error(`Pushpanjali ${reference}: local email status could not be updated`, error instanceof Error ? error.message : error);
+  }
+  if (!process.env.MONGODB_URI) return;
+  try {
+    const mongo = await pushpanjaliMongoCollection();
+    await mongo.certificates.updateOne(
+      { organisationKey: process.env.SAS_ORGANISATION_KEY || "sas-lucknow", certificateNumber: reference },
+      { $set: { ...update, updatedAt: new Date() } },
+    );
+    if (localRecord) await writeJsonAtomically(recordPath, { ...localRecord, mongoSyncedAt: new Date() });
+  } catch (error) {
+    mongoClientPromise = undefined;
+    pushpanjaliIndexPromise = undefined;
+    console.error(`Pushpanjali ${reference}: email status could not be updated`, error instanceof Error ? error.message : error);
+  }
 }
 
 async function countPushpanjaliOfferings() {
@@ -445,10 +759,12 @@ async function handlePushpanjaliCertificateEmail(request, response, headers, req
       return json(response, 400, { error: "The certificate image is invalid." }, headers);
     }
     await emailPushpanjaliCertificate({ ...pending, certificateImage });
+    await updatePushpanjaliCertificate(pending.reference, { emailStatus: "sent", emailedAt: new Date() });
     pendingPushpanjaliEmails.delete(token);
     return json(response, 200, { ok: true, emailed: true }, headers);
   } catch (error) {
     const status = Number(error?.statusCode || 500);
+    await updatePushpanjaliCertificate(pending.reference, { emailStatus: "failed", emailError: cleanText(error instanceof Error ? error.message : error, 300) });
     console.error(`Pushpanjali ${pending.reference}: certificate email failed`, error instanceof Error ? error.message : error);
     return json(response, status, { error: status === 413 ? "The certificate image was too large." : "The certificate email could not be sent." }, headers);
   }
@@ -487,7 +803,10 @@ async function handlePushpanjali(request, response) {
       return json(response, 400, { error: "Please enter your name, a valid email address and select one flower." }, headers);
     }
 
-    const offeringId = randomUUID();
+    const requestedOfferingId = cleanText(payload.requestId, 80);
+    const offeringId = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(requestedOfferingId)
+      ? requestedOfferingId
+      : randomUUID();
     const document = {
       offeringId,
       participant: { name, email },
@@ -512,6 +831,8 @@ async function handlePushpanjali(request, response) {
       emailed: false,
       emailQueued,
       emailToken,
+      recordStored: true,
+      databaseSyncQueued: persistence.mongoQueued,
     }, headers);
   } catch (error) {
     const status = Number(error?.statusCode || 500);
@@ -530,10 +851,6 @@ async function parseMultipart(request) {
 
   parser.on("field", (name, value) => { fields[name] = cleanText(value, name === "description" ? 2500 : 300); });
   parser.on("file", (field, stream, info) => {
-    if (field === "media" && !info.filename) {
-      stream.resume();
-      return;
-    }
     if (field !== "media" || !allowedTypes.has(info.mimeType)) {
       problems.push("Only JPG, PNG, WebP, MP4, WebM and MOV files are accepted.");
       stream.resume();
@@ -560,6 +877,7 @@ async function parseMultipart(request) {
       problems.push(file.kind === "image" ? "Each photograph must be 12 MB or smaller." : "Each video must be 80 MB or smaller.");
     }
   }
+  if (!files.length) problems.push("Please select at least one photograph or video.");
   return { fields, files, problems };
 }
 
@@ -645,15 +963,14 @@ async function handleSavitriVideoSubmission(request, response) {
     if (!fields.part || !fields.bookNo || !fields.cantoNo || !fields.cantoName || !fields.lineNos || !fields.pageNo || !fields.description) {
       problems.push("Please complete every Savitri reference and description field.");
     }
-    const media = parseYouTubeUrl(fields.youtubeUrl);
-    if (!media) problems.push("Please enter a valid public YouTube video link.");
-    if (files.length) problems.push("Video files are no longer uploaded here. Please use a YouTube link.");
+    if (files.length !== 1 || files[0]?.kind !== "video") problems.push("Please upload one MP4, WebM or MOV video.");
     if (problems.length) {
       await removeTemporaryFiles(files);
       return json(response, 400, { error: [...new Set(problems)].join(" ") });
     }
 
     const submissionId = randomUUID();
+    const [media] = await storeFiles(submissionId, files, "approved", "savitri-videos");
     const document = {
       submissionId,
       status: "approved",
@@ -680,7 +997,9 @@ async function handleSavitriVideoSubmission(request, response) {
 
 export async function handleSubmission(request, response) {
   const pathname = new URL(request.url || "/", "http://localhost").pathname;
-  if (request.method === "GET" && pathname === "/health") return json(response, 200, { ok: true });
+  if (request.method === "GET" && pathname === "/health") {
+    return json(response, 200, { ok: true, pushpanjali: { pendingDatabaseSync: await countPendingPushpanjaliRecords() } });
+  }
   if (pathname === "/api/pushpanjali-offerings" || pathname === "/api/pushpanjali-offerings/certificate-email") return handlePushpanjali(request, response);
   if (request.method === "GET" && pathname === "/api/savitri-videos") return json(response, 200, { items: await savitriVideoItems() });
   if (request.method === "GET" && pathname.startsWith("/api/savitri-video-media/")) return serveSavitriVideoMedia(pathname, request, response);
@@ -689,7 +1008,7 @@ export async function handleSubmission(request, response) {
   if (request.method === "GET" && pathname.startsWith("/api/gallery-media/")) return serveApprovedMedia(pathname, request, response);
   if (request.method !== "POST" || pathname !== "/api/gallery-submissions") return json(response, 404, { error: "Not found" });
   if (!String(request.headers["content-type"] || "").toLowerCase().startsWith("multipart/form-data")) {
-    return json(response, 400, { error: "Please submit the event form with photographs or a YouTube link." });
+    return json(response, 400, { error: "Please submit the event form with photographs or videos." });
   }
   const length = Number(request.headers["content-length"] || 0);
   if (length > MAX_REQUEST_BYTES) return json(response, 413, { error: "The complete upload must be 130 MB or smaller." });
@@ -705,20 +1024,14 @@ export async function handleSubmission(request, response) {
       return json(response, 201, { ok: true, reference: "received" });
     }
     if (!fields.title || !fields.date || !fields.category || !fields.description || fields.permission !== "yes") problems.push("Please complete all required event details and confirm permission to publish.");
-    const youtubeMedia = fields.youtubeUrl ? parseYouTubeUrl(fields.youtubeUrl) : null;
-    if (fields.youtubeUrl && !youtubeMedia) problems.push("Please enter a valid public YouTube video link.");
-    if (files.some(file => file.kind === "video")) problems.push("Video files are no longer uploaded here. Add the YouTube link instead.");
-    if (!files.length && !youtubeMedia) problems.push("Please select at least one photograph or add a YouTube video link.");
     if (problems.length) {
       await removeTemporaryFiles(files);
       return json(response, 400, { error: [...new Set(problems)].join(" ") });
     }
 
     const submissionId = randomUUID();
-    const publicationStatus = youtubeMedia ? "approved" : "pending";
-    const imageFiles = files.filter(file => file.kind === "image");
-    const media = imageFiles.length ? await storeFiles(submissionId, imageFiles, publicationStatus) : [];
-    if (youtubeMedia) media.push(youtubeMedia);
+    const publicationStatus = files.some(file => file.kind === "video") ? "approved" : "pending";
+    const media = await storeFiles(submissionId, files, publicationStatus);
     const document = {
       submissionId,
       status: publicationStatus,
@@ -754,9 +1067,12 @@ export function createGalleryServer() {
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   await mkdir(UPLOAD_DIR, { recursive: true });
+  await mkdir(PUSHPANJALI_RECORD_DIR, { recursive: true });
+  void syncPendingPushpanjaliRecords();
+  const pushpanjaliSyncTimer = setInterval(() => { void syncPendingPushpanjaliRecords(); }, 60_000);
+  pushpanjaliSyncTimer.unref();
   createGalleryServer().listen(PORT, "127.0.0.1", () => console.log(`Gallery submission service listening on 127.0.0.1:${PORT}`));
 }
-
 
 
 

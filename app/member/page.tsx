@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { MemberClient } from "./member-client";
 import "./member.css";
+import "./member-access.css";
+import "./member-campaign-motion-fixes.css";
 
 export const metadata: Metadata = {
   title: "Member Portal | Sri Aurobindo Society Lucknow",
@@ -10,4 +12,3 @@ export const metadata: Metadata = {
 export default function MemberPage() {
   return <MemberClient />;
 }
-

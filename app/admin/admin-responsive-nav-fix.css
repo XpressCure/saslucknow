@@ -1,0 +1,27 @@
+/* Keep the horizontal administrator menu compact on tablets and narrow windows. */
+@media (max-width: 900px) {
+  .admin-body {
+    grid-template-rows: max-content minmax(0, 1fr);
+  }
+
+  .admin-body > aside {
+    align-self: start;
+    align-items: center;
+    min-height: 64px;
+  }
+
+  .admin-body > aside button {
+    flex: 0 0 auto;
+    align-self: center;
+    height: 48px;
+    min-height: 48px;
+    padding-block: 6px;
+  }
+
+  .admin-body > aside button span {
+    flex: 0 0 32px;
+    width: 32px;
+    min-width: 32px;
+    height: 32px;
+  }
+}

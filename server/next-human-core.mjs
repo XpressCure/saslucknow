@@ -94,4 +94,3 @@ export function validateNextHumanVolunteerInquiry(input) {
   if (!privacyConsent) errors.push("Privacy and contact consent is required.");
   return { ok: errors.length === 0, errors, value: { fullName, ageRange, city, mobile, normalisedMobile: mobile, email, normalisedEmail: email, professionOrInstitution, profileUrl, filmResponse, whyNextHuman, nextQuality, explorationInterests, contributionAreas, primaryContributionArea, relevantContribution, exampleOfWork, contributionStyle, contributionLocation, weeklyAvailability, usualAvailability, organisationConnection, organisationConnectionDetails, orientationPreference, additionalContext, foundationStageAcknowledged, privacyConsent, updatesConsent, privacyNoticeVersion, source, sourceDetail, utm } };
 }
-

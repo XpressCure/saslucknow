@@ -1,0 +1,66 @@
+.campaign-destination-field select {
+  margin-top: 0.48rem;
+}
+
+.campaign-destination-field > small {
+  display: grid;
+  gap: 0.15rem;
+  margin-top: 0.55rem;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid rgba(192, 129, 30, 0.3);
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(255, 247, 224, 0.95), rgba(244, 233, 204, 0.66));
+  color: #536871;
+  line-height: 1.45;
+}
+
+.campaign-destination-field > small strong {
+  color: #133f4c;
+  font-size: 0.93rem;
+}
+
+.campaign-destination-summary {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.1rem 0.8rem;
+  align-items: center;
+  margin-top: 1rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid rgba(192, 129, 30, 0.28);
+  border-radius: 16px;
+  background: #fffaf0;
+}
+
+.campaign-destination-summary span {
+  grid-row: 1 / span 2;
+  padding: 0.42rem 0.58rem;
+  border-radius: 999px;
+  background: #163f4b;
+  color: #fff7e4;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.campaign-destination-summary strong {
+  color: #133f4c;
+  font-size: 1rem;
+}
+
+.campaign-destination-summary p {
+  margin: 0;
+  color: #627078;
+  font-size: 0.84rem;
+  line-height: 1.4;
+}
+
+@media (max-width: 680px) {
+  .campaign-destination-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .campaign-destination-summary span {
+    grid-row: auto;
+    justify-self: start;
+  }
+}

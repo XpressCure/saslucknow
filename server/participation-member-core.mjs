@@ -67,9 +67,25 @@ export function receiptNumber(paymentId, date = new Date()) {
   return `SASL-${date.getUTCFullYear()}-${String(paymentId || "PAYMENT").replace(/[^a-zA-Z0-9]/g, "").slice(-10).toUpperCase()}`;
 }
 
+export function formatMemberNumber(year, sequence) {
+  return `UC02-${year}-${String(sequence).padStart(6, "0")}`;
+}
+
+export async function allocateMemberNumber(db, organisationKey, now = new Date()) {
+  const year = now.getUTCFullYear();
+  const key = `${organisationKey}:member-number:${year}`;
+  const result = await db.collection("counters").findOneAndUpdate(
+    { _id: key },
+    { $inc: { value: 3 }, $setOnInsert: { organisationKey, kind: "member-number", year, createdAt: now }, $set: { updatedAt: now } },
+    { upsert: true, returnDocument: "after", includeResultMetadata: false },
+  );
+  return formatMemberNumber(year, Number(result?.value || 3));
+}
+
 export function publicMember(member) {
   return {
     id: String(member._id),
+    memberNumber: member.memberNumber || "",
     fullName: member.fullName,
     email: member.email || "",
     mobile: member.mobile || "",
@@ -79,7 +95,7 @@ export function publicMember(member) {
     sevaPreference: member.sevaPreference || "",
     pushpanjaliCertificateNumber: member.pushpanjaliCertificateNumber || "",
     role: member.role || "member",
+    membershipStatus: member.membershipStatus === "disabled" ? "disabled" : "enabled",
     joinedAt: member.joinedAt || member.createdAt,
   };
 }
-

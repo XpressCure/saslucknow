@@ -18,7 +18,7 @@ const types = {
 };
 
 function serveAsset(req, res, pathname) {
-  const relative = normalize(decodeURIComponent(pathname)).replace(/^[/\\\\]+/, "");
+  const relative = normalize(decodeURIComponent(pathname)).replace(/^[/\\]+/, "");
   const file = join(publicRoot, relative);
   if (!file.startsWith(publicRoot)) return false;
 
@@ -55,11 +55,9 @@ createServer((req, res) => {
   const url = new URL(req.url || "/", `http://${host}:${port}`);
   if (serveAsset(req, res, url.pathname)) return;
 
-  const targetPort = url.pathname.startsWith("/api/participation/") ? 3002 : upstreamPort;
-
   const upstream = proxyRequest({
     hostname: host,
-    port: targetPort,
+    port: upstreamPort,
     path: req.url,
     method: req.method,
     headers: req.headers,

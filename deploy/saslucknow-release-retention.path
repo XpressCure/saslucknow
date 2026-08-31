@@ -1,0 +1,9 @@
+[Unit]
+Description=Watch SAS Lucknow website release activation
+
+[Path]
+PathChanged=/var/www/saslucknow/releases
+Unit=saslucknow-release-retention.service
+
+[Install]
+WantedBy=multi-user.target

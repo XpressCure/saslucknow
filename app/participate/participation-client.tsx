@@ -73,6 +73,18 @@ export function ParticipationClient() {
   const activeSankalps = useMemo(() => overview.sankalps.filter(item => item.status !== "completed"), [overview.sankalps]);
 
   useEffect(() => {
+    const shouldOpenMemberForm = !window.location.hash || window.location.hash === "#parichay";
+    if (!shouldOpenMemberForm) return;
+    if (!window.location.hash) {
+      window.history.replaceState({}, "", `${window.location.pathname}${window.location.search}#parichay`);
+    }
+    const timer = window.setTimeout(() => {
+      document.getElementById("parichay")?.scrollIntoView({ block: "start" });
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
     const controller = new AbortController();
     fetch("/api/participation/overview", { signal: controller.signal })
       .then(async response => {
@@ -147,7 +159,7 @@ export function ParticipationClient() {
         window.location.assign("/member");
         return;
       }
-      setConfirmation(`${result.message} Open Member Login with the same mobile number and password. Account number: ${result.reference}`);
+      setConfirmation(`${result.message} You may now use Member Login with the same mobile number and password.`);
       form.reset();
       setFullName("");
       setEmail("");
@@ -183,7 +195,7 @@ export function ParticipationClient() {
 
       <section className="participation-path" aria-label="How to join the community">
         <article><span>01</span><h2>Join the Community</h2><p>Complete the form and create your secure member password.</p></article>
-        <article><span>02</span><h2>Participate</h2><p>Explore Sankalp, offer seva and keep your profile and Yogdaan together.</p></article>
+        <article><span>02</span><h2>Enter your member space</h2><p>Sign in to explore Darshan, Sangha, Sankalp, Seva and your private Yogdaan record.</p></article>
       </section>
 
       <section className="participation-overview" aria-labelledby="overview-title">
@@ -217,7 +229,6 @@ export function ParticipationClient() {
                 {item.acceptsSeva && <div className="participation-count"><span>{item.volunteerCount}</span><small>seva participants</small></div>}
                 <p className="sankalp-stage">Stage: {item.stage}</p>
               </div>
-              <Link className="participation-button" href="/member">View and participate</Link>
             </article>)}
           </div>
         )}
@@ -259,4 +270,3 @@ export function ParticipationClient() {
     </main>
   );
 }
-

@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>SAS Lucknow — Corrected Review Emulator</title>
+  <style>
+    :root { color-scheme: light; background: #fffaf1; }
+    * { box-sizing: border-box; }
+    html, body { min-height: 100%; margin: 0; }
+    body {
+      padding: 0;
+      overflow: hidden;
+      background: #fffaf1;
+      font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+    }
+    .emulator {
+      width: 100%;
+      height: 100dvh;
+      min-height: 0;
+      overflow: hidden;
+      border: 0;
+      border-radius: 0;
+      background: #fffaf1;
+      box-shadow: none;
+    }
+    iframe { display: block; width: 100%; height: 100%; border: 0; background: #fffaf1; }
+    @media (max-width: 520px) {
+      body { display: block; padding: 0; }
+      .emulator { width: 100%; height: 100dvh; min-height: 0; border: 0; border-radius: 0; box-shadow: none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="emulator" aria-label="SAS Lucknow corrected review emulator">
+    <iframe
+      title="SAS Lucknow corrected review build"
+      src="../../public/mobile-app/index.html?installed-preview-v24&member-interface-v16&real-application-persistence-v4&clean-app-layout-v24&system-back-only-v2&submit-review-fixed-v24&visible-validation-v24"
+      allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+      referrerpolicy="strict-origin-when-cross-origin"
+    ></iframe>
+  </main>
+</body>
+</html>

@@ -51,7 +51,7 @@ export function NextHumanClient() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [reference, setReference] = useState("");
-  const areaLabel = useMemo(() => new Map(contributionAreas.map(([id, label]) => [id, label])), []);
+  const areaLabel = useMemo(() => new Map<string, string>(contributionAreas.map(([id, label]) => [id, label])), []);
 
   const text = (name: string) => String(values[name] || "");
   const list = (name: string) => Array.isArray(values[name]) ? values[name] as string[] : [];
@@ -126,7 +126,7 @@ export function NextHumanClient() {
           utm: { source: params.get("utm_source") || "", medium: params.get("utm_medium") || "", campaign: params.get("utm_campaign") || "", content: params.get("utm_content") || "", term: params.get("utm_term") || "" },
         }),
       });
-      const result = await response.json().catch(() => ({}));
+      const result = await response.json().catch(() => ({})) as { error?: string; reference?: string };
       if (!response.ok) throw new Error(result.error || "Your inquiry could not be submitted.");
       setReference(result.reference || "received");
       setValues(initialForm);

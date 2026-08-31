@@ -30,4 +30,3 @@ export default function SriAurobindoPage() {
     <footer className="detail-footer"><a href="/">← Return to the Lucknow Centre</a><small>Towards a Life Divine</small></footer>
   </div>;
 }
-

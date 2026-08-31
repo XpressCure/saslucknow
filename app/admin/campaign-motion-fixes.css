@@ -1,0 +1,30 @@
+/*
+ * Shared motion rules for the Creative Studio card, its revision preview, and
+ * the full mobile-dashboard preview. Gentle Fade is continuous here so an
+ * administrator has enough time to verify the chosen effect before approval.
+ */
+.campaign-preview.motion-gentle_fade,
+.campaign-device-card.motion-gentle_fade {
+  animation: campaign-gentle-fade 4.8s ease-in-out infinite;
+  will-change: opacity, filter;
+}
+
+@keyframes campaign-gentle-fade {
+  0%,
+  100% {
+    filter: brightness(1);
+    opacity: 1;
+  }
+
+  50% {
+    filter: brightness(1.08);
+    opacity: .72;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .campaign-preview.motion-gentle_fade,
+  .campaign-device-card.motion-gentle_fade {
+    animation: none !important;
+  }
+}

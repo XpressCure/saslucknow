@@ -1,6 +1,7 @@
 import http from "node:http";
 import { randomUUID } from "node:crypto";
 import { MongoClient } from "mongodb";
+import nodemailer from "nodemailer";
 import { hashPassword, validatePassword } from "./participation-auth.mjs";
 import { handleAdminRequest } from "./participation-admin-api.mjs";
 import { handleMemberRequest } from "./participation-member-api.mjs";
@@ -26,6 +27,51 @@ const MAX_JSON_BYTES = 64 * 1024;
 const requestWindows = new Map();
 let clientPromise;
 let indexPromise;
+
+function nextHumanMailTransport() {
+  if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASSWORD) return null;
+  const port = Number(process.env.SMTP_PORT || 587);
+  return nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port,
+    secure: port === 465,
+    auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASSWORD },
+  });
+}
+
+function safeMailText(value) {
+  return String(value || "").replace(/[&<>"']/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]);
+}
+
+async function notifyNextHumanAdministrators(db, inquiry, submissionKind) {
+  const transport = nextHumanMailTransport();
+  if (!transport) return;
+  const configuredRecipients = String(process.env.NEXT_HUMAN_ADMIN_EMAILS || "").split(",").map(value => value.trim().toLowerCase()).filter(Boolean);
+  const administratorRows = await db.collection("members").find({
+    organisationKey: ORGANISATION_KEY,
+    role: { $in: ["administrator", "super_administrator"] },
+    membershipStatus: { $ne: "disabled" },
+    email: { $type: "string", $ne: "" },
+  }).project({ email: 1 }).toArray();
+  const recipients = [...new Set([...configuredRecipients, ...administratorRows.map(item => String(item.email || "").trim().toLowerCase()).filter(Boolean)])];
+  if (!recipients.length) return;
+  const adminUrl = `${String(process.env.PUBLIC_SITE_URL || "https://www.saslucknow.in").replace(/\/$/, "")}/admin`;
+  const refreshed = submissionKind === "refreshed";
+  await transport.sendMail({
+    from: process.env.EMAIL_FROM || `SAS Lucknow <${process.env.SMTP_USER}>`,
+    to: recipients.join(", "),
+    replyTo: inquiry.email || process.env.EMAIL_REPLY_TO || "info.saslucknow@gmail.com",
+    subject: `${refreshed ? "Updated" : "New"} NEXT HUMAN inquiry · ${inquiry.reference}`,
+    text: `${inquiry.fullName} has ${refreshed ? "updated" : "submitted"} a NEXT HUMAN Founding Circle inquiry.\n\nMobile: ${inquiry.mobile}\nEmail: ${inquiry.email}\nCity: ${inquiry.city}\nReference: ${inquiry.reference}\n\nReview it in Administration: ${adminUrl}`,
+    html: `<!doctype html><html><body style="margin:0;padding:24px;background:#f5ead4;color:#163846;font-family:Arial,sans-serif"><div style="max-width:620px;margin:0 auto;padding:32px;border:1px solid #decba8;border-radius:18px;background:#fffaf0"><div style="font-size:12px;font-weight:800;letter-spacing:2px;color:#a66f1e">NEXT HUMAN · ADMINISTRATOR ALERT</div><h1 style="margin:14px 0 10px;font-family:Georgia,serif;font-size:30px">${refreshed ? "An inquiry was updated" : "A new inquiry has arrived"}</h1><p style="line-height:1.65;color:#526a72"><strong>${safeMailText(inquiry.fullName)}</strong> has ${refreshed ? "updated" : "submitted"} a Founding Circle inquiry.</p><p style="line-height:1.7;color:#526a72">Reference: <strong>${safeMailText(inquiry.reference)}</strong><br>Mobile: ${safeMailText(inquiry.mobile)}<br>Email: ${safeMailText(inquiry.email)}<br>City: ${safeMailText(inquiry.city)}</p><a href="${adminUrl}" style="display:inline-block;margin-top:12px;padding:14px 22px;border-radius:999px;background:#163846;color:#fff;text-decoration:none;font-weight:700">Review in Administration</a></div></body></html>`,
+  });
+}
+
+function queueNextHumanAdministratorEmail(db, inquiry, submissionKind) {
+  void notifyNextHumanAdministrators(db, inquiry, submissionKind).catch(error => {
+    console.error(`NEXT HUMAN ${inquiry.reference}: administrator email alert failed`, error);
+  });
+}
 
 function sendJson(response, status, body, extraHeaders = {}) {
   response.writeHead(status, {
@@ -129,6 +175,56 @@ async function database() {
     db.collection("nextHumanVolunteerInquiries").createIndex(
       { organisationKey: 1, source: 1, createdAt: -1 },
       { name: "next_human_source_created" },
+    ),
+    db.collection("nextHumanEvents").createIndex(
+      { organisationKey: 1, eventKey: 1 },
+      { unique: true, name: "next_human_event" },
+    ),
+    (async () => {
+      const applications = db.collection("nextHumanApplications");
+      const indexes = await applications.indexes().catch(error => error?.codeName === "NamespaceNotFound" ? [] : Promise.reject(error));
+      const legacy = indexes.find(index => index.name === "next_human_member_application");
+      if (legacy?.unique) await applications.dropIndex("next_human_member_application");
+      await applications.createIndex(
+        { organisationKey: 1, eventKey: 1, memberId: 1, submittedAt: -1, createdAt: -1 },
+        { name: "next_human_member_submissions" },
+      );
+      await applications.createIndex(
+        { organisationKey: 1, eventKey: 1, pathway: 1, status: 1, submittedAt: -1 },
+        { name: "next_human_application_review" },
+      );
+    })(),
+    db.collection("nextHumanSeatReservations").createIndex(
+      { organisationKey: 1, eventKey: 1, dayId: 1, seatId: 1 },
+      { unique: true, name: "next_human_day_seat" },
+    ),
+    db.collection("nextHumanSeatReservations").createIndex(
+      { organisationKey: 1, eventKey: 1, dayId: 1, pathway: 1, status: 1 },
+      { name: "next_human_day_pathway_capacity" },
+    ),
+    db.collection("nextHumanBookings").createIndex(
+      { organisationKey: 1, eventKey: 1, memberId: 1, dayId: 1, status: 1 },
+      { name: "next_human_member_day_booking" },
+    ),
+    db.collection("nextHumanBookings").createIndex(
+      { organisationKey: 1, eventKey: 1, providerPaymentId: 1 },
+      { unique: true, sparse: true, name: "next_human_payment" },
+    ),
+    db.collection("nextHumanChallengeAttempts").createIndex(
+      { organisationKey: 1, memberId: 1, level: 1, completedAt: -1 },
+      { name: "next_human_challenge_member_level" },
+    ),
+    db.collection("nextHumanChallengeAttempts").createIndex(
+      { organisationKey: 1, memberId: 1, clientAttemptId: 1 },
+      { unique: true, name: "next_human_challenge_attempt_id" },
+    ),
+    db.collection("nextHumanChallengeProgress").createIndex(
+      { organisationKey: 1, memberId: 1 },
+      { unique: true, name: "next_human_challenge_member_progress" },
+    ),
+    db.collection("nextHumanChallengeProgress").createIndex(
+      { organisationKey: 1, highestCompletedLevel: -1, lastActivityAt: -1 },
+      { name: "next_human_challenge_admin_sort" },
     ),
   ]).catch(error => {
     indexPromise = undefined;
@@ -256,12 +352,14 @@ async function submitNextHumanInquiry(request, response, db) {
       $push: { submissionEvents: { source: validation.value.source, submittedAt: now } },
     });
     await db.collection("auditLogs").insertOne({ organisationKey: ORGANISATION_KEY, actorType: "public", action: "next_human.inquiry_refreshed", entityType: "nextHumanVolunteerInquiry", entityId: String(existing._id), reference: existing.reference, createdAt: now });
+    queueNextHumanAdministratorEmail(db, { ...existing, ...validation.value, reference: existing.reference }, "refreshed");
     return sendJson(response, 200, { status: "refreshed", reference: existing.reference, nextStep: "await_review", message: "Your existing Founding Circle inquiry has been refreshed." });
   }
   const reference = `NHV-${now.getFullYear()}-${randomUUID().slice(0, 8).toUpperCase()}`;
   const document = { ...validation.value, organisationKey: ORGANISATION_KEY, reference, status: "new", submittedIpHash: "not-stored", submissionEvents: [{ source: validation.value.source, submittedAt: now }], createdAt: now, updatedAt: now, latestSubmittedAt: now };
   const result = await collection.insertOne(document);
   await db.collection("auditLogs").insertOne({ organisationKey: ORGANISATION_KEY, actorType: "public", action: "next_human.inquiry_received", entityType: "nextHumanVolunteerInquiry", entityId: String(result.insertedId), reference, createdAt: now });
+  queueNextHumanAdministratorEmail(db, document, "received");
   return sendJson(response, 201, { status: "received", reference, nextStep: "await_review", message: "Your Founding Circle inquiry has been received." });
 }
 

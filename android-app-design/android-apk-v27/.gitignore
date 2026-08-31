@@ -1,0 +1,9 @@
+.gradle/
+.android/
+build/
+app/build/
+local.properties
+*.jar
+*.apk
+*.idsig
+
