@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { bharatUdayLevels, choicesFor, lifeQuoteFor, milestoneLevels, questionOrderFor } from "./bharat-uday-data";
+import { bharatUdayLevels, choicesFor, lifeQuoteFor, milestoneLevels, questionOrderFor, type BharatUdayLevel } from "./bharat-uday-data";
 
 type Stage = "overview" | "welcome" | "question" | "coach" | "quote" | "card";
 type StoredProgress = {
@@ -13,11 +13,34 @@ type StoredProgress = {
   attempts: Record<number, number>;
   name: string;
 };
+type MemberChallengeQuestion = { id: string; subject: string; prompt: string; choices: string[]; correctAnswer: string; note: string; source: string };
+type MemberChallengeLevel = { level: number; label: string; opensOn: string; releaseStatus: string; available: boolean; questions: MemberChallengeQuestion[] };
+type MemberChallengeProgress = { currentLevel: number; highestCompletedLevel: number; completedLevels: number[]; certificateLevels: number[]; scores: Record<string, number>; reflections: Record<string, string>; certificateDownloads: Record<string, number>; lastActivityAt: string | null };
+type MemberChallengeResponse = { progress: MemberChallengeProgress; attempts: { level: number; attemptNumber: number }[]; levels: MemberChallengeLevel[] };
 
 const storageKey = "sas-bharat-uday-progress-v1";
 const blankProgress: StoredProgress = { completed: [], currentLevel: 1, scores: {}, reflections: {}, attempts: {}, name: "" };
 const launchLevel = 1;
 const launchDate = "31 August 2026";
+
+function mergeMemberProgress(current: StoredProgress, remote: MemberChallengeProgress, attempts: { level: number }[] = []): StoredProgress {
+  const attemptCounts = attempts.reduce<Record<number, number>>((counts, attempt) => ({ ...counts, [attempt.level]: (counts[attempt.level] || 0) + 1 }), {});
+  return {
+    ...current,
+    completed: [...new Set(remote.completedLevels || [])].sort((left, right) => left - right),
+    currentLevel: Math.min(30, Math.max(1, Number(remote.currentLevel) || 1)),
+    scores: Object.fromEntries(Object.entries(remote.scores || {}).map(([level, value]) => [Number(level), Number(value) || 0])),
+    reflections: Object.fromEntries(Object.entries(remote.reflections || {}).map(([level, value]) => [Number(level), String(value || "")])),
+    attempts: { ...current.attempts, ...attemptCounts },
+  };
+}
+
+async function challengeRequest<T>(path: string, init?: RequestInit): Promise<T> {
+  const response = await fetch(`/api/participation/member/next-human-challenge${path}`, { credentials: "include", cache: "no-store", ...init, headers: { "Content-Type": "application/json" } });
+  const body = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(typeof body.error === "string" ? body.error : "Your challenge progress could not be saved.");
+  return body as T;
+}
 
 function safeProgress(value: unknown): StoredProgress {
   if (!value || typeof value !== "object") return blankProgress;
@@ -58,10 +81,22 @@ export function BharatUdayClient() {
   const [participantName, setParticipantName] = useState("");
   const [shareNotice, setShareNotice] = useState("");
   const [shareMenuOpen, setShareMenuOpen] = useState(false);
+  const [memberConnected, setMemberConnected] = useState(false);
+  const [memberLookupComplete, setMemberLookupComplete] = useState(false);
+  const [memberLevels, setMemberLevels] = useState<MemberChallengeLevel[]>([]);
+  const [attemptSaveState, setAttemptSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [attemptSaveError, setAttemptSaveError] = useState("");
+  const [certificateSaveState, setCertificateSaveState] = useState<"idle" | "saving" | "error">("idle");
+  const attemptIdRef = useRef("");
   const journeyRef = useRef<HTMLElement>(null);
   const introFilmRef = useRef<HTMLVideoElement>(null);
 
-  const activeLevel = bharatUdayLevels[levelNumber - 1];
+  const challengeLevels = useMemo<BharatUdayLevel[]>(() => bharatUdayLevels.map(level => {
+    const configured = memberLevels.find(item => item.level === level.number);
+    if (!configured || configured.questions.length !== 10) return level;
+    return { ...level, discoveries: configured.questions.map(question => ({ prompt: question.prompt, answer: question.correctAnswer, note: question.note, choices: question.choices })) };
+  }), [memberLevels]);
+  const activeLevel = challengeLevels[levelNumber - 1];
   const currentDiscoveryIndex = questionOrder[questionIndex] ?? questionIndex;
   const currentQuestion = activeLevel.discoveries[currentDiscoveryIndex];
   const currentPrompt = currentQuestion.prompt;
@@ -71,6 +106,7 @@ export function BharatUdayClient() {
   const score = correctAnswers * 10;
   const milestone = milestoneLevels.has(levelNumber);
   const lifeQuote = lifeQuoteFor(levelNumber);
+  const availableLevels = challengeLevels.filter(level => memberConnected ? memberLevels.some(item => item.level === level.number && item.available && item.questions.length === 10) : level.number === launchLevel);
 
   useEffect(() => {
     try {
@@ -83,6 +119,19 @@ export function BharatUdayClient() {
       }
     } catch { /* Progress remains usable if browser storage is unavailable. */ }
     setHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    void challengeRequest<MemberChallengeResponse>("/progress").then(result => {
+      if (cancelled) return;
+      setMemberConnected(true);
+      setMemberLevels(result.levels || []);
+      setProgress(current => mergeMemberProgress(current, result.progress, result.attempts || []));
+    }).catch(() => {
+      if (!cancelled) setMemberConnected(false);
+    }).finally(() => { if (!cancelled) setMemberLookupComplete(true); });
+    return () => { cancelled = true; };
   }, []);
 
   useEffect(() => {
@@ -106,19 +155,46 @@ export function BharatUdayClient() {
   }
 
   function beginLevel(number: number) {
-    if (number !== launchLevel) return;
-    const nextAttempt = (progress.attempts[launchLevel] || 0) + 1;
-    setLevelNumber(launchLevel);
+    if (!memberLookupComplete) return;
+    const levelData = challengeLevels[number - 1];
+    const isAvailable = memberConnected ? memberLevels.some(item => item.level === number && item.available && item.questions.length === 10) : number === launchLevel;
+    if (!levelData || !isAvailable) return;
+    const nextAttempt = (progress.attempts[number] || 0) + 1;
+    setLevelNumber(number);
     setAttemptNumber(nextAttempt);
-    setQuestionOrder(questionOrderFor(nextAttempt, bharatUdayLevels[0].discoveries.length));
-    setProgress(current => ({ ...current, currentLevel: launchLevel, attempts: { ...current.attempts, [launchLevel]: nextAttempt } }));
+    setQuestionOrder(questionOrderFor(nextAttempt, levelData.discoveries.length));
+    setProgress(current => ({ ...current, currentLevel: number, attempts: { ...current.attempts, [number]: nextAttempt } }));
     setQuestionIndex(0);
     setSelectedChoice("");
     setAnswerLocked(false);
     setAnswers([]);
+    attemptIdRef.current = globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    setAttemptSaveState("idle");
+    setAttemptSaveError("");
+    setCertificateSaveState("idle");
     setShareNotice("");
     setShareMenuOpen(false);
     showStage("welcome");
+  }
+
+  async function saveMemberAttempt(answerList: string[]) {
+    if (!memberConnected) return true;
+    setAttemptSaveState("saving");
+    setAttemptSaveError("");
+    try {
+      const questions = questionOrder.map((discoveryIndex, index) => {
+        const question = activeLevel.discoveries[discoveryIndex];
+        return { prompt: question.prompt, selectedAnswer: answerList[index], correctAnswer: question.answer, note: question.note };
+      });
+      const result = await challengeRequest<{ progress: MemberChallengeProgress }>("/attempts", { method: "POST", body: JSON.stringify({ level: levelNumber, realm: activeLevel.realm, title: activeLevel.title, clientAttemptId: attemptIdRef.current, questions }) });
+      setProgress(current => mergeMemberProgress(current, result.progress));
+      setAttemptSaveState("saved");
+      return true;
+    } catch (caught) {
+      setAttemptSaveState("error");
+      setAttemptSaveError(caught instanceof Error ? caught.message : "Your result could not be saved.");
+      return false;
+    }
   }
 
   function confirmAnswer() {
@@ -128,10 +204,25 @@ export function BharatUdayClient() {
     setSelectedChoice("");
     setAnswerLocked(false);
     if (questionIndex < questionOrder.length - 1) setQuestionIndex(value => value + 1);
-    else showStage("coach");
+    else {
+      showStage("coach");
+      void saveMemberAttempt(nextAnswers);
+    }
   }
 
-  function completeLevel() {
+  async function completeLevel() {
+    if (memberConnected && attemptSaveState !== "saved") return;
+    setCertificateSaveState("saving");
+    if (memberConnected) {
+      try {
+        const result = await challengeRequest<{ progress: MemberChallengeProgress }>(`/levels/${levelNumber}/reflection`, { method: "POST", body: JSON.stringify({ reflection: "" }) });
+        setProgress(current => mergeMemberProgress(current, result.progress));
+      } catch (caught) {
+        setCertificateSaveState("error");
+        setAttemptSaveError(caught instanceof Error ? caught.message : "Your certificate could not be recorded.");
+        return;
+      }
+    }
     const nextCompleted = [...new Set([...progress.completed, levelNumber])].sort((a, b) => a - b);
     const nextProgress: StoredProgress = {
       ...progress,
@@ -140,6 +231,7 @@ export function BharatUdayClient() {
       scores: { ...progress.scores, [levelNumber]: score },
     };
     setProgress(nextProgress);
+    setCertificateSaveState("idle");
     showStage("card");
   }
 
@@ -214,6 +306,9 @@ export function BharatUdayClient() {
   }
 
   async function downloadCard() {
+    if (memberConnected) {
+      await challengeRequest<{ saved: boolean }>(`/certificates/${levelNumber}/download`, { method: "POST", body: "{}" }).catch(() => undefined);
+    }
     const canvas = document.createElement("canvas"); canvas.width = 1080; canvas.height = 1080;
     let logo: HTMLImageElement | undefined;
     try {
@@ -251,7 +346,7 @@ export function BharatUdayClient() {
     <header className="bu-topbar">
       <Link href="/" className="bu-brand"><img src="/society-logo-transparent.png" alt="Sri Aurobindo Society symbol"/><span>Sri Aurobindo Society<small>Lucknow · Gomti Nagar Centre</small></span></Link>
       <nav aria-label="The Next Human Challenge navigation"><a href="#journey">30 Levels</a><a href="#how-it-works">How it works</a><Link href="/member">Member Login</Link></nav>
-      <button type="button" className="bu-nav-start" onClick={() => beginLevel(launchLevel)}>{progress.completed.includes(launchLevel) ? "Replay Level 1" : "Play Level 1"}</button>
+      <button type="button" className="bu-nav-start" disabled={!memberLookupComplete} onClick={() => beginLevel(launchLevel)}>{!memberLookupComplete ? "Preparing Level 1…" : progress.completed.includes(launchLevel) ? "Replay Level 1" : "Play Level 1"}</button>
     </header>
 
     <main>
@@ -273,7 +368,7 @@ export function BharatUdayClient() {
 
       <section className="bu-hero-cta" aria-label="Start The Next Human Challenge">
         <div><span>YOUR NEXT DISCOVERY IS READY</span><strong>{progress.completed.includes(launchLevel) ? "Replay Level 1 and rediscover its ideas." : `Level 1 opened on ${launchDate}.`}</strong></div>
-        <div className="bu-hero-cta-actions"><button type="button" onClick={() => beginLevel(launchLevel)}>{progress.completed.includes(launchLevel) ? "Replay Level 01" : "Begin Level 01"}<b>→</b></button><a href="#journey">View the open level</a></div>
+        <div className="bu-hero-cta-actions"><button type="button" disabled={!memberLookupComplete} onClick={() => beginLevel(launchLevel)}>{!memberLookupComplete ? "Preparing your level…" : progress.completed.includes(launchLevel) ? "Replay Level 01" : "Begin Level 01"}<b>→</b></button><a href="#journey">View the open level</a></div>
       </section>
 
       <section className="bu-intro" id="how-it-works">
@@ -290,9 +385,9 @@ export function BharatUdayClient() {
           <header className="bu-journey-title"><div><p className="bu-kicker">YOUR ASCENT</p><h2>30 levels. <em>One awakening journey.</em></h2><span>Difficulty rises gently. Curiosity leads the way.</span></div><ProgressRing completed={completedCount}/></header>
           <div className="bu-milestone-rail"><span>START</span><i className={completedCount >= 7 ? "reached" : ""}>7<small>First Light</small></i><i className={completedCount >= 15 ? "reached" : ""}>15<small>Widening Mind</small></i><i className={completedCount >= 21 ? "reached" : ""}>21<small>Living Energy</small></i><i className={completedCount >= 30 ? "reached" : ""}>30<small>NEXT HUMAN</small></i></div>
           <p className="bu-release-note">Only Level 1 is open. New levels will appear here automatically after the administrator selects their release dates.</p>
-          <div className="bu-level-grid">{bharatUdayLevels.filter(item => item.number === launchLevel).map(item => {
+          <div className="bu-level-grid">{availableLevels.map(item => {
             const complete = progress.completed.includes(item.number);
-            return <button key={item.number} type="button" className={`${complete ? "complete" : ""} available`} style={{ "--accent": item.accent } as React.CSSProperties} onClick={() => beginLevel(item.number)}>
+            return <button key={item.number} type="button" disabled={!memberLookupComplete} className={`${complete ? "complete" : ""} available`} style={{ "--accent": item.accent } as React.CSSProperties} onClick={() => beginLevel(item.number)}>
               <span>{String(item.number).padStart(2,"0")}</span><i>{item.symbol}</i><small>{item.realm}</small><strong>{item.title}</strong><b>{complete ? "✓ Complete · Replay →" : `Open now · ${launchDate} →`}</b>
             </button>;
           })}</div>
@@ -307,11 +402,11 @@ export function BharatUdayClient() {
         </div>}
 
         {stage === "coach" && <div className="bu-experience bu-coach" style={{ "--accent": activeLevel.accent } as React.CSSProperties}>
-          <div className="bu-coach-score"><span>{score}</span><small>out of 100</small></div><p className="bu-kicker">KHOJ · YOUR DISCOVERY</p><h2>Level 01 is complete.</h2><p className="bu-coach-fact">You answered {correctAnswers} of 10 correctly. Every completed level earns its certificate; there is no qualifying benchmark.</p><div className="bu-answer-notes">{questionOrder.map((discoveryIndex, index) => { const item = activeLevel.discoveries[discoveryIndex]; return <details key={item.prompt}><summary><span>{answers[index] === item.answer ? "✓" : "↗"}</span>{item.answer}</summary><p>{item.note}</p></details>; })}</div><button className="bu-primary" type="button" onClick={() => showStage("quote")}>Proceed to finish this level <b>→</b></button>
+          <div className="bu-coach-score"><span>{score}</span><small>out of 100</small></div><p className="bu-kicker">KHOJ · YOUR DISCOVERY</p><h2>Level {String(levelNumber).padStart(2, "0")} is complete.</h2><p className="bu-coach-fact">You answered {correctAnswers} of 10 correctly. Every completed level earns its certificate; there is no qualifying benchmark.</p><div className="bu-answer-notes">{questionOrder.map((discoveryIndex, index) => { const item = activeLevel.discoveries[discoveryIndex]; return <details key={item.prompt}><summary><span>{answers[index] === item.answer ? "✓" : "↗"}</span>{item.answer}</summary><p>{item.note}</p></details>; })}</div>{memberConnected && <div className={`bu-account-save ${attemptSaveState}`} role="status">{attemptSaveState === "saving" && <span>Saving this level to your member account…</span>}{attemptSaveState === "saved" && <span>✓ Saved to your member account and administrator dashboard.</span>}{attemptSaveState === "error" && <><span>{attemptSaveError}</span><button type="button" onClick={() => void saveMemberAttempt(answers)}>Retry saving</button></>}</div>}<button className="bu-primary" type="button" disabled={memberConnected && attemptSaveState !== "saved"} onClick={() => showStage("quote")}>{memberConnected && attemptSaveState === "saving" ? "Saving your result…" : "Proceed to finish this level"} <b>→</b></button>
         </div>}
 
         {stage === "quote" && <div className="bu-experience bu-life-quote" style={{ "--accent": activeLevel.accent } as React.CSSProperties}>
-          <div className="bu-quote-aura" aria-hidden="true"><span>{activeLevel.symbol}</span></div><p className="bu-kicker">SĀDHANA · A WORD FOR LIFE</p><h2>Carry this into your day.</h2><blockquote>“{lifeQuote.text}”</blockquote><cite>— {lifeQuote.author}{lifeQuote.source ? <small>{lifeQuote.source}</small> : null}</cite><p className="bu-quote-guidance">Read it once, quietly. Let its meaning travel with you beyond this level.</p><button className="bu-primary" type="button" onClick={completeLevel}>Carry this with me & create my card <b>→</b></button>
+          <div className="bu-quote-aura" aria-hidden="true"><span>{activeLevel.symbol}</span></div><p className="bu-kicker">SĀDHANA · A WORD FOR LIFE</p><h2>Carry this into your day.</h2><blockquote>“{lifeQuote.text}”</blockquote><cite>— {lifeQuote.author}{lifeQuote.source ? <small>{lifeQuote.source}</small> : null}</cite><p className="bu-quote-guidance">Read it once, quietly. Let its meaning travel with you beyond this level.</p>{certificateSaveState === "error" && <div className="bu-account-save error" role="alert"><span>{attemptSaveError}</span></div>}<button className="bu-primary" type="button" disabled={certificateSaveState === "saving"} onClick={() => void completeLevel()}>{certificateSaveState === "saving" ? "Recording your certificate…" : "Carry this with me & create my card"} <b>→</b></button>
         </div>}
 
         {stage === "card" && <div className="bu-experience bu-card-stage" style={{ "--accent": activeLevel.accent } as React.CSSProperties}>
