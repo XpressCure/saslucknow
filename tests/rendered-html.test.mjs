@@ -31,7 +31,6 @@ test("renders the mission homepage with accessible landmarks", async () => {
   assert.match(html, /id="wisdom"/);
   assert.match(html, /id="events"/);
   assert.ok(html.indexOf('id="gallery"') < html.indexOf('id="events"'));
-  assert.match(html, /href="\/sultanpur-shrine"/);
   assert.doesNotMatch(html, /<a href="#discover">Discover<\/a>/);
   assert.match(html, /Gomti Nagar Centre \(UC-02\)/i);
   assert.doesNotMatch(html, /codex-preview|Your site is taking shape/);
@@ -64,7 +63,6 @@ test("gives every public guide a unique title, description and canonical URL", a
     ["/sri-aurobindo/life-sketch", "Sri Aurobindo Life Sketch", "chronological life story"],
     ["/the-mother", "The Mother (Mirra Alfassa)", "Pondicherry and Auroville"],
     ["/darshan-divas", "Darshan Divas", "spiritual significance"],
-    ["/sultanpur-shrine", "Sri Aurobindo Sultanpur Shrine", "sacred relics"],
   ];
   for (const [route, title, description] of pages) {
     const response = await render(route);
@@ -87,7 +85,7 @@ test("publishes crawl rules and a sitemap for every public page", async () => {
   const sitemapResponse = await render("/sitemap.xml");
   assert.equal(sitemapResponse.status, 200);
   const sitemap = await sitemapResponse.text();
-  for (const route of ["/sri-aurobindo", "/sri-aurobindo/life-sketch", "/the-mother", "/darshan-divas", "/sultanpur-shrine"]) {
+  for (const route of ["/sri-aurobindo", "/sri-aurobindo/life-sketch", "/the-mother", "/darshan-divas"]) {
     assert.match(sitemap, new RegExp(`https:\\/\\/www\\.saslucknow\\.in${route.replaceAll("/", "\\/")}`));
   }
 });
@@ -120,16 +118,6 @@ test("applies phone-safe layouts to every page family and floating experience", 
     ".pushpanjali-modal",
     ".sakhi-window",
   ]) assert.match(css, new RegExp(selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
-});
-
-test("renders the Sultanpur Shrine detail page", async () => {
-  const response = await render("/sultanpur-shrine");
-  assert.equal(response.status, 200);
-  const html = await response.text();
-  assert.match(html, /The Sultanpur Shrine/);
-  assert.match(html, /April 6, 2008/);
-  assert.match(html, /Dr\. J\. P\. Singh/);
-  assert.match(html, /Address and map coming soon/);
 });
 
 test("renders sourced portraits and the lecture archive", async () => {
@@ -410,7 +398,6 @@ test("renders official Society identity, email, roots and sourced wisdom", async
   assert.match(html, /Auroville is an international township/);
   assert.match(html, /A sacred centre housing Sri Aurobindo’s relics/);
   assert.doesNotMatch(html, /Begin with what speaks to you/);
-  assert.doesNotMatch(html, /A SACRED PLACE<\/p><h2>The Sultanpur shrine/);
   assert.doesNotMatch(html, /WORDS TO LIVE BY|A few lights for the way/);
 });
 

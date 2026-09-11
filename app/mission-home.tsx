@@ -139,13 +139,11 @@ const copy = {
     learnText: "Simple entry points into a vast and many-sided vision.",
     pathways: ["Sri Aurobindo", "The Mother", "Integral Yoga", "Savitri"],
     library: "From the wisdom library", all: "All", articles: "Articles", talks: "Talks", reflections: "Reflections",
-    upcoming: "Upcoming gatherings", register: "Register", shrine: "The Sultanpur shrine",
-    shrineText: "A sacred place holding the relics of Sri Aurobindo, and a living centre for remembrance, study and quiet collective aspiration.",
+    upcoming: "Upcoming gatherings", register: "Register",
     community: "Join the Community", join: "Create your member account", volunteer: "Volunteer with us",
-    support: "Donate Now", supportText: "Voluntary donations help sustain programmes, publications, shrine care and digital outreach.",
+    support: "Donate Now", supportText: "Voluntary donations help sustain programmes, publications, community activities and digital outreach.",
     contribute: "Donate Now", footer: "Towards a Life Divine",
     more: "More",
-    sultanpur: "Sultanpur Shrine",
     darshan: "Darshan Divas",
     disclaimer: "Sri Aurobindo Society, Lucknow · Gomti Nagar Centre (UC-02). The Society was founded by the Mother in 1960 and is headquartered in Puducherry.",
   },
@@ -166,8 +164,7 @@ const copy = {
     learn: "जहाँ से मन जुड़े, वहीं से आरंभ करें", learnText: "एक विशाल और बहुआयामी दर्शन के सरल प्रवेश-द्वार।",
     pathways: ["श्री अरविंद", "श्री माँ", "पूर्ण योग", "सावित्री"],
     library: "ज्ञान संग्रह से", all: "सभी", articles: "लेख", talks: "व्याख्यान", reflections: "मनन",
-    upcoming: "आगामी आयोजन", register: "पंजीकरण", shrine: "सुल्तानपुर पवित्र स्थल",
-    shrineText: "श्री अरविंद के पवित्र अवशेषों का स्थल—स्मरण, अध्ययन और सामूहिक आकांक्षा का जीवंत केंद्र।",
+    upcoming: "आगामी आयोजन", register: "पंजीकरण",
     community: "समुदाय के साथ बढ़ें", join: "समुदाय से जुड़ें", volunteer: "सेवा में सहयोग दें",
     support: "कार्य में सहयोग", supportText: "स्वैच्छिक योगदान कार्यक्रमों, प्रकाशनों, स्थल की देखभाल और डिजिटल प्रसार में सहायक है।",
     contribute: "ससम्मान योगदान", footer: "दिव्य जीवन की ओर",
@@ -521,7 +518,6 @@ export function MissionHome() {
           <button type="button" aria-expanded={moreOpen} aria-haspopup="true" onClick={() => setMoreOpen(!moreOpen)}>{t.more}</button>
           <div className="more-dropdown">
             <a href="/next-human" onClick={() => { setMoreOpen(false); setMenu(false); }}>NEXT HUMAN · The Books</a>
-            <a href="/sultanpur-shrine" onClick={() => { setMoreOpen(false); setMenu(false); }}>{t.shrine}</a>
             <a href="/darshan-divas" onClick={() => { setMoreOpen(false); setMenu(false); }}>{t.darshan}</a>
           </div>
         </div>
@@ -591,8 +587,7 @@ export function MissionHome() {
       <section className="roots section" aria-labelledby="roots-title"><div className="section-title"><div><p className="kicker">A LIVING MOVEMENT</p><h2 id="roots-title">From Puducherry to Lucknow</h2></div><p>Founded by the Mother in Pondicherry on 19 September 1960, Sri Aurobindo Society carries Indian spirituality into meditation, education, culture and everyday life, drawing on the deeper spirit of India and its philosophical heritage.</p></div><div className="roots-grid">
         <article><span>01</span><h3>Puducherry</h3><p>The Society’s administrative headquarters and Society House are in Puducherry, close to the wider spiritual, cultural and educational life inspired by Sri Aurobindo and the Mother.</p><a href="https://aurosociety.org/society/index/About-Sri-Aurobindo-Society" target="_blank" rel="noreferrer">About the Society ↗</a></article>
         <article><span>02</span><h3>Auroville</h3><p>Founded by the Mother in 1968, Auroville is an international township dedicated to human unity, unending education and material and spiritual research.</p><a href="https://auroville.org/page/history" target="_blank" rel="noreferrer">Explore Auroville ↗</a></article>
-        <article><span>03</span><h3>Sultanpur</h3><p>A sacred centre housing Sri Aurobindo’s relics and nurturing collective meditation, study and educational activities.</p><a href="/sultanpur-shrine">Explore the Sultanpur Shrine →</a></article>
-        <article><span>04</span><h3>Lucknow</h3><p>The Lucknow and Gomti Nagar centres bring this vision into local life through Sunday meetings, lectures, study, reflection and community participation.</p><a href="#location">Visit our centre →</a></article>
+        <article><span>03</span><h3>Lucknow</h3><p>The Lucknow and Gomti Nagar centres bring this vision into local life through Sunday meetings, lectures, study, reflection and community participation.</p><a href="#location">Visit our centre →</a></article>
       </div></section>
 
       <section className="library section" id="wisdom">

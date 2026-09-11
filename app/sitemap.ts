@@ -12,7 +12,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${siteUrl}/sri-aurobindo/life-sketch`, lastModified, changeFrequency: "monthly", priority: 0.9 },
     { url: `${siteUrl}/the-mother`, lastModified, changeFrequency: "monthly", priority: 0.9 },
     { url: `${siteUrl}/darshan-divas`, lastModified, changeFrequency: "monthly", priority: 0.8 },
-    { url: `${siteUrl}/sultanpur-shrine`, lastModified, changeFrequency: "monthly", priority: 0.7 },
     { url: `${siteUrl}/joincommunity`, lastModified, changeFrequency: "weekly", priority: 0.8 },
     { url: `${siteUrl}/contribute`, lastModified, changeFrequency: "monthly", priority: 0.8 },
   ];

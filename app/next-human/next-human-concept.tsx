@@ -8,7 +8,15 @@ export function NextHumanConcept() {
         <Image src="/next-human/sri-aurobindo-symbol.png" alt="Sri Aurobindo symbol" width={40} height={40} unoptimized />
         <span><strong>NEXT HUMAN</strong><small>SRI AUROBINDO SOCIETY · LUCKNOW</small></span>
       </Link>
-      <nav aria-label="Page sections"><a href="#idea">The idea</a><a href="#books">The books</a></nav>
+      <nav aria-label="Website navigation">
+        <Link href="/">Home</Link>
+        <Link href="/next-human" aria-current="page">NEXT HUMAN</Link>
+        <Link href="/bharat-uday">Bharat Uday</Link>
+        <Link href="/sri-aurobindo">Sri Aurobindo</Link>
+        <Link href="/the-mother">The Mother</Link>
+        <Link href="/#wisdom">e-Library</Link>
+        <Link href="/joincommunity">Community</Link>
+      </nav>
     </header>
 
     <section className="nhc-hero">
