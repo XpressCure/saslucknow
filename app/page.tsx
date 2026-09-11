@@ -3,7 +3,7 @@ import { MissionHome } from "./mission-home";
 import { createPageMetadata, siteUrl } from "./seo";
 
 export const metadata: Metadata = createPageMetadata({
-  title: "NEXT HUMAN 2026 | Sri Aurobindo Society Lucknow",
+  title: "NEXT HUMAN | Sri Aurobindo Society Lucknow",
   description: "Enter NEXT HUMAN, a living inquiry into consciousness and the future human, while exploring The Next Human Quiz, Savitri, Integral Yoga and the work of Sri Aurobindo Society Lucknow.",
   path: "/",
   keywords: ["NEXT HUMAN", "future human", "The Next Human Quiz", "spiritual centre Lucknow", "Indian culture Lucknow"],

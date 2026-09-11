@@ -224,7 +224,7 @@ export function MissionHome() {
   const sakhiEndRef = useRef<HTMLDivElement>(null);
   const t = copy[lang];
   const primaryNav = [
-    { label: "NEXT HUMAN 2026", href: "/next-human" },
+    { label: "NEXT HUMAN", href: "/next-human" },
     { label: lang === "hi" ? "द नेक्स्ट ह्यूमन क्विज़" : "The Next Human Quiz", href: "/next-human-quiz" },
     { label: t.nav[0], href: "#wisdom" },
     { label: t.nav[2], href: "/joincommunity#parichay" },
