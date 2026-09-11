@@ -520,7 +520,7 @@ export function MissionHome() {
         <div className={`more-menu ${moreOpen ? "open" : ""}`}>
           <button type="button" aria-expanded={moreOpen} aria-haspopup="true" onClick={() => setMoreOpen(!moreOpen)}>{t.more}</button>
           <div className="more-dropdown">
-            <a href="/next-human" onClick={() => { setMoreOpen(false); setMenu(false); }}>NEXT HUMAN 2026 · Founding Circle</a>
+            <a href="/next-human" onClick={() => { setMoreOpen(false); setMenu(false); }}>NEXT HUMAN · The Books</a>
             <a href="/sultanpur-shrine" onClick={() => { setMoreOpen(false); setMenu(false); }}>{t.shrine}</a>
             <a href="/darshan-divas" onClick={() => { setMoreOpen(false); setMenu(false); }}>{t.darshan}</a>
           </div>
@@ -536,13 +536,13 @@ export function MissionHome() {
     <main id="main">
       <section className="home-next-hero" aria-labelledby="home-next-title">
         <div className="home-next-copy">
-          <p className="home-next-kicker">SRI AUROBINDO SOCIETY · LUCKNOW · 2026</p>
+          <p className="home-next-kicker">AN INQUIRY INTO HUMAN POSSIBILITY</p>
           <h1 id="home-next-title"><span>NEXT</span> HUMAN</h1>
           <p className="home-next-question">What must we become to meet the future?</p>
-          <p className="home-next-intro">A living inquiry into consciousness, evolution, <em>Savitri</em> and the future human—shaped in Lucknow by people willing to explore, build and serve.</p>
+          <p className="home-next-intro">An inquiry into consciousness, evolution and what humanity may become—developed through Book Zero and Book One.</p>
           <div className="home-next-actions">
-            <a className="home-next-primary" href="/next-human">Enter NEXT HUMAN <span>→</span></a>
-            <a className="home-next-secondary" href="/next-human#inquiry">Join the founding inquiry</a>
+            <a className="home-next-primary" href="/next-human">Explore NEXT HUMAN <span>→</span></a>
+            <a className="home-next-secondary" href="/next-human#books">Discover the two books</a>
           </div>
         </div>
         <figure className="home-next-visual">
@@ -555,7 +555,7 @@ export function MissionHome() {
         <header><p>THE WORK IS ALREADY UNDERWAY</p><h2 id="home-live-title">Two invitations. One evolving journey.</h2></header>
         <div className="home-live-grid">
           <a className="home-live-card home-live-card-next" href="/next-human">
-            <div><small>FOUNDING CIRCLE · LUCKNOW 2026</small><h3>NEXT HUMAN</h3><p>Help shape a seven-day inquiry into the possibilities of human evolution. Explore the vision, meet the lead explorer and offer what you can build.</p><span>Discover the inquiry →</span></div>
+            <div><small>BOOK ZERO · BOOK ONE</small><h3>NEXT HUMAN</h3><p>Explore the central idea through two books: what the human being is, why it may be transitional, and what a further evolution of consciousness could mean.</p><span>Enter the idea →</span></div>
           </a>
           <a className="home-live-card home-live-card-bharat" href="/bharat-uday">
             <img src="/bharat-uday/bharat-uday-hero.png" alt="Bharat Uday — The Next Human Challenge" loading="eager"/>
