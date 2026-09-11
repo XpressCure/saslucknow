@@ -31,7 +31,7 @@ import {
 import { cleanText, publicSankalp } from "./participation-core.mjs";
 import { activeMemberCampaignView } from "./participation-campaign-core.mjs";
 import { handleNextHumanMemberRequest, recordNextHumanPayment } from "./next-human-event-api.mjs";
-import { handleNextHumanBooksRequest } from "./next-human-books-api.mjs";
+import { handleNextHumanBooksRequest, recordNextHumanBookPayment } from "./next-human-books-api.mjs";
 
 const MEMBER_COOKIE = "sas_member_session";
 // Razorpay is production-ready but intentionally paused until the public contribution launch.
@@ -1320,6 +1320,8 @@ async function webhook(request, response, context) {
   await db.collection("paymentWebhookEvents").insertOne({ provider: "razorpay", eventId, eventType: event.event, createdAt: new Date() });
   const payment = event.payload?.payment?.entity;
   if (["payment.captured", "order.paid"].includes(event.event) && payment?.order_id && payment?.id) {
+    const bookOrder = await recordNextHumanBookPayment({ db, organisationKey, payment });
+    if (bookOrder) return sendJson(response, 200, { status: "ok", product: "next-human-book-one" });
     const order = await db.collection("paymentOrders").findOne({ organisationKey, providerOrderId: payment.order_id, provider: "razorpay" });
     if (order && Number(payment.amount) === order.amountPaise) {
       if (order.source === "public-website") await recordVerifiedPublicContribution({ db, organisationKey, order, payment });

@@ -91,6 +91,34 @@ async function createOrder(request, response, context, actor) {
   return sendJson(response, 201, { order: { id: providerOrder.id, amountPaise: BOOK_ONE_PRICE_PAISE, currency: "INR", razorpayKeyId: process.env.RAZORPAY_KEY_ID, title: "NEXT HUMAN · Book One" } });
 }
 
+export async function recordNextHumanBookPayment({ db, organisationKey, payment, memberId = null }) {
+  if (!payment?.order_id || !payment?.id) return null;
+  const order = await db.collection("nextHumanBookOrders").findOne({
+    organisationKey,
+    provider: "razorpay",
+    providerOrderId: payment.order_id,
+    bookId: BOOK_ONE_ID,
+    ...(memberId ? { memberId } : {}),
+  });
+  if (!order) return null;
+  if (Number(payment.amount) !== BOOK_ONE_PRICE_PAISE || payment.status !== "captured") {
+    throw Object.assign(new Error("Razorpay has not confirmed the expected ₹299 payment."), { statusCode: 409 });
+  }
+  const now = new Date();
+  await Promise.all([
+    db.collection("nextHumanBookOrders").updateOne(
+      { _id: order._id },
+      { $set: { status: "verified", providerPaymentId: payment.id, verifiedAt: now, updatedAt: now } },
+    ),
+    db.collection("nextHumanBookEntitlements").updateOne(
+      { organisationKey, memberId: order.memberId, bookId: BOOK_ONE_ID },
+      { $set: { status: "active", languages: ["en", "hi"], provider: "razorpay", providerPaymentId: payment.id, unlockedAt: now, updatedAt: now }, $setOnInsert: { createdAt: now } },
+      { upsert: true },
+    ),
+  ]);
+  return order;
+}
+
 async function verifyOrder(request, response, context, actor) {
   const { db, organisationKey, readJson, sendJson } = context;
   const body = await readJson(request);
@@ -104,15 +132,7 @@ async function verifyOrder(request, response, context, actor) {
   if (!paymentResponse.ok || payment.order_id !== order.providerOrderId || Number(payment.amount) !== BOOK_ONE_PRICE_PAISE || payment.status !== "captured") {
     return sendJson(response, 409, { error: "Razorpay has not confirmed the expected ₹299 payment." });
   }
-  const now = new Date();
-  await Promise.all([
-    db.collection("nextHumanBookOrders").updateOne({ _id: order._id }, { $set: { status: "verified", providerPaymentId: payment.id, verifiedAt: now, updatedAt: now } }),
-    db.collection("nextHumanBookEntitlements").updateOne(
-      { organisationKey, memberId: actor._id, bookId: BOOK_ONE_ID },
-      { $set: { status: "active", languages: ["en", "hi"], provider: "razorpay", providerPaymentId: payment.id, unlockedAt: now, updatedAt: now }, $setOnInsert: { createdAt: now } },
-      { upsert: true },
-    ),
-  ]);
+  await recordNextHumanBookPayment({ db, organisationKey, payment, memberId: actor._id });
   return sendJson(response, 200, { unlocked: true, languages: ["en", "hi"], message: "Book One is now available in your private account." });
 }
 
