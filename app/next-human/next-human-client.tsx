@@ -139,36 +139,46 @@ export function NextHumanClient() {
     <header className="nh-header">
       <Link href="/" className="nh-brand" aria-label="Sri Aurobindo Society Lucknow home">
         <Image src="/next-human/sri-aurobindo-symbol.png" alt="Sri Aurobindo symbol" width={42} height={42} unoptimized />
-        <span><strong>Sri Aurobindo Society</strong><small>LUCKNOW · AN INITIATIVE</small></span>
+        <span><strong>NEXT HUMAN INQUIRIES</strong><small>SRI AUROBINDO SOCIETY · LUCKNOW</small></span>
       </Link>
-      <a href="#founding-inquiry" className="nh-header-cta">Enter the Founding Circle</a>
+      <nav className="nh-nav" aria-label="NEXT HUMAN sections"><a href="#event">The event</a><a href="#activities">Activities</a><a href="#books">Books</a></nav>
+      <a href="#founding-inquiry" className="nh-header-cta">Enter the inquiry</a>
     </header>
 
     <section className="nh-hero">
       <div className="nh-hero-copy">
-        <p className="nh-kicker">LUCKNOW · 2026</p>
-        <h1><span>NEXT</span> HUMAN</h1>
-        <p className="nh-formula">Seven Days. 21 Movements. One Question:</p>
-        <h2>What comes after man?</h2>
-        <p className="nh-lead">Before the participants are invited—and before 200 young explorers are selected—a founding circle must be formed.</p>
-        <div className="nh-actions"><a href="#film" className="nh-button nh-primary">Watch the film</a><a href="#founding-inquiry" className="nh-button">Help build the journey</a></div>
-        <p className="nh-clarifier">This is an invitation to the voluntary foundation team. It is not registration for the event or application for the final 200.</p>
+        <p className="nh-kicker">A PUBLIC INQUIRY IN FORMATION · LUCKNOW 2026</p>
+        <h1>What comes <em>after</em> the human we know?</h1>
+        <p className="nh-lead">An evidence-led inquiry into consciousness, the body, technology and human possibility. Neither devotional nor dismissive. Open to what can be examined—and to what remains unresolved.</p>
+        <div className="nh-actions"><a href="#event" className="nh-button nh-primary">Discover NEXT HUMAN</a><a href="#founding-inquiry" className="nh-button">Enter the inquiry</a></div>
+        <p className="nh-clarifier">NEXT HUMAN is under transformation. We are inviting thoughtful participants to help shape what it becomes.</p>
       </div>
-      <div className="nh-explorer" aria-hidden="true"><Image src="/next-human/human-explorer.png" alt="" fill priority unoptimized /></div>
+      <div className="nh-explorer" aria-hidden="true"><Image src="/next-human/hero-inquiry.png" alt="" fill priority unoptimized /></div>
+    </section>
+
+    <section className="nh-position" id="event">
+      <p className="nh-kicker">THE POSITION</p>
+      <blockquote>We begin neither with belief nor disbelief. We begin with the quality of the question.</blockquote>
+      <div><p>NEXT HUMAN brings contemplative traditions, embodied practice, science, philosophy, art and emerging technology into a shared field—without forcing premature agreement.</p><p>Claims are not protected by charisma. Skepticism is not mistaken for understanding. Experience, evidence and interpretation are kept distinct long enough for genuine inquiry to begin.</p></div>
     </section>
 
     <section className="nh-film" id="film">
-      <div className="nh-section-heading"><p className="nh-kicker">THE UNBROKEN ASCENT</p><h2>Some questions ask to be lived.</h2></div>
+      <div className="nh-section-heading"><p className="nh-kicker">THE EVENT · SEVEN DAYS · 21 MOVEMENTS</p><h2>A temporary institution for inquiry.</h2><p>Researchers, practitioners, artists, technologists and serious independent minds move between first-person experience and third-person examination—without collapsing one into the other.</p></div>
       <video controls playsInline preload="metadata" src="/next-human/founding-circle-film.mp4">Your browser does not support embedded video.</video>
     </section>
 
     <section className="nh-invitation">
       <div><p className="nh-kicker">THE INVITATION</p><h2>Don’t attend it.<br/><em>Build it.</em></h2></div>
-      <div className="nh-invitation-copy"><p>An exploration of this depth cannot be assembled by an event company alone. It needs researchers and storytellers; young organisers and experienced institution-builders; doctors, artists, technologists, educators, filmmakers, hosts and partners.</p><p>You do not need to have every answer. You do need curiosity, integrity, generosity and the willingness to take responsibility.</p><blockquote>What are you ready to help bring into existence?</blockquote></div>
+      <div className="nh-invitation-copy"><p>An exploration of this depth cannot be assembled by an event company alone. It needs researchers and storytellers; young organisers and experienced institution-builders; doctors, artists, technologists, educators, filmmakers, hosts and partners.</p><p>You do not need every answer. You do need curiosity, integrity, generosity and a willingness to let evidence change your position.</p><blockquote>What are you genuinely trying to understand?</blockquote></div>
     </section>
 
     <section className="nh-architecture">
-      {[['01','SEVEN DAYS','A carefully curated journey—not a sequence of disconnected lectures.'],['02','21 MOVEMENTS','Every movement begins with a real question and leads somewhere meaningful.'],['03','A LIVING COMMUNITY','Selected young explorers, invited participants, mentors, institutions and builders.']].map(([n,t,d])=><article key={n}><span>{n}</span><h3>{t}</h3><p>{d}</p></article>)}
+      {[['01','ENTER THE QUESTION','Shared provocations establish the territory—not conclusions.'],['02','ENCOUNTER THE EVIDENCE','Research, lived reports and contested claims are examined in context.'],['03','BUILD WHAT FOLLOWS','Working groups translate insight into studies, practices and public questions.']].map(([n,t,d])=><article key={n}><span>{n}</span><h3>{t}</h3><p>{d}</p></article>)}
+    </section>
+
+    <section className="nh-activities" id="activities">
+      <div className="nh-section-heading"><p className="nh-kicker">ACTIVITIES UNDERWAY</p><h2>The inquiry is already moving.</h2><p>NEXT HUMAN is not waiting for a single event. Its work develops through connected, evolving formats.</p></div>
+      <div className="nh-activity-grid">{[['01','Inquiry Sessions','Small facilitated rooms where a precise question is examined across research, experience and dissent.'],['02','Embodied Protocols','Documented experiments in attention, perception and regulation—with conditions, observations and limits made visible.'],['03','Field Notes','Essays, conversations and working papers that reveal the evolution of the inquiry rather than a finished doctrine.']].map(([n,t,d])=><article key={n}><span>{n}</span><h3>{t}</h3><p>{d}</p></article>)}</div>
     </section>
 
     <section className="nh-explorer-lead">
@@ -179,6 +189,11 @@ export function NextHumanClient() {
     <section className="nh-contributions">
       <div className="nh-section-heading"><p className="nh-kicker">WHERE COULD YOU CONTRIBUTE?</p><h2>Find your place in the founding circle.</h2></div>
       <div className="nh-contribution-grid">{contributionAreas.map(([id,label,description],index)=><article key={id}><span>{String(index+1).padStart(2,"0")}</span><h3>{label}</h3><p>{description}</p></article>)}</div>
+    </section>
+
+    <section className="nh-books" id="books">
+      <div className="nh-section-heading"><p className="nh-kicker">THE BOOKS</p><h2>The inquiry, in long form.</h2></div>
+      <div className="nh-book-grid"><article><div className="nh-book-cover"><small>NEXT HUMAN</small><b>0</b><strong>Book Zero</strong></div><div><p className="nh-kicker">BOOK ZERO</p><h3>The ground of the question</h3><p>An opening text that clears conceptual space: what we mean by human, what we mistake for certainty, and why a different quality of inquiry is now required.</p><small>FOUNDATIONAL VOLUME</small></div></article><article><div className="nh-book-cover"><small>NEXT HUMAN</small><b>I</b><strong>Book One</strong></div><div><p className="nh-kicker">BOOK ONE</p><h3>Consciousness in question</h3><p>A deeper movement into first-person knowledge, scientific description and the difficult territory between experience and explanation.</p><small>IN DEVELOPMENT</small></div></article></div>
     </section>
 
     <section className="nh-form-section" id="founding-inquiry">
