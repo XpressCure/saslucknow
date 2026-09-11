@@ -4,7 +4,7 @@ import test from "node:test";
 
 const read = path => readFile(new URL(path, import.meta.url), "utf8");
 
-test("The Next Human Challenge uses a real, stable intro video", async () => {
+test("The Next Human Quiz uses a real, stable intro video", async () => {
   const [client, css, video] = await Promise.all([
     read("../app/bharat-uday/bharat-uday-client.tsx"),
     read("../app/bharat-uday/bharat-uday.css"),
@@ -14,7 +14,7 @@ test("The Next Human Challenge uses a real, stable intro video", async () => {
   assert.doesNotMatch(client, /className="bu-hero-film"[^>]*\bloop\b/);
   assert.match(client, /film\.play\(\)\.catch/);
   assert.match(client, /next-human-challenge-intro\.mp4/);
-  assert.match(client, /The Next Human <em>Challenge<\/em>/);
+  assert.match(client, /The Next Human <em>Quiz<\/em>/);
   assert.doesNotMatch(client, /bu-hero-glow/);
   assert.doesNotMatch(client, /bharat-uday-motion\.webp/);
   assert.match(css, /\.bu-hero-film\{[^}]*animation:none/);
@@ -30,7 +30,7 @@ test("the film holds its closing message while the real CTA stays outside it", a
   ]);
   assert.match(generator, /fourth = ease\(\(t - 10\.5\) \/ \.35\)/);
   assert.doesNotMatch(generator, /BEGIN LEVEL 01  >/);
-  assert.match(client, /<section className="bu-hero-cta" aria-label="Start The Next Human Challenge">/);
+  assert.match(client, /<section className="bu-hero-cta" aria-label="Start The Next Human Quiz">/);
   assert.match(client, /The journey begins with one question\./);
   assert.doesNotMatch(client, /<div className="bu-hero-actions">/);
   assert.match(css, /\.bu-hero-cta\{display:flex/);

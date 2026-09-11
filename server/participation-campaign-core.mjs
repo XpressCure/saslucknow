@@ -100,7 +100,7 @@ export const SAS_CAMPAIGN_TEMPLATES = Object.freeze({
   }),
   bharat_uday: Object.freeze({
     id: "bharat_uday",
-    label: "The Next Human Challenge",
+    label: "The Next Human Quiz",
     spiritualTheme: "Culture, science and consciousness for the next human",
     objective: "discovery",
     destination: "bharat-uday",
@@ -110,9 +110,9 @@ export const SAS_CAMPAIGN_TEMPLATES = Object.freeze({
     copy: {
       en: {
         eyebrow: "30 LEVELS · CULTURE · SCIENCE · CONSCIOUSNESS",
-        headline: "The Next Human Challenge",
+        headline: "The Next Human Quiz",
         body: "Five fast questions, one discovery and one personal reflection—across 30 vivid levels.",
-        cta: "Continue my challenge",
+        cta: "Continue my quiz",
       },
       hi: {
         eyebrow: "३० स्तर · संस्कृति · विज्ञान · चेतना",
@@ -136,7 +136,7 @@ export const SAS_CAMPAIGN_DESTINATIONS = Object.freeze([
   Object.freeze({ id: "sankalp", label: "Sankalp", description: "Opens active collective commitments and their progress." }),
   Object.freeze({ id: "yogdaan", label: "Yogdaan", description: "Opens the member's contribution and acknowledgement area." }),
   Object.freeze({ id: "parichay", label: "Parichay", description: "Opens the member's profile and Society identity details." }),
-  Object.freeze({ id: "bharat-uday", label: "The Next Human Challenge", description: "Resumes the member's 30-level culture, science and consciousness journey." }),
+  Object.freeze({ id: "bharat-uday", label: "The Next Human Quiz", description: "Resumes the member's 30-level culture, science and consciousness journey." }),
 ]);
 
 const CAMPAIGN_DESTINATION_IDS = new Set(SAS_CAMPAIGN_DESTINATIONS.map(destination => destination.id));

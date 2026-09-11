@@ -225,7 +225,7 @@ export function MissionHome() {
   const t = copy[lang];
   const primaryNav = [
     { label: "NEXT HUMAN 2026", href: "/next-human" },
-    { label: lang === "hi" ? "नेक्स्ट ह्यूमन चैलेंज" : "Next Human Challenge", href: "/bharat-uday" },
+    { label: lang === "hi" ? "द नेक्स्ट ह्यूमन क्विज़" : "The Next Human Quiz", href: "/next-human-quiz" },
     { label: t.nav[0], href: "#wisdom" },
     { label: t.nav[2], href: "/joincommunity#parichay" },
   ];
@@ -553,9 +553,9 @@ export function MissionHome() {
           <a className="home-live-card home-live-card-next" href="/next-human">
             <div><small>BOOK ZERO · BOOK ONE</small><h3>NEXT HUMAN</h3><p>Explore the central idea through two books: what the human being is, why it may be transitional, and what a further evolution of consciousness could mean.</p><span>Enter the idea →</span></div>
           </a>
-          <a className="home-live-card home-live-card-bharat" href="/bharat-uday">
-            <img src="/bharat-uday/bharat-uday-hero.png" alt="Bharat Uday — The Next Human Challenge" loading="eager"/>
-            <div><small>INTERACTIVE · 30 LEVELS</small><h3>Bharat Uday</h3><p>The Next Human Challenge continues as it is: culture, science and consciousness through a vivid, self-paced journey.</p><span>Play or continue the challenge →</span></div>
+          <a className="home-live-card home-live-card-bharat" href="/next-human-quiz">
+            <img src="/bharat-uday/bharat-uday-hero.png" alt="The Next Human Quiz" loading="eager"/>
+            <div><small>INTERACTIVE · 30 LEVELS</small><h3>The Next Human Quiz</h3><p>Culture, science and consciousness meet in a vivid, self-paced journey of questions and discoveries.</p><span>Play or continue the quiz →</span></div>
           </a>
         </div>
       </section>

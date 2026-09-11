@@ -6,7 +6,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   return [
     { url: siteUrl, lastModified, changeFrequency: "weekly", priority: 1 },
-    { url: `${siteUrl}/bharat-uday`, lastModified: new Date("2026-08-28T00:00:00+05:30"), changeFrequency: "daily", priority: 1 },
+    { url: `${siteUrl}/next-human-quiz`, lastModified: new Date("2026-09-11T00:00:00+05:30"), changeFrequency: "daily", priority: 1 },
     { url: `${siteUrl}/next-human`, lastModified, changeFrequency: "weekly", priority: 1 },
     { url: `${siteUrl}/sri-aurobindo`, lastModified, changeFrequency: "monthly", priority: 0.9 },
     { url: `${siteUrl}/sri-aurobindo/life-sketch`, lastModified, changeFrequency: "monthly", priority: 0.9 },

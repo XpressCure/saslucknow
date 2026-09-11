@@ -1175,7 +1175,7 @@ export function MemberClient() {
       case "sankalp": setTab("sankalp"); break;
       case "yogdaan": setTab("yogdaan"); break;
       case "parichay": setTab("parichay"); break;
-      case "bharat-uday": window.location.assign("/bharat-uday"); return;
+      case "bharat-uday": window.location.assign("/next-human-quiz"); return;
       case "dashboard":
       default: setTab("darshan"); setDarshanPanel("home"); break;
     }

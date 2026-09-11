@@ -272,11 +272,11 @@ export const bharatUdayLevels: BharatUdayLevel[] = [
     ["A responsible technology decision considers whom?", "People affected, including vulnerable groups", "Impact matters beyond the immediate user or buyer."],
   ]),
   level(30, "The NEXT HUMAN", "Integration", "✺", "#ff5f6d", "The future human is not produced by information alone. Knowledge must become character, attention, courage, relationship and conscious action.", "Carry one sentence with you: The future begins wherever I become more conscious now.", [
-    ["Which quality connects all 30 Next Human Challenge levels?", "Conscious curiosity", "Learning becomes transformative when curiosity and attention work together."],
+    ["Which quality connects all 30 Next Human Quiz levels?", "Conscious curiosity", "Learning becomes transformative when curiosity and attention work together."],
     ["What turns knowledge into lived wisdom?", "Practice and reflection", "Understanding deepens when tested in life."],
     ["Which response best serves a complex future?", "Learning, cooperating and adapting consciously", "Complex problems need flexible intelligence and shared effort."],
     ["In Sri Aurobindo's vision, humanity is what kind of being?", "A transitional being", "Humanity can participate consciously in further evolution."],
-    ["Where does the NEXT HUMAN challenge finally point?", "Toward a more conscious way of living", "The journey is completed not by a score, but by what awakens in action."],
+    ["Where does The Next Human Quiz finally point?", "Toward a more conscious way of living", "The journey is completed not by a score, but by what awakens in action."],
   ]),
 ];
 

@@ -200,6 +200,14 @@ async function database() {
       { organisationKey: 1, eventKey: 1, memberId: 1, dayId: 1, status: 1 },
       { name: "next_human_member_day_booking" },
     ),
+    db.collection("nextHumanBookOrders").createIndex(
+      { organisationKey: 1, memberId: 1, providerOrderId: 1 },
+      { unique: true, name: "next_human_book_order" },
+    ),
+    db.collection("nextHumanBookEntitlements").createIndex(
+      { organisationKey: 1, memberId: 1, bookId: 1 },
+      { unique: true, name: "next_human_book_entitlement" },
+    ),
     db.collection("nextHumanBookings").createIndex(
       { organisationKey: 1, eventKey: 1, providerPaymentId: 1 },
       { unique: true, sparse: true, name: "next_human_payment" },

@@ -31,6 +31,7 @@ import {
 import { cleanText, publicSankalp } from "./participation-core.mjs";
 import { activeMemberCampaignView } from "./participation-campaign-core.mjs";
 import { handleNextHumanMemberRequest, recordNextHumanPayment } from "./next-human-event-api.mjs";
+import { handleNextHumanBooksRequest } from "./next-human-books-api.mjs";
 
 const MEMBER_COOKIE = "sas_member_session";
 // Razorpay is production-ready but intentionally paused until the public contribution launch.
@@ -1383,6 +1384,7 @@ export async function handleMemberRequest({ request, response, url, db, organisa
     return true;
   }
   if (await handleNextHumanMemberRequest({ request, response, url, context, actor })) return true;
+  if (await handleNextHumanBooksRequest({ request, response, url, context, actor })) return true;
   if (request.method === "GET" && url.pathname === "/api/participation/member/dashboard") return handled(dashboard(response, context, actor));
   const focusImpressionMatch = url.pathname.match(/^\/api\/participation\/member\/focus-campaigns\/([^/]+)\/impression$/);
   if (request.method === "POST" && focusImpressionMatch) return handled(recordFocusCampaignImpression(response, context, actor, focusImpressionMatch[1]));

@@ -32,7 +32,7 @@ function safeProgress(value: unknown): StoredProgress {
 
 function shareText(levelNumber: number, name: string, milestone: boolean) {
   const achievement = milestone ? `a milestone at Level ${levelNumber}` : `Level ${levelNumber}`;
-  return `I completed ${achievement} of The Next Human Challenge. Culture, science and consciousness—one discovery at a time.\n\nTake the challenge: https://www.saslucknow.in/bharat-uday${name ? `\n— ${name}` : ""}`;
+  return `I completed ${achievement} of The Next Human Quiz. Culture, science and consciousness—one discovery at a time.\n\nTake the quiz: https://www.saslucknow.in/next-human-quiz${name ? `\n— ${name}` : ""}`;
 }
 
 function ProgressRing({ completed }: { completed: number }) {
@@ -174,7 +174,7 @@ export function BharatUdayClient() {
     context.fillText("GOMTI NAGAR CENTRE (UC-02)", 212, 158);
     context.textAlign = "center";
     context.fillStyle = "#ffcf5c"; context.font = "700 22px Arial";
-    context.fillText("THE NEXT HUMAN CHALLENGE", 540, 230);
+    context.fillText("THE NEXT HUMAN QUIZ", 540, 230);
     context.fillStyle = "#ffffff"; context.font = "700 62px Georgia";
     context.fillText(milestone ? "Milestone Certificate" : "Certificate of Discovery", 540, 304);
     context.strokeStyle = "rgba(255,211,111,.7)"; context.lineWidth = 2;
@@ -224,7 +224,7 @@ export function BharatUdayClient() {
 
   async function shareCard(platform?: "facebook" | "instagram" | "linkedin" | "whatsapp") {
     const text = shareText(levelNumber, participantName.trim(), milestone);
-    const url = "https://www.saslucknow.in/bharat-uday";
+    const url = "https://www.saslucknow.in/next-human-quiz";
     if (platform === "whatsapp") window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer");
     else if (platform === "facebook") window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer");
     else if (platform === "instagram") {
@@ -234,7 +234,7 @@ export function BharatUdayClient() {
       window.open("https://www.instagram.com/", "_blank", "noopener,noreferrer");
     }
     else if (platform === "linkedin") window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`, "_blank", "noopener,noreferrer");
-    else if (navigator.share) await navigator.share({ title: "My Next Human Challenge Discovery Card", text, url }).catch(() => null);
+    else if (navigator.share) await navigator.share({ title: "My Next Human Quiz Discovery Card", text, url }).catch(() => null);
     else await navigator.clipboard?.writeText(text).then(() => setShareNotice("Sharing message copied."));
   }
 
@@ -246,35 +246,35 @@ export function BharatUdayClient() {
   return <div className="bu-page">
     <header className="bu-topbar">
       <Link href="/" className="bu-brand"><img src="/society-logo-transparent.png" alt="Sri Aurobindo Society symbol"/><span>Sri Aurobindo Society<small>Lucknow · Gomti Nagar Centre</small></span></Link>
-      <nav aria-label="The Next Human Challenge navigation"><a href="#journey">30 Levels</a><a href="#how-it-works">How it works</a><Link href="/member">Member Login</Link></nav>
-      <button type="button" className="bu-nav-start" onClick={() => beginLevel(progress.currentLevel)}>{completedCount ? "Continue challenge" : "Start challenge"}</button>
+      <nav aria-label="The Next Human Quiz navigation"><a href="#journey">30 Levels</a><a href="#how-it-works">How it works</a><Link href="/member">Member Login</Link></nav>
+      <button type="button" className="bu-nav-start" onClick={() => beginLevel(progress.currentLevel)}>{completedCount ? "Continue quiz" : "Start quiz"}</button>
     </header>
 
     <main>
       <section className="bu-hero">
         <div className="bu-hero-media">
-          <video ref={introFilmRef} className="bu-hero-film" autoPlay muted playsInline preload="auto" poster="/next-human-challenge-poster.jpg" aria-label="A short introduction to The Next Human Challenge">
+          <video ref={introFilmRef} className="bu-hero-film" autoPlay muted playsInline preload="auto" poster="/next-human-challenge-poster.jpg" aria-label="A short introduction to The Next Human Quiz">
             <source src="/next-human-challenge-intro.mp4" type="video/mp4"/>
           </video>
         </div>
         <div className="bu-hero-copy">
           <span className="bu-live-pill"><i/> A 30-level discovery experience</span>
           <p>CULTURE · SCIENCE · CONSCIOUSNESS</p>
-          <h1>The Next Human <em>Challenge</em></h1>
+          <h1>The Next Human <em>Quiz</em></h1>
           <h2>Five fast questions. One discovery. One life quote.</h2>
           <div className="bu-hero-proof"><span><strong>30</strong> vivid levels</span><span><strong>5</strong> questions each</span><span><strong>∞</strong> go at your pace</span></div>
         </div>
         <div className="bu-scroll-cue"><span>Scroll to discover</span><i>↓</i></div>
       </section>
 
-      <section className="bu-hero-cta" aria-label="Start The Next Human Challenge">
+      <section className="bu-hero-cta" aria-label="Start The Next Human Quiz">
         <div><span>YOUR NEXT DISCOVERY IS READY</span><strong>{completedCount ? `Continue from Level ${progress.currentLevel}` : "The journey begins with one question."}</strong></div>
-        <div className="bu-hero-cta-actions"><button type="button" onClick={() => beginLevel(progress.currentLevel)}>{completedCount ? "Continue challenge" : "Begin Level 01"}<b>→</b></button><a href="#journey">Explore all 30 levels</a></div>
+        <div className="bu-hero-cta-actions"><button type="button" onClick={() => beginLevel(progress.currentLevel)}>{completedCount ? "Continue quiz" : "Begin Level 01"}<b>→</b></button><a href="#journey">Explore all 30 levels</a></div>
       </section>
 
       <section className="bu-intro" id="how-it-works">
         <div><p className="bu-kicker">NOT A TEST. A DISCOVERY.</p><h2>Culture meets science.<br/><em>Knowledge meets you.</em></h2></div>
-        <div className="bu-intro-copy"><p>The Next Human Challenge is a fast, free journey through 30 surprising worlds—from zero and space science to biodiversity, music, attention and the future human.</p><p>Complete one level or race through several. Your progress waits for you, and every finish reveals a Discovery Card carrying a word for life.</p></div>
+        <div className="bu-intro-copy"><p>The Next Human Quiz is a fast, free journey through 30 surprising worlds—from zero and space science to biodiversity, music, attention and the future human.</p><p>Complete one level or explore several. Your progress waits for you, and every finish reveals a Discovery Card carrying a word for life.</p></div>
       </section>
 
       <section className="bu-flow" aria-label="How each level works">
@@ -311,13 +311,13 @@ export function BharatUdayClient() {
         </div>}
 
         {stage === "card" && <div className="bu-experience bu-card-stage" style={{ "--accent": activeLevel.accent } as React.CSSProperties}>
-          <div className="bu-confetti" aria-hidden="true">✦ <i>●</i> ◆ <b>✺</b> ✦</div><p className="bu-kicker">{milestone ? "MILESTONE UNLOCKED" : "LEVEL COMPLETE"}</p><h2>{milestone ? "A larger light has opened." : "Your certificate is ready."}</h2><p>{milestone ? `Level ${levelNumber} has unlocked a special Next Human Challenge milestone certificate.` : "Add your name to personalise your Certificate of Discovery."}</p><div className={`bu-discovery-card bu-certificate ${milestone ? "milestone" : ""}`}>
-            <div className="bu-card-rings"/><header className="bu-certificate-brand"><img src="/society-logo-transparent.png" alt="Sri Aurobindo Society logo"/><span><strong>Sri Aurobindo Society, Lucknow</strong><small>Gomti Nagar Centre (UC-02)</small></span></header><p className="bu-certificate-series">THE NEXT HUMAN CHALLENGE</p><h3>{milestone ? "Milestone Certificate" : "Certificate of Discovery"}</h3><p className="bu-certifies">This certifies that</p><strong className="bu-certificate-name">{participantName.trim() || "A curious explorer"}</strong><p className="bu-certificate-copy">has successfully completed <b>Level {String(levelNumber).padStart(2,"0")} — {activeLevel.title}</b> and explored <b>{activeLevel.realm}</b> through culture, science and consciousness.</p><blockquote>“{lifeQuote.text}”<cite>— {lifeQuote.author}</cite></blockquote><footer>An initiative by Sri Aurobindo Society, Lucknow · Gomti Nagar Centre (UC-02)</footer>
+          <div className="bu-confetti" aria-hidden="true">✦ <i>●</i> ◆ <b>✺</b> ✦</div><p className="bu-kicker">{milestone ? "MILESTONE UNLOCKED" : "LEVEL COMPLETE"}</p><h2>{milestone ? "A larger light has opened." : "Your certificate is ready."}</h2><p>{milestone ? `Level ${levelNumber} has unlocked a special Next Human Quiz milestone certificate.` : "Add your name to personalise your Certificate of Discovery."}</p><div className={`bu-discovery-card bu-certificate ${milestone ? "milestone" : ""}`}>
+            <div className="bu-card-rings"/><header className="bu-certificate-brand"><img src="/society-logo-transparent.png" alt="Sri Aurobindo Society logo"/><span><strong>Sri Aurobindo Society, Lucknow</strong><small>Gomti Nagar Centre (UC-02)</small></span></header><p className="bu-certificate-series">THE NEXT HUMAN QUIZ</p><h3>{milestone ? "Milestone Certificate" : "Certificate of Discovery"}</h3><p className="bu-certifies">This certifies that</p><strong className="bu-certificate-name">{participantName.trim() || "A curious explorer"}</strong><p className="bu-certificate-copy">has successfully completed <b>Level {String(levelNumber).padStart(2,"0")} — {activeLevel.title}</b> and explored <b>{activeLevel.realm}</b> through culture, science and consciousness.</p><blockquote>“{lifeQuote.text}”<cite>— {lifeQuote.author}</cite></blockquote><footer>An initiative by Sri Aurobindo Society, Lucknow · Gomti Nagar Centre (UC-02)</footer>
           </div><label className="bu-name-field"><span>Name on your certificate</span><input value={participantName} onChange={event => saveName(event.target.value)} maxLength={60} placeholder="Write your name"/></label><div className="bu-card-actions"><button type="button" onClick={() => void downloadCard()}>Download Certificate</button><button type="button" aria-expanded={shareMenuOpen} onClick={() => setShareMenuOpen(value => !value)}>Share Certificate</button></div>{shareMenuOpen && <div className="bu-share-options" aria-label="Share certificate options"><button type="button" onClick={() => { setShareMenuOpen(false); void shareCard("whatsapp"); }}>WhatsApp</button><button type="button" onClick={() => { setShareMenuOpen(false); void shareCard("facebook"); }}>Facebook</button><button type="button" onClick={() => { setShareMenuOpen(false); void shareCard("instagram"); }}>Instagram</button><button type="button" onClick={() => { setShareMenuOpen(false); void shareCard("linkedin"); }}>LinkedIn</button></div>}{shareNotice && <p className="bu-share-notice">{shareNotice}</p>}<button className="bu-primary" type="button" onClick={nextLevel}>{levelNumber === 30 ? "Return to my complete journey" : `Proceed to Level ${String(levelNumber + 1).padStart(2,"0")}`} <b>→</b></button>
         </div>}
       </section>
     </main>
 
-    <footer className="bu-footer"><div><img src="/society-logo-transparent.png" alt=""/><span><strong>Sri Aurobindo Society, Lucknow</strong><small>Gomti Nagar Centre (UC-02)</small></span></div><p>The Next Human Challenge · Culture, Science & Consciousness</p><Link href="/">Return to The Song of Life</Link></footer>
+    <footer className="bu-footer"><div><img src="/society-logo-transparent.png" alt=""/><span><strong>Sri Aurobindo Society, Lucknow</strong><small>Gomti Nagar Centre (UC-02)</small></span></div><p>The Next Human Quiz · Culture, Science & Consciousness</p><Link href="/">Return to The Song of Life</Link></footer>
   </div>;
 }

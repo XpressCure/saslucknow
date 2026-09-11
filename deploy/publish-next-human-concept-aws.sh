@@ -61,7 +61,9 @@ sudo systemd-run \
 ready=0
 for attempt in {1..30}; do
   if curl -fsS --max-time 4 "http://127.0.0.1:3010/" >/dev/null \
-    && curl -fsS --max-time 4 "http://127.0.0.1:3010/next-human" | grep -q "Book Zero"; then
+    && curl -fsS --max-time 4 "http://127.0.0.1:3010/next-human" | grep -q "Book Zero" \
+    && curl -fsS --max-time 4 "http://127.0.0.1:3010/next-human-quiz" | grep -q "Next Human Quiz" \
+    && curl -fsS --max-time 4 "http://127.0.0.1:3010/member/next-human-books" | grep -q "private bookshelf"; then
     ready=1
     break
   fi
@@ -86,7 +88,9 @@ sudo systemctl restart saslucknow-gallery.service saslucknow-participation.servi
 
 live_ready=0
 for attempt in {1..30}; do
-  if curl -fsS --max-time 5 "http://127.0.0.1:3000/next-human" | grep -q "Book Zero"; then
+  if curl -fsS --max-time 5 "http://127.0.0.1:3000/next-human" | grep -q "Book Zero" \
+    && curl -fsS --max-time 5 "http://127.0.0.1:3000/next-human-quiz" | grep -q "Next Human Quiz" \
+    && curl -fsS --max-time 5 "http://127.0.0.1:3000/member/next-human-books" | grep -q "private bookshelf"; then
     live_ready=1
     break
   fi
