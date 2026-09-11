@@ -341,6 +341,12 @@ function pluralizeMinuteLabel(minutes: number) {
 
 function stageLabel(value: string) { return value.replaceAll("_", " ").replace(/\b\w/g, letter => letter.toUpperCase()); }
 
+function safeMemberReturnPath() {
+  if (typeof window === "undefined") return "";
+  const candidate = new URLSearchParams(window.location.search).get("returnTo") || "";
+  return candidate.startsWith("/") && !candidate.startsWith("//") ? candidate : "";
+}
+
 export function MemberClient() {
   const [member, setMember] = useState<Member | null>(null);
   const [dashboard, setDashboard] = useState<Dashboard | null>(null);
@@ -486,7 +492,10 @@ export function MemberClient() {
           setMembershipDisabledMessage(result.message || "Your membership access is currently disabled. Please contact Sri Aurobindo Society, Lucknow for assistance.");
           return;
         }
-        return loadDashboard();
+        return loadDashboard().then(() => {
+          const returnTo = safeMemberReturnPath();
+          if (returnTo) window.location.assign(returnTo);
+        });
       })
       .catch(error => {
         if (isMembershipDisabledError(error)) setMembershipDisabledMessage(error.message);
@@ -584,6 +593,8 @@ export function MemberClient() {
       } else {
         setMembershipDisabledMessage("");
         await loadDashboard();
+        const returnTo = safeMemberReturnPath();
+        if (returnTo) window.location.assign(returnTo);
       }
       form.reset();
       setNotice(null);
@@ -1206,6 +1217,7 @@ export function MemberClient() {
       </div>
       <button className={tab === "sankalp" ? "active" : ""} onClick={() => setTab("sankalp")}><span>S</span>Sankalp</button>
       <button className={tab === "yogdaan" ? "active" : ""} onClick={() => setTab("yogdaan")}><span>Y</span>Yogdaan</button>
+      <Link className="member-nav-link" href="/member/next-human-books"><span>B</span>My Books</Link>
       <button className={tab === "parichay" ? "active" : ""} onClick={() => setTab("parichay")}><span>P</span>Parichay</button>
       <button className="member-mobile-signout" onClick={signOut}><span>O</span>Sign out</button>
     </nav>
