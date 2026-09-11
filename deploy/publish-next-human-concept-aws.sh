@@ -71,7 +71,7 @@ for attempt in {1..30}; do
   if curl -fsS --max-time 5 "http://127.0.0.1:3010/" >/dev/null \
     && page_contains "http://127.0.0.1:3010/next-human" "Book Zero" \
     && page_contains "http://127.0.0.1:3010/next-human-quiz" "Next Human Quiz" \
-    && page_contains "http://127.0.0.1:3010/member/next-human-books" "private bookshelf"; then
+    && page_contains "http://127.0.0.1:3010/member/next-human-books" "YOUR PRIVATE BOOKSHELF"; then
     ready=1
     break
   fi
@@ -98,7 +98,7 @@ live_ready=0
 for attempt in {1..30}; do
   if page_contains "http://127.0.0.1:3000/next-human" "Book Zero" \
     && page_contains "http://127.0.0.1:3000/next-human-quiz" "Next Human Quiz" \
-    && page_contains "http://127.0.0.1:3000/member/next-human-books" "private bookshelf"; then
+    && page_contains "http://127.0.0.1:3000/member/next-human-books" "YOUR PRIVATE BOOKSHELF"; then
     live_ready=1
     break
   fi
