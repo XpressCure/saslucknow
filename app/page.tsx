@@ -3,10 +3,10 @@ import { MissionHome } from "./mission-home";
 import { createPageMetadata, siteUrl } from "./seo";
 
 export const metadata: Metadata = createPageMetadata({
-  title: "Sri Aurobindo Society Lucknow | Meditation & Culture",
-  description: "Explore Sri Aurobindo, the Mother (Mirra Alfassa), Integral Yoga, Savitri, meditation, Indian spirituality and weekly gatherings in Lucknow.",
+  title: "NEXT HUMAN 2026 | Sri Aurobindo Society Lucknow",
+  description: "Enter NEXT HUMAN 2026, a living inquiry into consciousness and the future human, while exploring Bharat Uday, Savitri, Integral Yoga and the work of Sri Aurobindo Society Lucknow.",
   path: "/",
-  keywords: ["spiritual centre Lucknow", "Sunday meditation Lucknow", "Indian culture Lucknow"],
+  keywords: ["NEXT HUMAN 2026", "future human", "Bharat Uday", "spiritual centre Lucknow", "Indian culture Lucknow"],
 });
 
 const structuredData = {

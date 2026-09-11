@@ -227,9 +227,9 @@ export function MissionHome() {
   const sakhiEndRef = useRef<HTMLDivElement>(null);
   const t = copy[lang];
   const primaryNav = [
+    { label: "NEXT HUMAN 2026", href: "/next-human" },
     { label: lang === "hi" ? "नेक्स्ट ह्यूमन चैलेंज" : "Next Human Challenge", href: "/bharat-uday" },
     { label: t.nav[0], href: "#wisdom" },
-    { label: t.nav[1], href: "#events" },
     { label: t.nav[2], href: "/joincommunity#parichay" },
   ];
   const normalizedLibraryQuery = libraryQuery.trim().toLowerCase();
@@ -534,6 +534,36 @@ export function MissionHome() {
     <PushpanjaliCampaign/>
 
     <main id="main">
+      <section className="home-next-hero" aria-labelledby="home-next-title">
+        <div className="home-next-copy">
+          <p className="home-next-kicker">SRI AUROBINDO SOCIETY · LUCKNOW · 2026</p>
+          <h1 id="home-next-title"><span>NEXT</span> HUMAN</h1>
+          <p className="home-next-question">What must we become to meet the future?</p>
+          <p className="home-next-intro">A living inquiry into consciousness, evolution, <em>Savitri</em> and the future human—shaped in Lucknow by people willing to explore, build and serve.</p>
+          <div className="home-next-actions">
+            <a className="home-next-primary" href="/next-human">Enter NEXT HUMAN <span>→</span></a>
+            <a className="home-next-secondary" href="/next-human#inquiry">Join the founding inquiry</a>
+          </div>
+        </div>
+        <figure className="home-next-visual">
+          <img src="/next-human/hero-inquiry.png" alt="A luminous human figure looking toward a field of emerging possibilities"/>
+          <figcaption><span>CONSCIOUSNESS</span><span>EVOLUTION</span><span>THE FUTURE HUMAN</span></figcaption>
+        </figure>
+      </section>
+
+      <section className="home-live-work" aria-labelledby="home-live-title">
+        <header><p>THE WORK IS ALREADY UNDERWAY</p><h2 id="home-live-title">Two invitations. One evolving journey.</h2></header>
+        <div className="home-live-grid">
+          <a className="home-live-card home-live-card-next" href="/next-human">
+            <div><small>FOUNDING CIRCLE · LUCKNOW 2026</small><h3>NEXT HUMAN</h3><p>Help shape a seven-day inquiry into the possibilities of human evolution. Explore the vision, meet the lead explorer and offer what you can build.</p><span>Discover the inquiry →</span></div>
+          </a>
+          <a className="home-live-card home-live-card-bharat" href="/bharat-uday">
+            <img src="/bharat-uday/bharat-uday-hero.png" alt="Bharat Uday — The Next Human Challenge" loading="eager"/>
+            <div><small>INTERACTIVE · 30 LEVELS</small><h3>Bharat Uday</h3><p>The Next Human Challenge continues as it is: culture, science and consciousness through a vivid, self-paced journey.</p><span>Play or continue the challenge →</span></div>
+          </a>
+        </div>
+      </section>
+
       <section className="theme-banner" aria-label="Website theme: The Song of Life"><img src="/song-of-life-banner.png" alt="The Song of Life, glowing over a radiant golden dawn"/><div className="theme-caption"><span>OUR WEBSITE THEME</span><p>A luminous invitation to discover the deeper music within life.</p></div></section>
       <section className="hero hero-vision" id="pathways" aria-label="The Vision">
         <div className="hero-orb" aria-hidden="true"><span>✦</span></div>
