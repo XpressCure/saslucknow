@@ -9,6 +9,13 @@ const waysOfKnowing = [
   ["कथा और काव्य", "Savitri जैसे ग्रन्थों में मनुष्य के भय, प्रेम और सम्भावना को पहचानना।"],
 ];
 
+const lifeStages = [
+  ["20–35", "भविष्य", "AI के समय में मेरी जगह और मेरे रिश्तों की दिशा क्या है?"],
+  ["35–50", "सन्तुलन", "काम, बच्चे, माता-पिता—और इन सबके बीच मैं कहाँ हूँ?"],
+  ["50–65", "अगला अध्याय", "स्वास्थ्य, अनुभव और विरासत को अर्थपूर्ण कैसे बनाऊँ?"],
+  ["65+", "पूर्णता", "बदलती दुनिया में सहज, प्रासंगिक और मृत्यु के प्रति निर्भय कैसे रहूँ?"],
+];
+
 export function NextHumanConcept() {
   return <main className="nh3-page">
     <header className="nh3-header">
@@ -17,13 +24,15 @@ export function NextHumanConcept() {
     </header>
 
     <section className="nh3-hero">
-      <Image className="nh3-hero-image" src="/next-human/cosmic-rhythm-hero-v4.png" alt="A luminous human possibility emerging among axes, orbits and cosmic rhythms" fill priority unoptimized />
+      <Image className="nh3-hero-image" src="/next-human/human-possibility-generations-v5.png" alt="Four generations looking toward a shared horizon of human possibility" fill priority unoptimized />
       <div className="nh3-hero-shade" />
-      <div className="nh3-hero-copy"><p className="nh3-eyebrow">A LIVING INQUIRY INTO HUMAN POSSIBILITY</p><h1>भविष्य केवल आता नहीं।<br/><span>मनुष्य उसे जन्म देता है।</span></h1><p className="nh3-lead">NEXT HUMAN यह खोज है कि तेज़ होती बुद्धि के साथ हमारी चेतना, करुणा और भीतर की स्वतंत्रता भी कैसे विकसित हो।</p><p className="nh3-english">Not an escape from today—a way to meet today so deeply that a different tomorrow becomes possible.</p><div className="nh3-actions"><a href="#questions">अपने प्रश्न से शुरू करें</a><Link href="/member/next-human-books">Books देखें</Link></div></div>
+      <div className="nh3-hero-copy"><p className="nh3-eyebrow">चार पीढ़ियाँ · एक बदलती दुनिया · एक साझा खोज</p><h1>आपके प्रश्न बदल रहे हैं।<br/><span>क्या मनुष्य भी बदल सकता है?</span></h1><p className="nh3-lead">AI, परिवार, स्वास्थ्य, पहचान, अध्यात्म और मृत्यु—NEXT HUMAN इन प्रश्नों का तैयार उत्तर नहीं बेचता। यह आपको उन्हें स्पष्टता, प्रमाण और अपने अनुभव की रोशनी में समझने का रास्ता देता है।</p><p className="nh3-english">The Human Possibility · मनुष्य की अगली सम्भावना</p><div className="nh3-actions"><a href="#questions">अपना प्रश्न चुनें</a><a href="#journeys">जीवन की यात्राएँ देखें</a></div></div>
       <aside className="nh3-now"><span>आज आपके भीतर क्या जीवित है?</span><p>AI का भय</p><p>रिश्तों की उलझन</p><p>शरीर और उम्र</p><p>जीवन का अर्थ</p></aside>
     </section>
 
-    <section className="nh3-definition"><div><p className="nh3-eyebrow">THE IDEA, SIMPLY</p><h2>Next Human कोई नया धर्म या तैयार आदर्श नहीं है।</h2></div><div className="nh3-definition-copy"><p>यह अपने आज के प्रश्न को ईमानदारी से देखने, उसके स्रोत को समझने और अपने जीवन में एक अधिक जागरूक उत्तर खोजने की प्रक्रिया है।</p><p><strong>अगला मनुष्य वह है जो केवल अधिक जानता नहीं—अधिक सचेत होकर जीता है।</strong></p></div></section>
+    <section className="nh3-generations" aria-label="Questions across four life stages"><header><p className="nh3-eyebrow">यह यात्रा किसके लिए है?</p><h2>उम्र बदलती है। प्रश्न बदलते हैं।<br/>खोज वही रहती है—मैं कैसे जिऊँ?</h2></header><div>{lifeStages.map(([age, title, question]) => <a href="#questions" key={age}><span>{age}</span><strong>{title}</strong><p>{question}</p><i>अपनी दिशा खोजें →</i></a>)}</div></section>
+
+    <section className="nh3-definition"><div><p className="nh3-eyebrow">सीधी-सी बात</p><h2>जानकारी बहुत है। पर अपने जीवन के लिए सही बात पहचानें कैसे?</h2></div><div className="nh3-definition-copy"><p>यहाँ विज्ञान को विज्ञान की तरह, इतिहास को प्रमाण के साथ, और आध्यात्मिक अनुभव को उसके सही सन्दर्भ में रखा जाता है—ताकि श्रद्धा अन्धी न हो और तर्क हृदयहीन न बने।</p><p><strong>अगला मनुष्य कोई चमत्कारी प्रजाति नहीं। वह हममें जागती हुई अधिक स्पष्ट, करुणामय और सचेत सम्भावना है।</strong></p></div></section>
 
     <section className="nh3-questions" id="questions"><header><p className="nh3-eyebrow">START WHERE YOU ARE</p><h2>आज आप किस बात को<br/>समझना चाहते हैं?</h2><p>एक विषय चुनिए। पेज उसी क्षण बताएगा कि यह खोज आपके लिए क्या खोल सकती है और आप यहाँ से क्या लेकर जाएँगे।</p></header><PersonalPathFinder /></section>
 
