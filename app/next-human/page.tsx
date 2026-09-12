@@ -3,19 +3,19 @@ import { NextHumanConcept } from "./next-human-concept";
 import "./next-human.css";
 
 export const metadata: Metadata = {
-  title: "NEXT HUMAN | आपके जीवन का अगला प्रश्न क्या है?",
-  description: "AI, work, marriage, parenting, health, ageing and mortality—begin with the questions of your life and explore them through evidence, experience and the NEXT HUMAN books.",
+  title: "NEXT HUMAN | मनुष्य की अगली सम्भावना",
+  description: "आज के जीवित प्रश्नों से भविष्य की मानवीय सम्भावना तक—चेतना, विवेक, जीवन-अभ्यास और NEXT HUMAN books की एक खुली खोज।",
   openGraph: {
-    title: "NEXT HUMAN — आपके जीवन का अगला प्रश्न क्या है?",
-    description: "आज के जीवन के प्रश्नों से चेतना और मानवीय सम्भावना की गहरी खोज तक।",
+    title: "NEXT HUMAN — भविष्य केवल आता नहीं, मनुष्य उसे जन्म देता है",
+    description: "आज के प्रश्नों से अधिक सचेत, स्वतंत्र और करुणामय मनुष्य की सम्भावना तक।",
     url: "/next-human",
     type: "website",
     images: [{ url: "/next-human/og.png", width: 1730, height: 910, alt: "NEXT HUMAN — An inquiry into human possibility" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "NEXT HUMAN — आपके जीवन का अगला प्रश्न क्या है?",
-    description: "आज के जीवन के प्रश्नों से चेतना और मानवीय सम्भावना की गहरी खोज तक।",
+    title: "NEXT HUMAN — मनुष्य की अगली सम्भावना",
+    description: "आज के प्रश्नों से एक अधिक सचेत भविष्य की ओर।",
     images: ["/next-human/og.png"],
   },
 };
