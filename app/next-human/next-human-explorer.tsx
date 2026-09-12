@@ -19,18 +19,18 @@ const people = [
     ["1926", "एक नया चरण", "Ashram परम्परा में Siddhi Day; सामूहिक साधना की जिम्मेदारी The Mother ने सँभाली।"],
   ]},
   { id: "vivek", name: "Swami Vivekananda", question: "भीतर का संशय विश्व के लिए साहस कैसे बनता है?", source: "https://belurmath.org/swami-vivekananda/", events: [
-    ["1863", "नरेंद्रनाथ", "Calcutta में जन्म; तीक्ष्ण तर्क, संगीत, अध्ययन और सत्य को प्रत्यक्ष जानने की बेचैनी।"],
     ["1881", "Ramakrishna से मिलन", "एक युवा संशयवादी का प्रश्न: क्या ईश्वर को वास्तव में जाना जा सकता है?"],
     ["1886", "संन्यास और भारत-यात्रा", "गुरु के देहान्त के बाद त्याग, भ्रमण और भारत की पीड़ा से सीधा साक्षात्कार।"],
     ["1893", "Chicago", "विश्व धर्म संसद में सह-अस्तित्व और मानव गरिमा की आत्मविश्वासपूर्ण भारतीय वाणी।"],
     ["1897", "सेवा का संगठन", "Ramakrishna Mission—अन्तर-साधना को मानव-सेवा से जोड़ने का प्रयास।"],
+    ["1902", "अन्तिम दिन", "Belur Math के आधिकारिक जीवन-वृत्त के अनुसार 4 July की रात उनका अन्त शान्तिपूर्वक हुआ।"],
   ]},
   { id: "mother", name: "The Mother", question: "क्या भीतर का परिवर्तन शरीर और सामूहिक जीवन तक उतर सकता है?", source: "https://www.sriaurobindoashram.org/mother/on_herself.php", events: [
     ["1878", "Paris", "Mirra Alfassa का जन्म; कला, शिक्षा और अन्तर-अनुभवों की आरम्भिक खोज।"],
     ["1914", "पहली Pondicherry यात्रा", "Sri Aurobindo से मिलन और Arya के प्रकाशन में सहभागिता।"],
     ["1920", "स्थायी वापसी", "Pondicherry लौटकर सामूहिक साधना और जीवन के संगठन में सक्रिय भूमिका।"],
     ["1926", "Ashram की जिम्मेदारी", "समुदाय के दैनिक और आध्यात्मिक जीवन को आकार देने का नया चरण।"],
-    ["1956–73", "चेतना और शरीर", "उनके अपने अभिलेखों में supramental और cellular transformation के दावे—आस्था नहीं, विवेकपूर्ण अध्ययन के लिए।"],
+    ["1956", "Supramental manifestation", "29 February का उनका दर्ज आध्यात्मिक अनुभव—एक महत्त्वपूर्ण दावा, जिसे उसी श्रेणी में विवेक से पढ़ना चाहिए।"],
   ]},
 ];
 
@@ -52,5 +52,19 @@ export function LifeTimelineExplorer() {
     <div className="nh3-timeline-question"><span>इस जीवन से आज का प्रश्न</span><h3>{active.question}</h3></div>
     <div className="nh3-timeline" role="tabpanel"><div className="nh3-timeline-track">{active.events.map((item, index) => <button key={item[0]} type="button" className={eventIndex === index ? "active" : ""} onClick={() => setEventIndex(index)} aria-label={`${item[0]} ${item[1]}`}><i/><b>{item[0]}</b><span>{item[1]}</span></button>)}</div><div className="nh3-event-card"><span>{event[0]}</span><h4>{event[1]}</h4><p>{event[2]}</p><a href={active.source} target="_blank" rel="noreferrer">प्रामाणिक स्रोत देखें ↗</a></div></div>
     <p className="nh3-timeline-note"><strong>कैसे पढ़ें:</strong> तारीख और घटना इतिहास हैं; उनके अन्तर-अनुभव उनके अपने आध्यात्मिक विवरण हैं। हम दोनों को मिलाते नहीं—दोनों से ईमानदार प्रश्न करते हैं।</p>
+  </div>;
+}
+
+const rhythmLenses = [
+  { id: "axis", label: "Axis · धुरी", title: "धुरी गति को दिशा देती है।", body: "पृथ्वी अपने rotation axis पर घूमती है और सूर्य की परिक्रमा करती है। 90° हमें दिशाओं और परस्पर लम्बवत आयामों को समझने की गणितीय भाषा देता है।", note: "यह भौतिक विज्ञान का क्षेत्र है: मापन, मॉडल और परीक्षण।" },
+  { id: "symbol", label: "Symbol · प्रतीक", title: "क्या रूप किसी गहरे सम्बन्ध की याद दिला सकता है?", body: "Shivling में 90° या axis को ब्रह्माण्डीय शक्ति का संकेत मानना एक प्रतीकात्मक व्याख्या है। यह अर्थपूर्ण inquiry हो सकती है, पर अपने-आप में वैज्ञानिक प्रमाण नहीं।", note: "यह दर्शन और सांस्कृतिक व्याख्या का क्षेत्र है।" },
+  { id: "rhythm", label: "Rhythm · लय", title: "वृत्त में हर गति का सम्बन्ध एक केन्द्र से है।", body: "Ras Leela की वृत्ताकार लय हमें केन्द्र, सम्बन्ध और अनेकता में एकता पर विचार करने देती है। विज्ञान में rhythm और periodicity मापे जाते हैं; यहाँ नृत्य एक जीवित रूपक भी है।", note: "यह कला, अनुभव और विज्ञान के बीच संवाद का क्षेत्र है।" },
+];
+
+export function CosmicRhythmExplorer() {
+  const [active, setActive] = useState(rhythmLenses[0]);
+  return <div className="nh3-rhythm-lab">
+    <div className="nh3-orbit-visual" aria-hidden="true"><div className="nh3-axis-v"/><div className="nh3-axis-h"/><div className="nh3-orbit orbit-one"/><div className="nh3-orbit orbit-two"/><div className="nh3-core">90°</div></div>
+    <div className="nh3-rhythm-content"><div className="nh3-rhythm-tabs" role="tablist" aria-label="Explore three lenses">{rhythmLenses.map(lens => <button key={lens.id} type="button" role="tab" aria-selected={lens.id === active.id} onClick={() => setActive(lens)}>{lens.label}</button>)}</div><div role="tabpanel"><h3>{active.title}</h3><p>{active.body}</p><small>{active.note}</small></div></div>
   </div>;
 }

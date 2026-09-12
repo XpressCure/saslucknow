@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { LifeTimelineExplorer, PersonalPathFinder } from "./next-human-explorer";
+import { CosmicRhythmExplorer, LifeTimelineExplorer, PersonalPathFinder } from "./next-human-explorer";
 
 const waysOfKnowing = [
   ["इतिहास", "जो हुआ, उसे उसके समय और प्रमाण के साथ समझना।"],
@@ -17,7 +17,7 @@ export function NextHumanConcept() {
     </header>
 
     <section className="nh3-hero">
-      <Image className="nh3-hero-image" src="/next-human/future-horizon-hero-v3.png" alt="Indian generations looking towards a luminous future horizon" fill priority unoptimized />
+      <Image className="nh3-hero-image" src="/next-human/cosmic-rhythm-hero-v4.png" alt="A luminous human possibility emerging among axes, orbits and cosmic rhythms" fill priority unoptimized />
       <div className="nh3-hero-shade" />
       <div className="nh3-hero-copy"><p className="nh3-eyebrow">A LIVING INQUIRY INTO HUMAN POSSIBILITY</p><h1>भविष्य केवल आता नहीं।<br/><span>मनुष्य उसे जन्म देता है।</span></h1><p className="nh3-lead">NEXT HUMAN यह खोज है कि तेज़ होती बुद्धि के साथ हमारी चेतना, करुणा और भीतर की स्वतंत्रता भी कैसे विकसित हो।</p><p className="nh3-english">Not an escape from today—a way to meet today so deeply that a different tomorrow becomes possible.</p><div className="nh3-actions"><a href="#questions">अपने प्रश्न से शुरू करें</a><Link href="/member/next-human-books">Books देखें</Link></div></div>
       <aside className="nh3-now"><span>आज आपके भीतर क्या जीवित है?</span><p>AI का भय</p><p>रिश्तों की उलझन</p><p>शरीर और उम्र</p><p>जीवन का अर्थ</p></aside>
@@ -28,6 +28,8 @@ export function NextHumanConcept() {
     <section className="nh3-questions" id="questions"><header><p className="nh3-eyebrow">START WHERE YOU ARE</p><h2>आज आप किस बात को<br/>समझना चाहते हैं?</h2><p>एक विषय चुनिए। पेज उसी क्षण बताएगा कि यह खोज आपके लिए क्या खोल सकती है और आप यहाँ से क्या लेकर जाएँगे।</p></header><PersonalPathFinder /></section>
 
     <section className="nh3-method" id="method"><div className="nh3-method-title"><p className="nh3-eyebrow">FROM QUESTION TO POSSIBILITY</p><h2>उत्तर बाहर से थोपना नहीं।<br/>भीतर से उभरने देना।</h2></div><ol><li><b>01</b><div><strong>रुकें · Pause</strong><p>प्रतिक्रिया से पहले प्रश्न को साफ़ सुनें।</p></div></li><li><b>02</b><div><strong>देखें · Observe</strong><p>मन, शरीर, समाज और इतिहास—सभी स्रोत पहचानें।</p></div></li><li><b>03</b><div><strong>परखें · Discern</strong><p>तथ्य, विश्वास, अनुभव और कल्पना में फर्क रखें।</p></div></li><li><b>04</b><div><strong>जीएँ · Embody</strong><p>एक छोटा सच अपने व्यवहार में उतारें।</p></div></li></ol></section>
+
+    <section className="nh3-rhythm"><header><p className="nh3-eyebrow">THE COSMIC RHYTHM LAB</p><h2>धुरी। गति। लय।<br/>और उनके बीच मनुष्य।</h2><p>एक ही दृश्य को तीन अलग दृष्टियों से देखिए—विज्ञान, प्रतीक और जीवित अनुभव।</p></header><CosmicRhythmExplorer /></section>
 
     <section className="nh3-journeys" id="journeys"><header><p className="nh3-eyebrow">INTERACTIVE LIFE JOURNEYS</p><h2>किसी महान जीवन को<br/>तारीखों में नहीं—मोड़ों में पढ़िए।</h2></header><LifeTimelineExplorer /><article className="nh3-savitri"><div><span>SAVITRI · A POETIC DOOR</span><h3>जब प्रेम मृत्यु से पूछता है—क्या यही अन्तिम सीमा है?</h3><p>सावित्री और अश्वपति की यात्रा चमत्कार सिद्ध करने के लिए नहीं, मनुष्य के भय, नियति और चेतना की सम्भावना को विशाल दृष्टि से देखने के लिए यहाँ है।</p><Link href="/member/next-human-books?book=one">Book One में प्रवेश करें <i>→</i></Link></div></article></section>
 
