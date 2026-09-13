@@ -1,7 +1,50 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
+
+const heroSlides = [
+  {
+    image: "/next-human/satyug-dawn-hero-v6.png",
+    alt: "Four generations walking from a changing city toward a shared dawn",
+    eyebrow: "सतयुग · समय का नहीं, चेतना का प्रश्न",
+    title: "क्या नया युग आने वाला है—",
+    accent: "या उसे मनुष्य के भीतर जन्म लेना है?",
+    body: "यदि सतयुग अधिक सत्य, करुणा और जागरूकता का युग है, तो उसकी पहली सुबह हमारे निर्णयों में कहाँ दिखाई देगी?",
+  },
+  {
+    image: "/next-human/human-possibility-generations-v5.png",
+    alt: "Indian generations looking toward a shared horizon of human possibility",
+    eyebrow: "चार पीढ़ियाँ · एक बदलती दुनिया · एक साझा खोज",
+    title: "आपके प्रश्न बदल रहे हैं।",
+    accent: "क्या मनुष्य भी बदल सकता है?",
+    body: "AI, परिवार, स्वास्थ्य, पहचान और मृत्यु—हर उम्र का प्रश्न अलग है, लेकिन हर खोज के केन्द्र में मनुष्य है।",
+  },
+  {
+    image: "/next-human/discernment-hero-v7.png",
+    alt: "A thoughtful Indian seeker between scientific patterns and cultural memory",
+    eyebrow: "श्रद्धा भी · विवेक भी",
+    title: "इतनी जानकारी के बीच",
+    accent: "अपने जीवन का सत्य पहचानें कैसे?",
+    body: "विज्ञान को प्रमाण के साथ, परम्परा को सन्दर्भ के साथ और अन्तर-अनुभव को ईमानदारी के साथ पढ़ने की एक खुली जगह।",
+  },
+];
+
+export function HeroSlideshow() {
+  const [active, setActive] = useState(0);
+  useEffect(() => {
+    const timer = window.setInterval(() => setActive(value => (value + 1) % heroSlides.length), 8500);
+    return () => window.clearInterval(timer);
+  }, []);
+  const slide = heroSlides[active];
+  return <section className="nh3-hero" aria-roledescription="carousel" aria-label="Questions opening the Next Human inquiry">
+    {heroSlides.map((item, index) => <Image key={item.image} className={`nh3-hero-image ${index === active ? "active" : ""}`} src={item.image} alt={index === active ? item.alt : ""} fill priority={index === 0} unoptimized />)}
+    <div className="nh3-hero-shade" />
+    <div className="nh3-hero-copy" aria-live="polite"><p className="nh3-eyebrow">{slide.eyebrow}</p><h1>{slide.title}<br/><span>{slide.accent}</span></h1><p className="nh3-lead">{slide.body}</p><p className="nh3-english">THE HUMAN POSSIBILITY · मनुष्य की अगली सम्भावना</p><div className="nh3-actions"><a href="#questions">अपना प्रश्न चुनें</a><a href="#satyug">सतयुग का प्रश्न खोलें</a></div></div>
+    <div className="nh3-slide-controls" role="tablist" aria-label="Choose an opening question">{heroSlides.map((item, index) => <button key={item.image} type="button" role="tab" aria-selected={active === index} aria-label={`प्रश्न ${index + 1}`} onClick={() => setActive(index)}><span>{index + 1}</span></button>)}</div>
+  </section>;
+}
 
 const paths = [
   { id: "future", label: "काम और भविष्य", prompt: "AI के बाद मेरी जगह क्या होगी?", get: ["अपने वास्तविक भय को नाम देने की स्पष्टता", "काम और पहचान को अलग देखने का नया सन्दर्भ", "अगले 7 दिनों का एक छोटा जीवन-प्रयोग"], next: "Future & Work", book: "Book Zero से शुरू करें" },

@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { CosmicRhythmExplorer, LifeTimelineExplorer, PersonalPathFinder } from "./next-human-explorer";
+import { CosmicRhythmExplorer, HeroSlideshow, LifeTimelineExplorer, PersonalPathFinder } from "./next-human-explorer";
 
 const waysOfKnowing = [
   ["इतिहास", "जो हुआ, उसे उसके समय और प्रमाण के साथ समझना।"],
@@ -16,21 +16,25 @@ const lifeStages = [
   ["65+", "पूर्णता", "बदलती दुनिया में सहज, प्रासंगिक और मृत्यु के प्रति निर्भय कैसे रहूँ?"],
 ];
 
+const eraAngles = [
+  ["01", "समय", "क्या युग अपने निश्चित चक्र में बदलते हैं—या हम इतिहास को अर्थ देने के लिए युगों की भाषा बनाते हैं?"],
+  ["02", "समाज", "क्या न्याय, सुरक्षा और परस्पर विश्वास किसी बेहतर युग के वास्तविक संकेत हो सकते हैं?"],
+  ["03", "विकास", "क्या तेज़ तकनीक मानवीय विकास है, यदि विवेक और करुणा उसी गति से न बढ़ें?"],
+  ["04", "चेतना", "क्या नया युग उस क्षण शुरू होता है जब मनुष्य भय और विभाजन से अलग उत्तर देना सीखता है?"],
+];
+
 export function NextHumanConcept() {
   return <main className="nh3-page">
     <header className="nh3-header">
       <Link href="/" className="nh3-brand" aria-label="Sri Aurobindo Society Lucknow home"><Image src="/next-human/sri-aurobindo-symbol.png" alt="" width={36} height={36} unoptimized /><span><strong>NEXT HUMAN</strong><small>मनुष्य की अगली सम्भावना</small></span></Link>
-      <nav aria-label="Universal website navigation"><Link href="/">Home</Link><Link href="/bharat-uday">Bharat Uday</Link><a href="#questions">आपके प्रश्न</a><a href="#journeys">जीवन-यात्राएँ</a><Link href="/next-human-quiz">Quiz</Link><Link href="/member/next-human-books">My Books</Link></nav>
+      <nav aria-label="Universal website navigation"><Link href="/">Home</Link><Link href="/bharat-uday">Bharat Uday</Link><a href="#satyug">युग का प्रश्न</a><a href="#questions">आपके प्रश्न</a><a href="#journeys">जीवन-यात्राएँ</a><Link href="/next-human-quiz">Quiz</Link><Link href="/member/next-human-books">My Books</Link></nav>
     </header>
 
-    <section className="nh3-hero">
-      <Image className="nh3-hero-image" src="/next-human/human-possibility-generations-v5.png" alt="Four generations looking toward a shared horizon of human possibility" fill priority unoptimized />
-      <div className="nh3-hero-shade" />
-      <div className="nh3-hero-copy"><p className="nh3-eyebrow">चार पीढ़ियाँ · एक बदलती दुनिया · एक साझा खोज</p><h1>आपके प्रश्न बदल रहे हैं।<br/><span>क्या मनुष्य भी बदल सकता है?</span></h1><p className="nh3-lead">AI, परिवार, स्वास्थ्य, पहचान, अध्यात्म और मृत्यु—NEXT HUMAN इन प्रश्नों का तैयार उत्तर नहीं बेचता। यह आपको उन्हें स्पष्टता, प्रमाण और अपने अनुभव की रोशनी में समझने का रास्ता देता है।</p><p className="nh3-english">The Human Possibility · मनुष्य की अगली सम्भावना</p><div className="nh3-actions"><a href="#questions">अपना प्रश्न चुनें</a><a href="#journeys">जीवन की यात्राएँ देखें</a></div></div>
-      <aside className="nh3-now"><span>आज आपके भीतर क्या जीवित है?</span><p>AI का भय</p><p>रिश्तों की उलझन</p><p>शरीर और उम्र</p><p>जीवन का अर्थ</p></aside>
-    </section>
+    <HeroSlideshow />
 
     <section className="nh3-generations" aria-label="Questions across four life stages"><header><p className="nh3-eyebrow">यह यात्रा किसके लिए है?</p><h2>उम्र बदलती है। प्रश्न बदलते हैं।<br/>खोज वही रहती है—मैं कैसे जिऊँ?</h2></header><div>{lifeStages.map(([age, title, question]) => <a href="#questions" key={age}><span>{age}</span><strong>{title}</strong><p>{question}</p><i>अपनी दिशा खोजें →</i></a>)}</div></section>
+
+    <section className="nh3-satyug" id="satyug"><header><p className="nh3-eyebrow">THE AGE WITHIN</p><h2>क्या सतयुग यहाँ है?</h2><p>इस प्रश्न को भविष्यवाणी की तरह नहीं—चार जीवित दृष्टियों से खोलिए।</p></header><div className="nh3-era-grid">{eraAngles.map(([number, title, body]) => <article key={number}><span>{number}</span><h3>{title}</h3><p>{body}</p></article>)}</div><blockquote>“शायद सतयुग वह दुनिया नहीं जहाँ समस्याएँ समाप्त हो जाती हैं—बल्कि वह चेतना है जो उनका उत्तर एक नये स्तर से देती है।”</blockquote></section>
 
     <section className="nh3-definition"><div><p className="nh3-eyebrow">सीधी-सी बात</p><h2>जानकारी बहुत है। पर अपने जीवन के लिए सही बात पहचानें कैसे?</h2></div><div className="nh3-definition-copy"><p>यहाँ विज्ञान को विज्ञान की तरह, इतिहास को प्रमाण के साथ, और आध्यात्मिक अनुभव को उसके सही सन्दर्भ में रखा जाता है—ताकि श्रद्धा अन्धी न हो और तर्क हृदयहीन न बने।</p><p><strong>अगला मनुष्य कोई चमत्कारी प्रजाति नहीं। वह हममें जागती हुई अधिक स्पष्ट, करुणामय और सचेत सम्भावना है।</strong></p></div></section>
 
